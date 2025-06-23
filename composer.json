@@ -1,0 +1,13 @@
+{
+    "name": "josephg/roko",
+    "description": "Giving your WordPress sites the sanity it needs",
+    "autoload": {
+        "psr-4": {
+            "JosephG\\Roko\\": "src/"
+        },
+        "files": [
+            "src/Infrastructure/WordPress/Functions.php"
+        ]
+    },
+    "require": {}
+}

@@ -1,0 +1,69 @@
+#-------------------------------------------------------------
+#  WordPress plugin – common .gitignore
+#-------------------------------------------------------------
+
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+*.log
+*.tmp
+*.swp
+*.swo
+.idea/
+.vscode/
+*.sublime-*
+
+# Composer
+vendor/                 
+composer.lock
+
+# Node / build output
+node_modules/
+npm-debug.log*
+yarn-error.log*
+.pnp/
+.pnp.js
+dist/
+build/
+*.map
+
+# PHP tools
+.phpunit.cache/
+phpunit.xml
+coverage/
+
+# Env & secrets
+.env
+.env.*
+*.key
+*.pem
+
+# WordPress cache / uploads (if symlinked inside plugin during dev)
+wp-content/cache/
+wp-content/uploads/
+
+# Generated assets in assets/ (keep source, ignore compiled)
+assets/css/*.min.css
+assets/js/*.min.js
+assets/js/*.map
+assets/*.zip
+
+# Mac package receipts
+*.pkg
+
+# IDE helper files
+*.iml
+nbproject/
+
+# Logs / reports
+*.coverage
+*.lcov
+coverage.xml
+clover.xml
+phpcs.xml
+phpcbf.xml
+
+# Misc
+.trash/
+*.orig
+
