@@ -1,127 +1,171 @@
 <!-- templates/partials/security.php -->
-<div class="roko-admin">
-	<div class="roko-container">
-	<!-- Security Dashboard -->
-	<div
-		class="roko-card"
-		id="roko-security-dashboard"
-		data-endpoint="<?php echo esc_url( rest_url( 'roko/v1/security' ) ); ?>"
-		data-nonce="<?php echo wp_create_nonce( 'wp_rest' ); ?>"
-	>
-		<div class="roko-card-header">
-		<h3 class="roko-card-title">
-			Security Analysis
-			<span class="tooltip-icon" data-tooltip="Security status and recommendations for your WordPress site">?</span>
-		</h3>
-		<p class="roko-card-subtitle">Security status and recommendations for your WordPress site</p>
-		</div>
+    <div class="roko-card" id="roko-security-dashboard"
+         data-endpoint="<?php echo esc_url( rest_url( 'roko/v1/security' ) ); ?>"
+         data-nonce="<?php echo wp_create_nonce( 'wp_rest' ); ?>">
 
-		<div class="roko-card-body">
-		<!-- Score -->
-		<div class="roko-security-score roko-d-flex roko-align-items-center roko-mb-4">
-			<div class="score-circle" id="roko-score-ring">
-			<span class="score-value" id="roko-score-value">—</span>
-			<span class="score-label">/100</span>
-			</div>
-			<div class="score-details">
-			<p class="roko-boost-score" id="roko-score-status">Loading…</p>
-			<p class="roko-text-muted"><span id="roko-critical-count">0</span> critical issues found</p>
-			</div>
-		</div>
+      <div class="roko-card-header roko-d-flex roko-justify-content-between roko-align-items-center">
+        <div>
+          <h3 class="roko-card-title">Security Analysis</h3>
+          <p class="roko-card-subtitle">Live snapshot of your WordPress hardening state</p>
+        </div>
+        <!-- View mode toggle -->
+        <div class="roko-view-toggle" role="group" aria-label="View mode">
+          <button id="roko-pill-all" class="roko-button roko-button-outline active" aria-pressed="true">Show all checks</button>
+          <button id="roko-pill-need" class="roko-button roko-button-clear" aria-pressed="false">Show required actions</button>
+        </div>
+      </div>
 
-		<!-- Details Grid -->
-		<div class="roko-site-details-grid" id="roko-details-grid"></div>
+      <div class="roko-card-body">
+        <!-- Score display -->
+        <div class="roko-security-score roko-d-flex roko-align-items-center roko-mb-4">
+          <div class="score-circle" id="roko-score-ring">
+            <span class="score-value" id="roko-score-value">…</span>
+            <span class="score-label">/100</span>
+          </div>
+          <div class="score-details roko-ml-4">
+            <p class="roko-boost-score" id="roko-score-status">Loading…</p>
+            <p class="roko-text-muted"><span id="roko-critical-count">0</span> critical issues found</p>
+          </div>
+        </div>
 
-		<!-- Quick Actions -->
-		<div class="roko-security-actions roko-mt-5 roko-d-flex roko-gap-3">
-			<button class="roko-button" id="roko-btn-scan">Run Security Scan</button>
-			<button class="roko-button roko-button-outline" id="roko-btn-update">Update Plugins</button>
-			<button class="roko-button roko-button-outline" id="roko-btn-harden">Harden WP</button>
-			<button class="roko-button roko-button-outline" id="roko-btn-report">Generate Report</button>
-		</div>
-		</div>
-	</div>
-	</div>
-</div>
+        <!-- Security details grid -->
+        <div class="roko-security-details-grid" id="roko-details-grid">
+          <!-- Cards will be inserted here -->
+        </div>
 
-<script type="module">
-	document.addEventListener('DOMContentLoaded', () => {
-	const root     = document.getElementById('roko-security-dashboard');
-	const endpoint = root?.dataset.endpoint;
-	const nonce    = root?.dataset.nonce;
-	if (!endpoint || !nonce) return;
+        <!-- Action buttons -->
+        <div class="roko-security-actions roko-mt-5 roko-d-flex">
+          <button class="roko-button roko-button-outline roko-mr-3">Safe‑update plugins</button>
+          <button class="roko-button roko-button-outline roko-mr-3">Auto‑fix issues</button>
+          <button class="roko-button roko-button-outline">Generate report</button>
+        </div>
+      </div>
+    </div>
 
-	fetch(endpoint, {
-		credentials: 'same-origin',
-		headers: { 'X-WP-Nonce': nonce },
-	})
-		.then(r => r.ok ? r.json() : Promise.reject(r))
-		.then(renderDashboard)
-		.catch(() => {
-		root.querySelector('#roko-score-status').textContent = 'Error';
-		});
+<style>
+/* Score circle styling */
+.score-circle {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: conic-gradient(#00a32a 0%, #e9ecef 0% 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  flex-shrink: 0;
+}
 
-	function renderDashboard(data) {
-		const score = calcScore(data);
-		updateScoreRing(score);
-		document.getElementById('roko-critical-count').textContent = countCriticalIssues(data);
-		document.getElementById('roko-details-grid').innerHTML = buildCardsHTML(data);
-	}
+.score-circle::before {
+  content: '';
+  position: absolute;
+  width: 60px;
+  height: 60px;
+  background: white;
+  border-radius: 50%;
+}
 
-	function calcScore(d) {
-		const ok   = (d.fileSecurity.wpDebug ? 0 : 5) + (d.networkSecurity.httpsEnforced ? 10 : 0);
-		const risk = d.fileIntegrity.coreModified ? 20 : 0;
-		return Math.max(0, Math.min(100, 80 + ok - risk));
-	}
+.score-value {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1d2327;
+  z-index: 1;
+}
 
-	function updateScoreRing(score) {
-		const ring  = document.getElementById('roko-score-ring');
-		const val   = document.getElementById('roko-score-value');
-		val.textContent = score;
-		ring.style.background = `conic-gradient(#00a32a ${score}%, #e9ecef ${score}% 100%)`;
-		const status = document.getElementById('roko-score-status');
-		status.textContent = score >= 80 ? 'Secure' : (score >= 60 ? 'Needs Attention' : 'Critical Issues');
-		status.className   = 'roko-boost-score ' + (score >= 80 ? 'good' : (score >= 60 ? 'fair' : 'poor'));
-	}
+.score-label {
+  font-size: 12px;
+  color: #646970;
+  z-index: 1;
+}
 
-	const boolBadge = (b) => `<span class="roko-badge ${b ? 'roko-badge-success' : 'roko-badge-error'}">${b ? 'Yes' : 'No'}</span>`;
+/* View toggle styling */
+.roko-view-toggle {
+  display: flex;
+  gap: 4px;
+}
 
-	function countCriticalIssues(d) {
-		let c = 0;
-		if (d.fileIntegrity.coreModified) c++;
-		if (!d.networkSecurity.sslValid)  c++;
-		return c;
-	}
+.roko-view-toggle .roko-button {
+  font-size: 12px;
+  padding: 6px 12px;
+  min-height: 32px;
+}
 
-	function buildCardsHTML(d) {
-		return `
-		<div class="roko-detail-card">
-		<h4>WordPress Security Keys</h4>
-		<p class="roko-text-muted">Rotated: ${new Date(d.securityKeys.rotatedAt).toLocaleDateString()}</p>
-		${boolBadge(!d.securityKeys.needsRotation)}
-		</div>
-		<div class="roko-detail-card">
-		<h4>File Security</h4>
-		<div class="security-item roko-d-flex roko-justify-content-between"><span>wp-config.php</span>${boolBadge(['600','644'].includes(d.fileSecurity.wpConfigPerm))}</div>
-		<div class="security-item roko-d-flex roko-justify-content-between"><span>.htaccess</span>${boolBadge(d.fileSecurity.htaccessPerm === '644')}</div>
-		</div>
-		<div class="roko-detail-card">
-		<h4>User Security</h4>
-		<div class="security-item roko-d-flex roko-justify-content-between"><span>Default admin user</span>${boolBadge(!d.userSecurity.adminUsernameRisk)}</div>
-		</div>
-		<div class="roko-detail-card">
-		<h4>Network Security</h4>
-		<div class="security-item roko-d-flex roko-justify-content-between"><span>HTTPS enforced</span>${boolBadge(d.networkSecurity.httpsEnforced)}</div>
-		<div class="security-item roko-d-flex roko-justify-content-between"><span>SSL valid</span>${boolBadge(d.networkSecurity.sslValid)}</div>
-		</div>
-		<div class="roko-detail-card">
-		<h4>File Integrity</h4>
-		<div class="security-item roko-d-flex roko-justify-content-between"><span>Core modified</span>${boolBadge(!d.fileIntegrity.coreModified)}</div>
-		</div>
-		<div class="roko-detail-card">
-		<h4>Known Vulnerabilities</h4>
-		${d.knownVulnerabilities.length ? d.knownVulnerabilities.slice(0,3).map(v=>`<div class="security-item roko-d-flex roko-justify-content-between"><span>${v.plugin}</span><span class="roko-badge roko-badge-${v.severity}">${v.severity}</span></div>`).join('') : '<p class="roko-text-muted">None</p>'}
-		</div>`;
-	}
-	});
-</script>
+.roko-view-toggle .roko-button.active {
+  background: #2271b1;
+  color: white;
+  border-color: #2271b1;
+}
+
+/* Security item styling */
+.security-item {
+  padding: 12px 0;
+  border-bottom: 1px solid #f0f0f1;
+}
+
+.security-item:last-child {
+  border-bottom: none;
+}
+
+.security-item-label {
+  font-weight: 500;
+  color: #1d2327;
+  margin-bottom: 4px;
+}
+
+.security-item-note {
+  font-size: 12px;
+  color: #646970;
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* Hide OK items when in "required actions" mode */
+.hide-ok [data-status="ok"] {
+  display: none;
+}
+
+/* Status-based text colors */
+.security-item[data-status="critical"] .security-item-label {
+  color: #d63638;
+}
+
+.security-item[data-status="warn"] .security-item-label {
+  color: #996800;
+}
+
+.security-item[data-status="ok"] .security-item-label {
+  color: #00a32a;
+}
+
+/* Vulnerability table specific styling */
+.roko-vulnerabilities-table-container {
+  margin: 16px 0;
+}
+
+.roko-vulnerabilities-table-container .roko-table {
+  margin: 0;
+}
+
+/* Severity badge colors */
+.roko-badge-high {
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #d63638;
+}
+
+.roko-badge-medium {
+  background-color: #fff3cd;
+  color: #664d03;
+  border: 1px solid #dba617;
+}
+
+.roko-badge-low {
+  background-color: #d1ecf1;
+  color: #0c5460;
+  border: 1px solid #17a2b8;
+}
+
+</style>
+
+<!-- Load the external JavaScript file -->
+<script type="module" src="<?php echo plugin_dir_url(__FILE__) . '../../assets/js/security.js'; ?>"></script>

@@ -4,7 +4,7 @@ declare(strict_types=1);
 namespace JosephG\Roko\Domain\Security;
 
 use JsonException;
-use JosephG\Roko\Domain\Security\SecurityKeys\Repository\SecurityKeysRepositoryInterface;
+use JosephG\Roko\Domain\Security\SecurityKeys\Entity\SecurityKeysProviderInterface;
 use JosephG\Roko\Domain\Security\FileSecurity\Repository\FileSecurityRepositoryInterface;
 use JosephG\Roko\Domain\Security\UserSecurity\Repository\UserSecurityRepositoryInterface;
 use JosephG\Roko\Domain\Security\NetworkSecurity\Repository\NetworkSecurityRepositoryInterface;
@@ -19,7 +19,7 @@ use JosephG\Roko\Domain\Security\KnownVulnerabilities\Repository\VulnerabilityRe
 final readonly class SecurityAggregate {
 
 	public function __construct(
-		private SecurityKeysRepositoryInterface $keysRepo,
+		private SecurityKeysProviderInterface $keysRepo,
 		private FileSecurityRepositoryInterface $fileRepo,
 		private UserSecurityRepositoryInterface $userRepo,
 		private NetworkSecurityRepositoryInterface $netRepo,
@@ -31,19 +31,20 @@ final readonly class SecurityAggregate {
 	 * Returns a plain PHP array describing the current security posture.
 	 */
 	public function snapshot(): array {
-		$keys          = $this->keysRepo->current();
+		$keys          = $this->keysRepo->snapshot();
 		$filePerms     = $this->fileRepo->currentPermissions();
 		$userProfile   = $this->userRepo->currentProfile();
 		$networkState  = $this->netRepo->currentState();
 		$integrityScan = $this->integrityRepo->latestScan();
 		$vulns         = $this->vulnRepo->latestKnown();
 
+		$securityKeys = array_map( function( $key ) {
+			return $key->strength();
+		}, $keys->toArray() );
+
 		return array(
 			'timestamp'            => ( new \DateTimeImmutable() )->format( \DateTimeInterface::ATOM ),
-			'securityKeys'         => array(
-				'needsRotation' => $keys->needsRotation(),
-				'rotatedAt'     => $keys->rotatedAt()->format( \DateTimeInterface::ATOM ),
-			),
+			'securityKeys'         => $securityKeys,
 			'fileSecurity'         => array(
 				'wpConfigPerm'  => $filePerms->wpConfig,
 				'htaccessPerm'  => $filePerms->htaccess,

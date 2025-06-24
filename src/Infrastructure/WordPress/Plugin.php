@@ -8,7 +8,7 @@ use JosephG\Roko\Infrastructure\WordPress\Admin\AdminPage;
 // Security.
 use JosephG\Roko\Infrastructure\WordPress\Security\SecurityJsonService;
 use JosephG\Roko\Domain\Security\SecurityAggregate;
-use JosephG\Roko\Infrastructure\WordPress\Repository\WpSecurityKeysRepository;
+use JosephG\Roko\Infrastructure\WordPress\Security\WpSecurityKeysProvider;
 use JosephG\Roko\Infrastructure\WordPress\Repository\WpFileSecurityRepository;
 use JosephG\Roko\Infrastructure\WordPress\Repository\WpUserSecurityRepository;
 use JosephG\Roko\Infrastructure\WordPress\Repository\WpNetworkSecurityRepository;
@@ -28,7 +28,7 @@ class Plugin {
 		QueryMonitorBridge::init();
 
 		$aggregate = new SecurityAggregate(
-			new WpSecurityKeysRepository(),
+			new WpSecurityKeysProvider(),
 			new WpFileSecurityRepository(),
 			new WpUserSecurityRepository(),
 			new WpNetworkSecurityRepository(),

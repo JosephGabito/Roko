@@ -1,7 +1,7 @@
 <?php
 /**
- * -Style Admin Interface for Roko
- * 100% Compatible with Manage Dashboard patterns
+ * Site Intelligence Center - Admin Interface for Roko
+ * 100% Compatible with WordPress Dashboard patterns
  */
 
 namespace JosephG\Roko\Infrastructure\WordPress\Admin;
@@ -10,8 +10,8 @@ class AdminPage {
 	public function add_admin_page() {
 		add_submenu_page(
 			'index.php',
-			'Intelligence',
-			'Intelligence',
+			'Site Intelligence',
+			'Site Intelligence',
 			'manage_options',
 			'roko-admin',
 			array( $this, 'render_admin_page' )
@@ -27,14 +27,99 @@ class AdminPage {
 		wp_enqueue_script( 'roko-admin', ROKO_PLUGIN_URL . 'assets/js/admin.js', array( 'jquery' ), '1.0.0', true );
 	}
 
+	/**
+	 * Get environment type for display.
+	 */
+	private function get_environment_type() {
+		// Detect environment
+		if ( defined( 'WP_ENVIRONMENT_TYPE' ) ) {
+			switch ( WP_ENVIRONMENT_TYPE ) {
+				case 'development':
+				case 'local':
+					return array( 'label' => 'DEV', 'class' => 'roko-env-dev' );
+				case 'staging':
+					return array( 'label' => 'STAGE', 'class' => 'roko-env-stage' );
+				case 'production':
+					return array( 'label' => 'LIVE', 'class' => 'roko-env-live' );
+				default:
+					return array( 'label' => 'LIVE', 'class' => 'roko-env-live' );
+			}
+		}
+
+		// Fallback detection
+		$site_url = get_site_url();
+		if ( strpos( $site_url, 'localhost' ) !== false || 
+			 strpos( $site_url, '.local' ) !== false || 
+			 strpos( $site_url, '127.0.0.1' ) !== false ) {
+			return array( 'label' => 'DEV', 'class' => 'roko-env-dev' );
+		} elseif ( strpos( $site_url, 'staging' ) !== false || 
+				   strpos( $site_url, 'stage' ) !== false ) {
+			return array( 'label' => 'STAGE', 'class' => 'roko-env-stage' );
+		}
+
+		return array( 'label' => 'LIVE', 'class' => 'roko-env-live' );
+	}
+
+	/**
+	 * Get instant value metrics for header.
+	 */
+	private function get_instant_metrics() {
+		// Mock data - in real implementation, get from your data sources
+		return array(
+			'security' => array( 'score' => 94, 'status' => 'good' ),
+			'performance' => array( 'score' => 88, 'status' => 'good' ),
+			'critical_alerts' => 1
+		);
+	}
+
 	public function render_admin_page() {
 		$current_tab = isset( $_GET['tab'] ) ? sanitize_text_field( $_GET['tab'] ) : 'overview';
+		$environment = $this->get_environment_type();
+		$metrics = $this->get_instant_metrics();
 		?>
 		<div class="roko-admin">
 			<div class="roko-container">
-				<div class="roko-mb-6">
-					<h1>Site Intelligence Dashboard</h1>
-					<p>Comprehensive analysis and insights for <?php echo esc_html( get_bloginfo( 'name' ) ); ?></p>
+				
+				<!-- Confident Header with Instant Value -->
+				<div class="roko-header-section roko-mb-6">
+					<div class="roko-header-main">
+						<h1 class="roko-header-title">
+							Roko Insights
+							<span class="roko-env-pill <?php echo esc_attr( $environment['class'] ); ?>">
+								<?php echo esc_html( $environment['label'] ); ?>
+							</span>
+						</h1>
+						<p class="roko-header-subtitle">Security, speed & insights—sorted.</p>
+					</div>
+					
+					<!-- Instant Value String -->
+					<div class="roko-instant-metrics">
+						<div class="roko-metric-item">
+							<span class="roko-metric-label">Security</span>
+							<span class="roko-metric-score roko-metric-<?php echo esc_attr( $metrics['security']['status'] ); ?>">
+								<?php echo esc_html( $metrics['security']['score'] ); ?><span class="roko-metric-total">/100</span>
+							</span>
+						</div>
+						<span class="roko-metric-separator">•</span>
+						<div class="roko-metric-item">
+							<span class="roko-metric-label">Performance</span>
+							<span class="roko-metric-score roko-metric-<?php echo esc_attr( $metrics['performance']['status'] ); ?>">
+								<?php echo esc_html( $metrics['performance']['score'] ); ?><span class="roko-metric-total">/100</span>
+							</span>
+						</div>
+						<span class="roko-metric-separator">•</span>
+						<div class="roko-metric-item">
+							<?php if ( $metrics['critical_alerts'] > 0 ) : ?>
+								<span class="roko-metric-label">Critical alerts</span>
+								<span class="roko-metric-score roko-metric-critical">
+									<?php echo esc_html( $metrics['critical_alerts'] ); ?>
+								</span>
+							<?php else : ?>
+								<span class="roko-metric-label">Status</span>
+								<span class="roko-metric-score roko-metric-good">All clear</span>
+							<?php endif; ?>
+						</div>
+					</div>
 				</div>
 
 				<!-- Main Horizontal Tabs -->
@@ -44,7 +129,7 @@ class AdminPage {
 						'overview'    => 'Overview',
 						'performance' => 'Performance',
 						'security'    => 'Security',
-						'rum'         => 'Real-User Monitoring',
+						'a11y'         => 'Accessibility',
 						'internals'   => 'Internals',
 						'automations' => 'Integrations',
 						'settings'    => 'Settings',
@@ -189,8 +274,8 @@ class AdminPage {
 							case 'security':
 										include ROKO_PLUGIN_DIR . '/templates/partials/security.php';
 								break;
-							case 'rum':
-										include ROKO_PLUGIN_DIR . '/templates/partials/rum.php';
+							case 'a11y':
+										include ROKO_PLUGIN_DIR . '/templates/partials/a11y.php';
 								break;
 							case 'automations':
 										include ROKO_PLUGIN_DIR . '/templates/partials/integrations.php';
@@ -207,6 +292,185 @@ class AdminPage {
 				</div>
 			</div>
 		</div>
+		
+		<style>
+		/* Header Section Styling */
+		.roko-header-section {
+			background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+			border: 1px solid #e0e0e0;
+			border-radius: 8px;
+			padding: 24px;
+			position: relative;
+			overflow: hidden;
+		}
+
+		.roko-header-section::before {
+			content: '';
+			position: absolute;
+			top: 0;
+			left: 0;
+			right: 0;
+			height: 3px;
+			background: linear-gradient(90deg, var(--roko-blue, #2271b1) 0%, var(--roko-green, #00a32a) 100%);
+		}
+
+		.roko-header-main {
+			margin-bottom: 16px;
+		}
+
+		.roko-header-title {
+			font-size: 28px;
+			font-weight: 700;
+			color: #1d2327;
+			margin: 0 0 8px 0;
+			letter-spacing: -0.025em;
+			display: flex;
+			align-items: center;
+			gap: 12px;
+		}
+
+		.roko-header-subtitle {
+			font-size: 16px;
+			color: #646970;
+			margin: 0;
+			font-weight: 500;
+		}
+
+		/* Environment Pills */
+		.roko-env-pill {
+			display: inline-flex;
+			align-items: center;
+			padding: 4px 12px;
+			border-radius: 20px;
+			font-size: 11px;
+			font-weight: 700;
+			text-transform: uppercase;
+			letter-spacing: 0.05em;
+		}
+
+		.roko-env-dev {
+			background: #e8f5e8;
+			color: #0f5132;
+			border: 1px solid #00a32a;
+		}
+
+		.roko-env-stage {
+			background: #fff3cd;
+			color: #664d03;
+			border: 1px solid #dba617;
+		}
+
+		.roko-env-live {
+			background: #f8d7da;
+			color: #721c24;
+			border: 1px solid #d63638;
+		}
+
+		/* Instant Metrics */
+		.roko-instant-metrics {
+			display: flex;
+			align-items: center;
+			gap: 12px;
+			flex-wrap: wrap;
+		}
+
+		.roko-metric-item {
+			display: flex;
+			align-items: center;
+			gap: 6px;
+		}
+
+		.roko-metric-label {
+			font-size: 13px;
+			color: #646970;
+			font-weight: 500;
+		}
+
+		.roko-metric-score {
+			font-size: 16px;
+			font-weight: 700;
+			line-height: 1;
+		}
+
+		.roko-metric-total {
+			font-size: 12px;
+			font-weight: 500;
+			color: #8c8f94;
+		}
+
+		.roko-metric-separator {
+			color: #c3c4c7;
+			font-weight: 600;
+		}
+
+		/* Metric Score Colors */
+		.roko-metric-good {
+			color: var(--roko-green, #00a32a);
+		}
+
+		.roko-metric-warning {
+			color: var(--roko-yellow, #dba617);
+		}
+
+		.roko-metric-critical {
+			color: var(--roko-red, #d63638);
+		}
+
+		/* Responsive Header */
+		@media (max-width: 768px) {
+			.roko-header-title {
+				font-size: 24px;
+				flex-direction: column;
+				align-items: flex-start;
+				gap: 8px;
+			}
+
+			.roko-instant-metrics {
+				flex-direction: column;
+				align-items: flex-start;
+				gap: 8px;
+			}
+
+			.roko-metric-item {
+				justify-content: space-between;
+				width: 100%;
+				padding: 8px 0;
+				border-bottom: 1px solid #f0f0f1;
+			}
+
+			.roko-metric-separator {
+				display: none;
+			}
+		}
+
+		/* Enhanced Tab Navigation */
+		.roko-tab-nav {
+			background: #ffffff;
+			border: 1px solid #e0e0e0;
+			border-radius: 6px;
+			padding: 4px;
+			display: flex;
+			gap: 2px;
+		}
+
+		.roko-tab-nav .roko-button {
+			border-radius: 4px;
+			font-weight: 500;
+			transition: all 0.2s ease;
+		}
+
+		.roko-tab-nav .roko-button-outline {
+			background: var(--roko-blue, #2271b1);
+			color: white;
+			border-color: var(--roko-blue, #2271b1);
+			box-shadow: 0 2px 4px rgba(34, 113, 177, 0.25);
+		}
+
+		.roko-tab-nav .roko-button-clear:hover {
+			background: #f6f7f7;
+			color: #1d2327;
+		}
+		</style>
 		<?php
 	}
 }
