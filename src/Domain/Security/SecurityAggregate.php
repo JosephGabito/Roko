@@ -5,7 +5,7 @@ namespace JosephG\Roko\Domain\Security;
 
 use JsonException;
 use JosephG\Roko\Domain\Security\SecurityKeys\Entity\SecurityKeysProviderInterface;
-use JosephG\Roko\Domain\Security\FileSecurity\Repository\FileSecurityRepositoryInterface;
+use JosephG\Roko\Domain\Security\FileSecurity\Entity\FilePermissionInterface;
 use JosephG\Roko\Domain\Security\UserSecurity\Repository\UserSecurityRepositoryInterface;
 use JosephG\Roko\Domain\Security\NetworkSecurity\Repository\NetworkSecurityRepositoryInterface;
 use JosephG\Roko\Domain\Security\FileIntegrity\Repository\FileIntegrityRepositoryInterface;
@@ -19,8 +19,8 @@ use JosephG\Roko\Domain\Security\KnownVulnerabilities\Repository\VulnerabilityRe
 final readonly class SecurityAggregate {
 
 	public function __construct(
-		private SecurityKeysProviderInterface $keysRepo,
-		private FileSecurityRepositoryInterface $fileRepo,
+		private SecurityKeysProviderInterface $securityKeysProvider,
+		private FilePermissionInterface $filePermissionProvider,
 		private UserSecurityRepositoryInterface $userRepo,
 		private NetworkSecurityRepositoryInterface $netRepo,
 		private FileIntegrityRepositoryInterface $integrityRepo,
@@ -31,8 +31,8 @@ final readonly class SecurityAggregate {
 	 * Returns a plain PHP array describing the current security posture.
 	 */
 	public function snapshot(): array {
-		$keys          = $this->keysRepo->snapshot();
-		$filePerms     = $this->fileRepo->currentPermissions();
+		$keys          = $this->securityKeysProvider->snapshot();
+		$fileSecurity  = $this->filePermissionProvider->snapshot();
 		$userProfile   = $this->userRepo->currentProfile();
 		$networkState  = $this->netRepo->currentState();
 		$integrityScan = $this->integrityRepo->latestScan();
@@ -42,14 +42,23 @@ final readonly class SecurityAggregate {
 			return $key->strength();
 		}, $keys->toArray() );
 
+		$fileSecurity = $fileSecurity->toArray();
+
 		return array(
 			'timestamp'            => ( new \DateTimeImmutable() )->format( \DateTimeInterface::ATOM ),
 			'securityKeys'         => $securityKeys,
 			'fileSecurity'         => array(
-				'wpConfigPerm'  => $filePerms->wpConfig,
-				'htaccessPerm'  => $filePerms->htaccess,
-				'dirListingOff' => $filePerms->directoryListingDisabled,
-				'wpDebug'       => $filePerms->wpDebug,
+				'directoryListingIsOn' => $fileSecurity['directoryListingIsOn']->value(),
+				'wpDebugOn' => $fileSecurity['wpDebugOn']->value(),
+				'editorOn' => $fileSecurity['editorOn']->value(),
+				'dashboardInstallsOn' => $fileSecurity['dashboardInstallsOn']->value(),
+				'phpExecutionInUploadsDirOn' => $fileSecurity['phpExecutionInUploadsDirOn']->value(),
+				'doesSensitiveFilesExists' => $fileSecurity['doesSensitiveFilesExists']->value(),
+				'xmlrpcOn' => $fileSecurity['xmlrpcOn']->value(),
+				'wpConfigPermission644' => $fileSecurity['wpConfigPermission644']->value(),
+				'htAccessPermission644' => $fileSecurity['htAccessPermission644']->value(),
+				'anyBackupExposed' => $fileSecurity['anyBackupExposed']->value(),
+				'logFilesExposed' => $fileSecurity['logFilesExposed']->value(),
 			),
 			'userSecurity'         => array(
 				'adminUsernameRisk' => $userProfile->isDefaultAdmin(),

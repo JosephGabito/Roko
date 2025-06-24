@@ -9,7 +9,7 @@ use JosephG\Roko\Infrastructure\WordPress\Admin\AdminPage;
 use JosephG\Roko\Infrastructure\WordPress\Security\SecurityJsonService;
 use JosephG\Roko\Domain\Security\SecurityAggregate;
 use JosephG\Roko\Infrastructure\WordPress\Security\WpSecurityKeysProvider;
-use JosephG\Roko\Infrastructure\WordPress\Repository\WpFileSecurityRepository;
+use JosephG\Roko\Infrastructure\WordPress\Security\WpFileSecurityProvider;
 use JosephG\Roko\Infrastructure\WordPress\Repository\WpUserSecurityRepository;
 use JosephG\Roko\Infrastructure\WordPress\Repository\WpNetworkSecurityRepository;
 use JosephG\Roko\Infrastructure\WordPress\Repository\WpFileIntegrityRepository;
@@ -29,7 +29,7 @@ class Plugin {
 
 		$aggregate = new SecurityAggregate(
 			new WpSecurityKeysProvider(),
-			new WpFileSecurityRepository(),
+			new WpFileSecurityProvider(),
 			new WpUserSecurityRepository(),
 			new WpNetworkSecurityRepository(),
 			new WpFileIntegrityRepository(),

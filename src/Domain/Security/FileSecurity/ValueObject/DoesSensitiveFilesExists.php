@@ -1,0 +1,21 @@
+<?php
+namespace JosephG\Roko\Domain\Security\FileSecurity\ValueObject;
+
+final readonly class DoesSensitiveFilesExists {
+
+	private bool $exists;
+
+	public function __construct(
+		bool $exists
+	) {
+		$this->exists = $exists;
+	}
+
+	public function exists(): bool {
+		return $this->exists;
+	}
+
+	public function value(): bool {
+		return $this->exists;
+	}
+}
