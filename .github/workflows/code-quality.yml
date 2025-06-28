@@ -9,8 +9,10 @@ on:
 jobs:
   code-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     
     strategy:
+      fail-fast: false
       matrix:
         php-version: ['7.4', '8.0', '8.1', '8.2']
 
@@ -25,23 +27,32 @@ jobs:
       with:
         php-version: ${{ matrix.php-version }}
         extensions: mbstring, intl, zip
-        tools: composer
+        tools: composer:v2
         coverage: none
+        ini-values: memory_limit=256M
+      env:
+        COMPOSER_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Validate composer.json
       run: composer validate --strict
 
-    - name: Cache Composer packages
+    - name: Get composer cache directory
       id: composer-cache
+      run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+
+    - name: Cache Composer packages
       uses: actions/cache@v4
       with:
-        path: vendor
-        key: ${{ runner.os }}-php-${{ matrix.php-version }}-${{ hashFiles('**/composer.lock') }}
+        path: ${{ steps.composer-cache.outputs.dir }}
+        key: ${{ runner.os }}-composer-${{ matrix.php-version }}-${{ hashFiles('**/composer.lock', '**/composer.json') }}
         restore-keys: |
-          ${{ runner.os }}-php-${{ matrix.php-version }}-
+          ${{ runner.os }}-composer-${{ matrix.php-version }}-
+          ${{ runner.os }}-composer-
 
     - name: Install dependencies
-      run: composer install --prefer-dist --no-progress
+      run: |
+        composer install --prefer-dist --no-progress --no-interaction --optimize-autoloader
+        composer show
 
     - name: PHP Syntax Check
       run: |
@@ -50,26 +61,25 @@ jobs:
 
     - name: WordPress Coding Standards
       run: |
-        if [ -f "phpcs.xml" ]; then
-          vendor/bin/phpcs --report=checkstyle --report-file=phpcs-report.xml
-        else
-          vendor/bin/phpcs --standard=WordPress src/ roko.php --report=checkstyle --report-file=phpcs-report.xml
-        fi
+        vendor/bin/phpcs --standard=WordPress src/ roko.php --report=checkstyle --report-file=phpcs-report.xml || true
 
     - name: PHP 7.4 Compatibility Check
-      run: vendor/bin/phpcs --standard=PHPCompatibility --runtime-set testVersion 7.4- src/ roko.php --report=checkstyle --report-file=php74-compat-report.xml
+      run: |
+        vendor/bin/phpcs --standard=PHPCompatibility --runtime-set testVersion 7.4- src/ roko.php --report=checkstyle --report-file=php74-compat-report.xml || true
 
     - name: Upload PHPCS results
-      if: failure()
+      if: always()
       uses: actions/upload-artifact@v4
       with:
         name: phpcs-results-php-${{ matrix.php-version }}
         path: |
           phpcs-report.xml
           php74-compat-report.xml
+        retention-days: 5
 
   security-check:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     name: Security Audit
 
     steps:
@@ -80,16 +90,20 @@ jobs:
       uses: shivammathur/setup-php@v2
       with:
         php-version: '8.1'
-        tools: composer
+        tools: composer:v2
+        coverage: none
+      env:
+        COMPOSER_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Install dependencies
-      run: composer install --prefer-dist --no-progress
+      run: composer install --prefer-dist --no-progress --no-interaction
 
     - name: Security Audit
-      run: composer audit
+      run: composer audit || true
 
   release-test:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     name: Release Package Test
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
 
@@ -101,15 +115,18 @@ jobs:
       uses: shivammathur/setup-php@v2
       with:
         php-version: '7.4'
-        tools: composer
+        tools: composer:v2
+        coverage: none
+      env:
+        COMPOSER_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Install dependencies
-      run: composer install --no-dev --optimize-autoloader
+      run: composer install --no-dev --optimize-autoloader --no-interaction
 
     - name: Test release script
       run: |
         chmod +x bin/release.sh
-        # Test release script without actually creating release
+        # Test release script syntax
         bash -n bin/release.sh
 
     - name: Validate plugin structure

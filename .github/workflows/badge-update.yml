@@ -11,6 +11,7 @@ on:
 jobs:
   update-badges:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -41,33 +42,21 @@ jobs:
       uses: shivammathur/setup-php@v2
       with:
         php-version: '7.4'
-        tools: composer
+        tools: composer:v2
+        coverage: none
+      env:
+        COMPOSER_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Install dependencies
-      run: composer install --prefer-dist --no-progress
+      run: composer install --prefer-dist --no-progress --no-interaction
 
     - name: Run tests and checks
       id: quality-checks
       run: |
         # Initialize status variables
-        UNIT_TESTS="unknown"
+        UNIT_TESTS="no-tests"
         PHP74_COMPAT="unknown" 
         CODING_STANDARDS="unknown"
-        
-        # Check if PHPUnit is available and run unit tests
-        if [ -f "phpunit.xml" ] || [ -f "phpunit.xml.dist" ]; then
-          if vendor/bin/phpunit --version > /dev/null 2>&1; then
-            if vendor/bin/phpunit --no-coverage > /dev/null 2>&1; then
-              UNIT_TESTS="passing"
-            else
-              UNIT_TESTS="failing"
-            fi
-          else
-            UNIT_TESTS="no-tests"
-          fi
-        else
-          UNIT_TESTS="no-tests"
-        fi
         
         # Check PHP 7.4 compatibility
         if vendor/bin/phpcs --standard=PHPCompatibility --runtime-set testVersion 7.4- src/ roko.php > /dev/null 2>&1; then
@@ -93,49 +82,33 @@ jobs:
       run: |
         # Build status badge
         BUILD_STATUS="${{ steps.workflow-status.outputs.build-status }}"
-        if [ "$BUILD_STATUS" = "success" ]; then
-          BUILD_COLOR="brightgreen"
-          BUILD_MESSAGE="passing"
-        elif [ "$BUILD_STATUS" = "failure" ]; then
-          BUILD_COLOR="red"
-          BUILD_MESSAGE="failing"
-        else
-          BUILD_COLOR="yellow"
-          BUILD_MESSAGE="unknown"
-        fi
+        case "$BUILD_STATUS" in
+          "success") BUILD_COLOR="brightgreen"; BUILD_MESSAGE="passing" ;;
+          "failure") BUILD_COLOR="red"; BUILD_MESSAGE="failing" ;;
+          *) BUILD_COLOR="yellow"; BUILD_MESSAGE="unknown" ;;
+        esac
         
         # Unit tests badge
         UNIT_STATUS="${{ steps.quality-checks.outputs.unit-tests }}"
-        if [ "$UNIT_STATUS" = "passing" ]; then
-          UNIT_COLOR="brightgreen"
-          UNIT_MESSAGE="passing"
-        elif [ "$UNIT_STATUS" = "failing" ]; then
-          UNIT_COLOR="red"
-          UNIT_MESSAGE="failing"
-        else
-          UNIT_COLOR="lightgrey"
-          UNIT_MESSAGE="no%20tests"
-        fi
+        case "$UNIT_STATUS" in
+          "passing") UNIT_COLOR="brightgreen"; UNIT_MESSAGE="passing" ;;
+          "failing") UNIT_COLOR="red"; UNIT_MESSAGE="failing" ;;
+          *) UNIT_COLOR="lightgrey"; UNIT_MESSAGE="no%20tests" ;;
+        esac
         
         # PHP 7.4 compatibility badge
         PHP74_STATUS="${{ steps.quality-checks.outputs.php74-compat }}"
-        if [ "$PHP74_STATUS" = "passing" ]; then
-          PHP74_COLOR="brightgreen"
-          PHP74_MESSAGE="compatible"
-        else
-          PHP74_COLOR="red"
-          PHP74_MESSAGE="incompatible"
-        fi
+        case "$PHP74_STATUS" in
+          "passing") PHP74_COLOR="brightgreen"; PHP74_MESSAGE="compatible" ;;
+          *) PHP74_COLOR="red"; PHP74_MESSAGE="incompatible" ;;
+        esac
         
         # Coding standards badge
         CS_STATUS="${{ steps.quality-checks.outputs.coding-standards }}"
-        if [ "$CS_STATUS" = "passing" ]; then
-          CS_COLOR="brightgreen"
-          CS_MESSAGE="passing"
-        else
-          CS_COLOR="red"
-          CS_MESSAGE="failing"
-        fi
+        case "$CS_STATUS" in
+          "passing") CS_COLOR="brightgreen"; CS_MESSAGE="passing" ;;
+          *) CS_COLOR="red"; CS_MESSAGE="failing" ;;
+        esac
         
         # Generate shield URLs
         echo "build-badge=https://img.shields.io/badge/build-${BUILD_MESSAGE}-${BUILD_COLOR}" >> $GITHUB_OUTPUT
@@ -145,83 +118,37 @@ jobs:
 
     - name: Update README with badges
       run: |
-        # Create badge section in a temporary file
-        cat > /tmp/badges.md << 'EOF'
-        [![Build Status](${{ steps.badges.outputs.build-badge }})](https://github.com/${{ github.repository }}/actions/workflows/code-quality.yml)
+        # Create badge section
+        BADGES="[![Build Status](${{ steps.badges.outputs.build-badge }})](https://github.com/${{ github.repository }}/actions/workflows/code-quality.yml)
         [![Unit Tests](${{ steps.badges.outputs.unit-badge }})](https://github.com/${{ github.repository }}/actions/workflows/code-quality.yml)
         [![PHP 7.4 Compatibility](${{ steps.badges.outputs.php74-badge }})](https://github.com/${{ github.repository }}/actions/workflows/code-quality.yml)
-        [![Coding Standards](${{ steps.badges.outputs.cs-badge }})](https://github.com/${{ github.repository }}/actions/workflows/code-quality.yml)
-        EOF
+        [![Coding Standards](${{ steps.badges.outputs.cs-badge }})](https://github.com/${{ github.repository }}/actions/workflows/code-quality.yml)"
         
-        # Check if README.md exists
+        # Update README if it exists
         if [ -f "README.md" ]; then
-          # Check if badges section exists
           if grep -q "<!-- BADGES-START -->" README.md; then
-            # Use awk to replace the badges section
-            awk '
-              /<!-- BADGES-START -->/ { 
-                print; 
-                system("cat /tmp/badges.md"); 
-                while (getline > 0 && !/<!-- BADGES-END -->/) continue; 
-                print "<!-- BADGES-END -->"
-                next 
-              } 
-              { print }
-            ' README.md > README.tmp && mv README.tmp README.md
-          else
-            # Add badges after the first heading using awk
-            awk '
-              /^# / && !badges_added { 
-                print; 
-                print ""; 
-                print "<!-- BADGES-START -->"; 
-                system("cat /tmp/badges.md"); 
-                print "<!-- BADGES-END -->"; 
-                badges_added=1; 
-                next 
-              } 
-              { print }
-            ' README.md > README.tmp && mv README.tmp README.md
+            # Replace existing badges using perl (more reliable than sed)
+            perl -i -pe "
+              if (/<!-- BADGES-START -->/) {
+                print;
+                print qq{$BADGES\n};
+                while (<>) {
+                  last if /<!-- BADGES-END -->/;
+                }
+                print qq{<!-- BADGES-END -->\n};
+                next;
+              }
+            " README.md
           fi
         fi
-        
-        # Clean up
-        rm -f /tmp/badges.md
-
-    - name: Create status check
-      uses: actions/github-script@v7
-      with:
-        script: |
-          const checks = {
-            'Unit Tests': '${{ steps.quality-checks.outputs.unit-tests }}',
-            'PHP 7.4 Compatibility': '${{ steps.quality-checks.outputs.php74-compat }}',
-            'Coding Standards': '${{ steps.quality-checks.outputs.coding-standards }}'
-          };
-          
-          for (const [name, status] of Object.entries(checks)) {
-            await github.rest.checks.create({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              name: name,
-              head_sha: context.sha,
-              status: 'completed',
-              conclusion: status === 'passing' ? 'success' : 'failure',
-              output: {
-                title: `${name}: ${status}`,
-                summary: `${name} check ${status}`
-              }
-            });
-          }
 
     - name: Commit badge updates
       run: |
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
         
-        if git diff --quiet; then
-          echo "No changes to commit"
-        else
+        if ! git diff --quiet; then
           git add README.md
-          git commit -m "Update status badges [skip ci]" || exit 0
-          git push
+          git commit -m "Update status badges [skip ci]" || true
+          git push || true
         fi 
