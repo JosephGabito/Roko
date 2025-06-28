@@ -1,6 +1,12 @@
 #!/bin/bash
-# Generate WordPress.org readme.txt
+# Generate WordPress.org readme.txt file
+# This creates the official plugin directory listing file required for WordPress.org submission
+# Run this before releasing to WordPress.org repository
 
+echo "📝 Generating WordPress.org readme.txt..."
+
+# Create the readme.txt file with WordPress.org format
+# This format is required for plugin directory listing and automatic updates  
 cat > readme.txt << 'EOF'
 === Roko Security ===
 Contributors: josephgabito
@@ -42,4 +48,5 @@ No, Roko Security is designed to run efficiently in the background.
 
 EOF
 
-echo "readme.txt generated" 
+echo "✅ readme.txt generated successfully" 
+echo "📋 File ready for WordPress.org submission" 

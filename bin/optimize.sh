@@ -1,12 +1,21 @@
 #!/bin/bash
-# Optimize plugin for production
+# Optimize codebase for production deployment
+# Removes development files and runs performance optimizations
 
-echo "Optimizing plugin..."
+echo "🚀 Optimizing codebase for production..."
 
-# Optimize Composer autoloader
-composer dump-autoload --optimize --no-dev
+# Remove development and testing files that shouldn't be in production
+echo "• Removing development files..."
+rm -rf tests/
+rm -rf .git/
+rm -rf node_modules/
+rm -f composer.lock
+rm -f .gitignore
 
-# Minify CSS/JS if you have build tools
-# npm run build
+# Run Composer with production optimizations
+# --no-dev: Skip development dependencies
+# --optimize-autoloader: Generate optimized autoloader for better performance
+echo "• Running Composer install with production optimizations..."
+composer install --no-dev --optimize-autoloader
 
-echo "Optimization completed" 
+echo "✅ Codebase optimized for production deployment" 
