@@ -77,7 +77,7 @@ jobs:
         fi
         
         # Check WordPress coding standards
-        if vendor/bin/phpcs --standard=phpcs.xml > /dev/null 2>&1; then
+        if vendor/bin/phpcs --standard=WordPress src/ roko.php > /dev/null 2>&1; then
           CODING_STANDARDS="passing"
         else
           CODING_STANDARDS="failing"

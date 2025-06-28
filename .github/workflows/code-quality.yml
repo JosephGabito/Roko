@@ -41,7 +41,7 @@ jobs:
           ${{ runner.os }}-php-${{ matrix.php-version }}-
 
     - name: Install dependencies
-      run: composer install --prefer-dist --no-progress --no-suggest
+      run: composer install --prefer-dist --no-progress
 
     - name: PHP Syntax Check
       run: |
@@ -49,7 +49,12 @@ jobs:
         php -l roko.php
 
     - name: WordPress Coding Standards
-      run: vendor/bin/phpcs --standard=phpcs.xml --report=checkstyle --report-file=phpcs-report.xml
+      run: |
+        if [ -f "phpcs.xml" ]; then
+          vendor/bin/phpcs --report=checkstyle --report-file=phpcs-report.xml
+        else
+          vendor/bin/phpcs --standard=WordPress src/ roko.php --report=checkstyle --report-file=phpcs-report.xml
+        fi
 
     - name: PHP 7.4 Compatibility Check
       run: vendor/bin/phpcs --standard=PHPCompatibility --runtime-set testVersion 7.4- src/ roko.php --report=checkstyle --report-file=php74-compat-report.xml
