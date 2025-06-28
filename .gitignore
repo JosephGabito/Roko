@@ -60,8 +60,6 @@ nbproject/
 *.lcov
 coverage.xml
 clover.xml
-phpcs.xml
-phpcbf.xml
 
 # Misc
 .trash/
