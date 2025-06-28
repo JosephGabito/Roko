@@ -1,0 +1,117 @@
+name: Code Quality
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  code-quality:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        php-version: ['7.4', '8.0', '8.1', '8.2']
+
+    name: PHP ${{ matrix.php-version }} Quality Check
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: ${{ matrix.php-version }}
+        extensions: mbstring, intl, zip
+        tools: composer
+        coverage: none
+
+    - name: Validate composer.json
+      run: composer validate --strict
+
+    - name: Cache Composer packages
+      id: composer-cache
+      uses: actions/cache@v3
+      with:
+        path: vendor
+        key: ${{ runner.os }}-php-${{ matrix.php-version }}-${{ hashFiles('**/composer.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-php-${{ matrix.php-version }}-
+
+    - name: Install dependencies
+      run: composer install --prefer-dist --no-progress --no-suggest
+
+    - name: PHP Syntax Check
+      run: |
+        find src/ -name "*.php" -exec php -l {} \;
+        php -l roko.php
+
+    - name: WordPress Coding Standards
+      run: vendor/bin/phpcs --standard=phpcs.xml --report=checkstyle --report-file=phpcs-report.xml
+
+    - name: PHP 7.4 Compatibility Check
+      run: vendor/bin/phpcs --standard=PHPCompatibility --runtime-set testVersion 7.4- src/ roko.php --report=checkstyle --report-file=php74-compat-report.xml
+
+    - name: Upload PHPCS results
+      if: failure()
+      uses: actions/upload-artifact@v3
+      with:
+        name: phpcs-results-php-${{ matrix.php-version }}
+        path: |
+          phpcs-report.xml
+          php74-compat-report.xml
+
+  security-check:
+    runs-on: ubuntu-latest
+    name: Security Audit
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.1'
+        tools: composer
+
+    - name: Install dependencies
+      run: composer install --prefer-dist --no-progress
+
+    - name: Security Audit
+      run: composer audit
+
+  release-test:
+    runs-on: ubuntu-latest
+    name: Release Package Test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '7.4'
+        tools: composer
+
+    - name: Install dependencies
+      run: composer install --no-dev --optimize-autoloader
+
+    - name: Test release script
+      run: |
+        chmod +x bin/release.sh
+        # Test release script without actually creating release
+        bash -n bin/release.sh
+
+    - name: Validate plugin structure
+      run: |
+        # Check main plugin file exists
+        test -f roko.php
+        # Check required headers
+        grep -q "Plugin Name:" roko.php
+        grep -q "Version:" roko.php
+        grep -q "Description:" roko.php 

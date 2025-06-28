@@ -1,0 +1,229 @@
+name: Update Badges
+
+on:
+  push:
+    branches: [ main ]
+  workflow_run:
+    workflows: ["Code Quality"]
+    types:
+      - completed
+
+jobs:
+  update-badges:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        fetch-depth: 0
+
+    - name: Get workflow status
+      id: workflow-status
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const { data: workflows } = await github.rest.actions.listWorkflowRuns({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            workflow_id: 'code-quality.yml',
+            branch: 'main',
+            per_page: 1
+          });
+          
+          const latestRun = workflows.workflow_runs[0];
+          const status = latestRun ? latestRun.conclusion : 'unknown';
+          
+          core.setOutput('build-status', status);
+          core.setOutput('run-id', latestRun ? latestRun.id : '');
+
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '7.4'
+        tools: composer
+
+    - name: Install dependencies
+      run: composer install --prefer-dist --no-progress
+
+    - name: Run tests and checks
+      id: quality-checks
+      run: |
+        # Initialize status variables
+        UNIT_TESTS="unknown"
+        PHP74_COMPAT="unknown" 
+        CODING_STANDARDS="unknown"
+        
+        # Check if PHPUnit is available and run unit tests
+        if [ -f "phpunit.xml" ] || [ -f "phpunit.xml.dist" ]; then
+          if vendor/bin/phpunit --version > /dev/null 2>&1; then
+            if vendor/bin/phpunit --no-coverage > /dev/null 2>&1; then
+              UNIT_TESTS="passing"
+            else
+              UNIT_TESTS="failing"
+            fi
+          else
+            UNIT_TESTS="no-tests"
+          fi
+        else
+          UNIT_TESTS="no-tests"
+        fi
+        
+        # Check PHP 7.4 compatibility
+        if vendor/bin/phpcs --standard=PHPCompatibility --runtime-set testVersion 7.4- src/ roko.php > /dev/null 2>&1; then
+          PHP74_COMPAT="passing"
+        else
+          PHP74_COMPAT="failing"
+        fi
+        
+        # Check WordPress coding standards
+        if vendor/bin/phpcs --standard=phpcs.xml > /dev/null 2>&1; then
+          CODING_STANDARDS="passing"
+        else
+          CODING_STANDARDS="failing"
+        fi
+        
+        # Output results
+        echo "unit-tests=$UNIT_TESTS" >> $GITHUB_OUTPUT
+        echo "php74-compat=$PHP74_COMPAT" >> $GITHUB_OUTPUT
+        echo "coding-standards=$CODING_STANDARDS" >> $GITHUB_OUTPUT
+
+    - name: Generate badge URLs
+      id: badges
+      run: |
+        # Build status badge
+        BUILD_STATUS="${{ steps.workflow-status.outputs.build-status }}"
+        if [ "$BUILD_STATUS" = "success" ]; then
+          BUILD_COLOR="brightgreen"
+          BUILD_MESSAGE="passing"
+        elif [ "$BUILD_STATUS" = "failure" ]; then
+          BUILD_COLOR="red"
+          BUILD_MESSAGE="failing"
+        else
+          BUILD_COLOR="yellow"
+          BUILD_MESSAGE="unknown"
+        fi
+        
+        # Unit tests badge
+        UNIT_STATUS="${{ steps.quality-checks.outputs.unit-tests }}"
+        if [ "$UNIT_STATUS" = "passing" ]; then
+          UNIT_COLOR="brightgreen"
+          UNIT_MESSAGE="passing"
+        elif [ "$UNIT_STATUS" = "failing" ]; then
+          UNIT_COLOR="red"
+          UNIT_MESSAGE="failing"
+        else
+          UNIT_COLOR="lightgrey"
+          UNIT_MESSAGE="no tests"
+        fi
+        
+        # PHP 7.4 compatibility badge
+        PHP74_STATUS="${{ steps.quality-checks.outputs.php74-compat }}"
+        if [ "$PHP74_STATUS" = "passing" ]; then
+          PHP74_COLOR="brightgreen"
+          PHP74_MESSAGE="compatible"
+        else
+          PHP74_COLOR="red"
+          PHP74_MESSAGE="incompatible"
+        fi
+        
+        # Coding standards badge
+        CS_STATUS="${{ steps.quality-checks.outputs.coding-standards }}"
+        if [ "$CS_STATUS" = "passing" ]; then
+          CS_COLOR="brightgreen"
+          CS_MESSAGE="passing"
+        else
+          CS_COLOR="red"
+          CS_MESSAGE="failing"
+        fi
+        
+        # Generate shield URLs
+        echo "build-badge=https://img.shields.io/badge/build-${BUILD_MESSAGE}-${BUILD_COLOR}" >> $GITHUB_OUTPUT
+        echo "unit-badge=https://img.shields.io/badge/unit%20tests-${UNIT_MESSAGE}-${UNIT_COLOR}" >> $GITHUB_OUTPUT
+        echo "php74-badge=https://img.shields.io/badge/PHP%207.4-${PHP74_MESSAGE}-${PHP74_COLOR}" >> $GITHUB_OUTPUT
+        echo "cs-badge=https://img.shields.io/badge/coding%20standards-${CS_MESSAGE}-${CS_COLOR}" >> $GITHUB_OUTPUT
+
+    - name: Update README with badges
+      run: |
+        # Create badge section
+        cat > badges.md << EOF
+        [![Build Status](${{ steps.badges.outputs.build-badge }})](https://github.com/${{ github.repository }}/actions/workflows/code-quality.yml)
+        [![Unit Tests](${{ steps.badges.outputs.unit-badge }})](https://github.com/${{ github.repository }}/actions/workflows/code-quality.yml)
+        [![PHP 7.4 Compatibility](${{ steps.badges.outputs.php74-badge }})](https://github.com/${{ github.repository }}/actions/workflows/code-quality.yml)
+        [![Coding Standards](${{ steps.badges.outputs.cs-badge }})](https://github.com/${{ github.repository }}/actions/workflows/code-quality.yml)
+        EOF
+        
+        # Check if README.md exists
+        if [ -f "README.md" ]; then
+          # Check if badges section exists
+          if grep -q "<!-- BADGES-START -->" README.md; then
+            # Replace existing badges
+            sed -i '/<!-- BADGES-START -->/,/<!-- BADGES-END -->/c\
+        <!-- BADGES-START -->\
+        '"$(cat badges.md)"'\
+        <!-- BADGES-END -->' README.md
+          else
+            # Add badges after the first heading
+            sed -i '1,/^# /{ /^# /a\
+        \
+        <!-- BADGES-START -->\
+        '"$(cat badges.md)"'\
+        <!-- BADGES-END -->\
+        ' -e '}' README.md
+          fi
+        fi
+        
+        # Clean up
+        rm badges.md
+
+    - name: Create badge endpoint
+      uses: actions/github-script@v6
+      with:
+        script: |
+          // Create a simple badge endpoint using GitHub Gist
+          const badgeData = {
+            schemaVersion: 1,
+            label: "roko-plugin",
+            message: "${{ steps.workflow-status.outputs.build-status }}",
+            color: "${{ steps.workflow-status.outputs.build-status }}" === "success" ? "brightgreen" : "red"
+          };
+          
+          console.log('Badge data:', badgeData);
+
+    - name: Commit badge updates
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        
+        if git diff --quiet; then
+          echo "No changes to commit"
+        else
+          git add README.md
+          git commit -m "Update status badges [skip ci]" || exit 0
+          git push
+        fi
+
+    - name: Create status check
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const checks = {
+            'Unit Tests': '${{ steps.quality-checks.outputs.unit-tests }}',
+            'PHP 7.4 Compatibility': '${{ steps.quality-checks.outputs.php74-compat }}',
+            'Coding Standards': '${{ steps.quality-checks.outputs.coding-standards }}'
+          };
+          
+          for (const [name, status] of Object.entries(checks)) {
+            await github.rest.checks.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              name: name,
+              head_sha: context.sha,
+              status: 'completed',
+              conclusion: status === 'passing' ? 'success' : 'failure',
+              output: {
+                title: `${name}: ${status}`,
+                summary: `${name} check ${status}`
+              }
+            });
+          } 

@@ -1,0 +1,64 @@
+name: PR Code Review
+
+on:
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  annotate-pr:
+    runs-on: ubuntu-latest
+    name: Annotate PR with Issues
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '7.4'
+        tools: composer
+
+    - name: Install dependencies
+      run: composer install --prefer-dist --no-progress
+
+    - name: Run PHPCS with annotations
+      uses: chekalsky/phpcs-action@v1
+      with:
+        phpcs_bin_path: './vendor/bin/phpcs'
+        enable_warnings: true
+
+    - name: PHP Compatibility Check
+      run: |
+        vendor/bin/phpcs --standard=PHPCompatibility --runtime-set testVersion 7.4- src/ roko.php --report=json > php-compat-results.json || true
+        
+    - name: Comment PR with results
+      if: always()
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const fs = require('fs');
+          
+          // Read PHP compatibility results
+          let compatResults = '';
+          try {
+            const data = fs.readFileSync('php-compat-results.json', 'utf8');
+            const results = JSON.parse(data);
+            
+            if (results.totals.errors > 0 || results.totals.warnings > 0) {
+              compatResults = `## PHP 7.4 Compatibility Issues\n\n`;
+              compatResults += `- Errors: ${results.totals.errors}\n`;
+              compatResults += `- Warnings: ${results.totals.warnings}\n\n`;
+            }
+          } catch (e) {
+            compatResults = 'Could not parse PHP compatibility results.\n\n';
+          }
+          
+          if (compatResults) {
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: compatResults + '\nPlease fix these issues before merging.'
+            });
+          } 

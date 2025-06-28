@@ -1,5 +1,12 @@
 # Roko Security Plugin
 
+<!-- BADGES-START -->
+[![Build Status](https://img.shields.io/badge/build-unknown-yellow)](https://github.com/yourusername/roko/actions/workflows/code-quality.yml)
+[![Unit Tests](https://img.shields.io/badge/unit%20tests-no%20tests-lightgrey)](https://github.com/yourusername/roko/actions/workflows/code-quality.yml)
+[![PHP 7.4 Compatibility](https://img.shields.io/badge/PHP%207.4-unknown-yellow)](https://github.com/yourusername/roko/actions/workflows/code-quality.yml)
+[![Coding Standards](https://img.shields.io/badge/coding%20standards-unknown-yellow)](https://github.com/yourusername/roko/actions/workflows/code-quality.yml)
+<!-- BADGES-END -->
+
 WordPress security plugin - **Development in Progress**
 
 ## Development Setup
