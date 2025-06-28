@@ -62,7 +62,7 @@ class WpEventRespority implements EventRepositoryInterface {
 		global $wpdb;
 
 		$table_name = $this->getTableName();
-		$results = $wpdb->get_results(
+		$results    = $wpdb->get_results(
 			$wpdb->prepare(
 				'SELECT * FROM %s',
 				$table_name
@@ -76,7 +76,7 @@ class WpEventRespority implements EventRepositoryInterface {
 		global $wpdb;
 
 		$table_name = $this->getTableName();
-		$results = $wpdb->get_results(
+		$results    = $wpdb->get_results(
 			$wpdb->prepare(
 				'SELECT * FROM %s WHERE sent_at IS NULL',
 				$table_name

@@ -1,16 +1,16 @@
 <?xml version="1.0"?>
 <ruleset name="Roko WordPress Standards (Snake Case Free)">
-    <description>WordPress Standards without the snake_case bullshit</description>
+    <description>WordPress Standards with PSR-12 support</description>
+
+    <config name="testVersion" value="7.4-"/>
+    <rule ref="PHPCompatibilityWP">
+        <include-pattern>*\.php$</include-pattern>
+    </rule>
 
     <!-- Include WordPress but exclude all the naming to support PSR-12 -->
     <rule ref="WordPress">
-        <!-- KILL ALL NAMING CONVENTIONS -->
         <exclude name="WordPress.NamingConventions"/>
-        
-        <!-- KILL FILE NAMING -->
         <exclude name="WordPress.Files.FileName"/>
-        
-        <!-- KILL COMMENTING REQUIREMENTS -->
         <exclude name="Squiz.Commenting"/>
         <exclude name="Generic.Commenting"/>
         
@@ -23,10 +23,5 @@
     <exclude-pattern>*/templates/*</exclude-pattern>
     <exclude-pattern>*/tests/*</exclude-pattern>
     <exclude-pattern>*/build/*</exclude-pattern>
-
-    <arg value="p"/>
-    <arg value="s"/>
-    <arg value="n"/>
-    <arg value="v"/>
-    <arg name="parallel" value="20"/>
+ 
 </ruleset> 

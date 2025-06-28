@@ -44,7 +44,7 @@ class Bridge {
 	public static function render_tools_middle() {
 		// If form was submitted, process it first:
 		if ( ! empty( $_POST['roko_profiler_submit'] ) && check_admin_referer( 'roko_profiler_action', 'roko_profiler_nonce' ) ) {
-			$profilerUrls = roko_get_http_post( 'roko_profiler_urls', INPUT_POST, FILTER_UNSAFE_RAW );
+			$profilerUrls  = roko_get_http_post( 'roko_profiler_urls', INPUT_POST, FILTER_UNSAFE_RAW );
 			$profilerCount = roko_get_http_post( 'roko_profiler_count', INPUT_POST, FILTER_VALIDATE_INT );
 
 			echo '<div class="roko-notice roko-notice-success"><p>Profiling started:</p><ul>';

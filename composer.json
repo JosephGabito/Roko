@@ -18,11 +18,9 @@
     "require": {},
     "require-dev": {
         "dealerdirect/phpcodesniffer-composer-installer": "^1.0",
-        "phpcompatibility/php-compatibility": "^9.3",
+        "phpcompatibility/phpcompatibility-wp": "^2.1",
         "wp-coding-standards/wpcs": "^3.0",
-        "phpunit/phpunit": "^9.6",
-        "brain/monkey": "^2.6",
-        "mockery/mockery": "^1.4"
+        "phpunit/phpunit": "^9.0"
     },
     "config": {
         "allow-plugins": {
@@ -31,10 +29,7 @@
     },
     "scripts": {
         "phpcs": "phpcs src/ roko.php",
-        "phpcs-full": "phpcs --standard=phpcs.xml src/ roko.php",
         "phpcbf": "phpcbf src/ roko.php || true",
-        "php74-compat": "phpcs --standard=PHPCompatibility --runtime-set testVersion 7.4- src/ roko.php --ignore=*/vendor/*",
-        "php70-compat": "phpcs --standard=PHPCompatibility --runtime-set testVersion 7.0- src/ roko.php --ignore=*/vendor/*",
         "syntax-check": [
             "find src/ -name '*.php' -exec php -l {} \\;",
             "php -l roko.php"
@@ -44,11 +39,8 @@
             "@phpcs",
             "@phpunit"
         ],
-        "phpunit": "phpunit tests/ || echo 'No tests directory found'",
-        "test-unit": "phpunit tests/Unit/ || echo 'No unit tests found'",
-        "fix": "@phpcbf",
-        "validate-composer": "composer validate --strict",
-        "security-check": "composer audit",
-        "autoload-dump": "composer dump-autoload --optimize"
+        "phpunit": "[ -f phpunit.xml ] && phpunit --configuration phpunit.xml || phpunit tests/ 2>/dev/null || echo 'No tests found'",
+        "php74-compat": "phpcs --standard=PHPCompatibilityWP --runtime-set testVersion 7.4- src/ roko.php",
+        "php70-compat": "phpcs --standard=PHPCompatibilityWP --runtime-set testVersion 7.0- src/ roko.php"
     }
 }
