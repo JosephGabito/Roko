@@ -58,7 +58,7 @@ final class SecurityKey {
 	}
 
 	public function isEmpty(): bool {
-		return $this->key === '';
+		return '' === $this->key;
 	}
 
 	/*
@@ -87,7 +87,7 @@ final class SecurityKey {
 	 */
 	private function entropyBits(): float {
 		$len = \strlen( $this->key );
-		if ( $len === 0 ) {
+		if ( 0 === $len ) {
 			return 0.0;
 		}
 

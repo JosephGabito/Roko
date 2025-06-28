@@ -38,7 +38,7 @@ function roko_get_http_query( $query_string, $mode = INPUT_GET, $filter = FILTER
 	}
 
 	$value = filter_input( $mode, $query_string, $filter );
-	if ( $value === null || $value === false ) {
+	if ( null === $value || false === $value ) {
 		return null;
 	}
 
@@ -52,7 +52,7 @@ function roko_get_http_post( $post_string, $mode = INPUT_POST, $filter = FILTER_
 	}
 
 	$value = filter_input( $mode, $post_string, $filter );
-	if ( $value === null || $value === false ) {
+	if ( null === $value || false === $value ) {
 		return null;
 	}
 
@@ -65,7 +65,7 @@ function roko_get_http_request_textarea( $request_string, $mode = INPUT_GET, $fi
 	}
 
 	$value = filter_input( $mode, $request_string, $filter );
-	if ( $value === null || $value === false ) {
+	if ( null === $value || false === $value ) {
 		return null;
 	}
 
@@ -78,5 +78,5 @@ function roko_get_http_request_checkbox( $request_string, $mode = INPUT_POST, $f
 	}
 
 	$value = filter_input( $mode, $request_string, $filter, FILTER_NULL_ON_FAILURE );
-	return $value !== null ? (bool) $value : false;
+	return null !== $value ? (bool) $value : false;
 }

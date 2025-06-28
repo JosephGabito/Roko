@@ -2,7 +2,7 @@
 <ruleset name="Roko WordPress Standards (Snake Case Free)">
     <description>WordPress Standards without the snake_case bullshit</description>
 
-    <!-- Include WordPress but exclude all the naming nonsense -->
+    <!-- Include WordPress but exclude all the naming to support PSR-12 -->
     <rule ref="WordPress">
         <!-- KILL ALL NAMING CONVENTIONS -->
         <exclude name="WordPress.NamingConventions"/>
@@ -14,9 +14,6 @@
         <exclude name="Squiz.Commenting"/>
         <exclude name="Generic.Commenting"/>
         
-        <!-- ALLOW MODERN SYNTAX -->
-        <exclude name="Generic.Arrays.DisallowShortArraySyntax"/>
-        <exclude name="WordPress.PHP.YodaConditions"/>
     </rule>
 
     <!-- Exclude directories -->
