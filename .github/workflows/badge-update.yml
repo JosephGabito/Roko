@@ -114,7 +114,7 @@ jobs:
           UNIT_MESSAGE="failing"
         else
           UNIT_COLOR="lightgrey"
-          UNIT_MESSAGE="no tests"
+          UNIT_MESSAGE="no%20tests"
         fi
         
         # PHP 7.4 compatibility badge
@@ -145,8 +145,8 @@ jobs:
 
     - name: Update README with badges
       run: |
-        # Create badge section
-        cat > badges.md << EOF
+        # Create badge section in a temporary file
+        cat > /tmp/badges.md << 'EOF'
         [![Build Status](${{ steps.badges.outputs.build-badge }})](https://github.com/${{ github.repository }}/actions/workflows/code-quality.yml)
         [![Unit Tests](${{ steps.badges.outputs.unit-badge }})](https://github.com/${{ github.repository }}/actions/workflows/code-quality.yml)
         [![PHP 7.4 Compatibility](${{ steps.badges.outputs.php74-badge }})](https://github.com/${{ github.repository }}/actions/workflows/code-quality.yml)
@@ -157,24 +157,36 @@ jobs:
         if [ -f "README.md" ]; then
           # Check if badges section exists
           if grep -q "<!-- BADGES-START -->" README.md; then
-            # Replace existing badges
-            sed -i '/<!-- BADGES-START -->/,/<!-- BADGES-END -->/c\
-        <!-- BADGES-START -->\
-        '"$(cat badges.md)"'\
-        <!-- BADGES-END -->' README.md
+            # Use awk to replace the badges section
+            awk '
+              /<!-- BADGES-START -->/ { 
+                print; 
+                system("cat /tmp/badges.md"); 
+                while (getline > 0 && !/<!-- BADGES-END -->/) continue; 
+                print "<!-- BADGES-END -->"
+                next 
+              } 
+              { print }
+            ' README.md > README.tmp && mv README.tmp README.md
           else
-            # Add badges after the first heading
-            sed -i '1,/^# /{ /^# /a\
-        \
-        <!-- BADGES-START -->\
-        '"$(cat badges.md)"'\
-        <!-- BADGES-END -->\
-        ' -e '}' README.md
+            # Add badges after the first heading using awk
+            awk '
+              /^# / && !badges_added { 
+                print; 
+                print ""; 
+                print "<!-- BADGES-START -->"; 
+                system("cat /tmp/badges.md"); 
+                print "<!-- BADGES-END -->"; 
+                badges_added=1; 
+                next 
+              } 
+              { print }
+            ' README.md > README.tmp && mv README.tmp README.md
           fi
         fi
         
         # Clean up
-        rm badges.md
+        rm -f /tmp/badges.md
 
     - name: Create status check
       uses: actions/github-script@v7
