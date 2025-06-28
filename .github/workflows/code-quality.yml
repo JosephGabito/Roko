@@ -75,8 +75,16 @@ jobs:
     - name: Install dependencies
       run: composer install --prefer-dist --no-progress
 
+    - name: Debug - Check if phpcs.xml exists
+      run: |
+        ls -la
+        cat phpcs.xml
+        
+    - name: Debug - Check PHPCS config
+      run: vendor/bin/phpcs --config-show
+
     - name: Run WordPress Coding Standards
-      run: composer phpcs
+      run: vendor/bin/phpcs --standard=$PWD/phpcs.xml src/ roko.php
 
   code-quality:
     runs-on: ubuntu-latest
