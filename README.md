@@ -1,4 +1,4 @@
-# Roko Security Plugin
+# Super Secret WordPress Plugin
 
 <!-- BADGES-START -->
 [![Build Status](https://img.shields.io/badge/build-unknown-yellow)](https://github.com/yourusername/roko/actions/workflows/code-quality.yml)
@@ -7,7 +7,7 @@
 [![Coding Standards](https://img.shields.io/badge/coding%20standards-unknown-yellow)](https://github.com/yourusername/roko/actions/workflows/code-quality.yml)
 <!-- BADGES-END -->
 
-WordPress security plugin - **Development in Progress**
+WordPress plugin - **Development in Progress**
 
 ## Development Setup
 
