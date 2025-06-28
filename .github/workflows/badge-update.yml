@@ -20,7 +20,7 @@ jobs:
 
     - name: Get workflow status
       id: workflow-status
-      uses: actions/github-script@v6
+      uses: actions/github-script@v7
       with:
         script: |
           const { data: workflows } = await github.rest.actions.listWorkflowRuns({
@@ -176,35 +176,8 @@ jobs:
         # Clean up
         rm badges.md
 
-    - name: Create badge endpoint
-      uses: actions/github-script@v6
-      with:
-        script: |
-          // Create a simple badge endpoint using GitHub Gist
-          const badgeData = {
-            schemaVersion: 1,
-            label: "roko-plugin",
-            message: "${{ steps.workflow-status.outputs.build-status }}",
-            color: "${{ steps.workflow-status.outputs.build-status }}" === "success" ? "brightgreen" : "red"
-          };
-          
-          console.log('Badge data:', badgeData);
-
-    - name: Commit badge updates
-      run: |
-        git config --local user.email "action@github.com"
-        git config --local user.name "GitHub Action"
-        
-        if git diff --quiet; then
-          echo "No changes to commit"
-        else
-          git add README.md
-          git commit -m "Update status badges [skip ci]" || exit 0
-          git push
-        fi
-
     - name: Create status check
-      uses: actions/github-script@v6
+      uses: actions/github-script@v7
       with:
         script: |
           const checks = {
@@ -226,4 +199,17 @@ jobs:
                 summary: `${name} check ${status}`
               }
             });
-          } 
+          }
+
+    - name: Commit badge updates
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        
+        if git diff --quiet; then
+          echo "No changes to commit"
+        else
+          git add README.md
+          git commit -m "Update status badges [skip ci]" || exit 0
+          git push
+        fi 
