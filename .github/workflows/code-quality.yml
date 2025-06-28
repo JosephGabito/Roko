@@ -72,7 +72,7 @@ jobs:
       run: composer install --prefer-dist --no-progress
 
     - name: WordPress Coding Standards
-      run: vendor/bin/phpcs --standard=WordPress src/ roko.php || true
+      run: vendor/bin/phpcs --standard=WordPress src/ roko.php
 
   code-quality:
     runs-on: ubuntu-latest
