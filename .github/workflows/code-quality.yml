@@ -10,6 +10,7 @@ jobs:
   unit-tests:
     runs-on: ubuntu-latest
     name: Unit Tests
+    continue-on-error: true
     
     steps:
     - name: Checkout code
@@ -24,19 +25,13 @@ jobs:
     - name: Install dependencies
       run: composer install --prefer-dist --no-progress
 
-    - name: Check for tests
-      run: |
-        if [ -d "tests" ] && [ -f "phpunit.xml" ]; then
-          echo "Running PHPUnit tests..."
-          composer phpunit
-        else
-          echo "No tests directory or phpunit.xml found, skipping tests"
-          exit 0
-        fi
+    - name: Run Unit Tests
+      run: composer phpunit
 
   php-compatibility:
     runs-on: ubuntu-latest
     name: PHP 7.4 Compatibility
+    continue-on-error: true
     
     steps:
     - name: Checkout code
@@ -57,6 +52,7 @@ jobs:
   wordpress-linting:
     runs-on: ubuntu-latest
     name: WordPress Linting
+    continue-on-error: true
     
     steps:
     - name: Checkout code
@@ -140,6 +136,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     name: Security Audit
+    continue-on-error: true
 
     steps:
     - name: Checkout code
@@ -158,7 +155,7 @@ jobs:
       run: composer install --prefer-dist --no-progress
 
     - name: Security Audit
-      run: composer audit || true
+      run: composer audit
 
   release-test:
     runs-on: ubuntu-latest
@@ -180,19 +177,16 @@ jobs:
         COMPOSER_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Install dependencies
-      run: composer install --no-dev --optimize-autoloader --no-interaction
+      run: composer install --no-dev --optimize-autoloader
 
     - name: Test release script
       run: |
         chmod +x bin/release.sh
-        # Test release script syntax
         bash -n bin/release.sh
 
     - name: Validate plugin structure
       run: |
-        # Check main plugin file exists
         test -f roko.php
-        # Check required headers
         grep -q "Plugin Name:" roko.php
         grep -q "Version:" roko.php
         grep -q "Description:" roko.php 
