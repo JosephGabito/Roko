@@ -1,10 +1,10 @@
 # Super Secret WordPress Plugin
 
 <!-- BADGES-START -->
-[![Build Status](https://img.shields.io/badge/build-unknown-yellow)](https://github.com/yourusername/roko/actions/workflows/code-quality.yml)
-[![Unit Tests](https://img.shields.io/badge/unit%20tests-no%20tests-lightgrey)](https://github.com/yourusername/roko/actions/workflows/code-quality.yml)
-[![PHP 7.4 Compatibility](https://img.shields.io/badge/PHP%207.4-unknown-yellow)](https://github.com/yourusername/roko/actions/workflows/code-quality.yml)
-[![Coding Standards](https://img.shields.io/badge/coding%20standards-unknown-yellow)](https://github.com/yourusername/roko/actions/workflows/code-quality.yml)
+[![Build Status](https://img.shields.io/badge/build-unknown-yellow)](https://github.com/JosephGabito/roko/actions/workflows/code-quality.yml)
+[![Unit Tests](https://img.shields.io/badge/unit%20tests-no%20tests-lightgrey)](https://github.com/JosephGabito/roko/actions/workflows/code-quality.yml)
+[![PHP 7.4 Compatibility](https://img.shields.io/badge/PHP%207.4-unknown-yellow)](https://github.com/JosephGabito/roko/actions/workflows/code-quality.yml)
+[![Coding Standards](https://img.shields.io/badge/coding%20standards-unknown-yellow)](https://github.com/JosephGabito/roko/actions/workflows/code-quality.yml)
 <!-- BADGES-END -->
 
 WordPress plugin - **Development in Progress**
@@ -13,7 +13,7 @@ WordPress plugin - **Development in Progress**
 
 1. Clone and install dependencies:
 ```bash
-git clone https://github.com/yourusername/roko.git
+git clone https://github.com/JosephGabito/roko.git
 cd roko
 composer install
 ```
