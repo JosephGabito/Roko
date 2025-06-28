@@ -10,7 +10,6 @@ jobs:
   unit-tests:
     runs-on: ubuntu-latest
     name: Unit Tests
-    continue-on-error: true
     
     steps:
     - name: Checkout code
@@ -31,7 +30,6 @@ jobs:
   php-compatibility:
     runs-on: ubuntu-latest
     name: PHP 7.4 Compatibility
-    continue-on-error: true
     
     steps:
     - name: Checkout code
@@ -52,7 +50,6 @@ jobs:
   wordpress-linting:
     runs-on: ubuntu-latest
     name: WordPress Linting
-    continue-on-error: true
     
     steps:
     - name: Checkout code
@@ -136,7 +133,6 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     name: Security Audit
-    continue-on-error: true
 
     steps:
     - name: Checkout code

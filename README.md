@@ -1,12 +1,10 @@
 # Super Secret WordPress Plugin
 
 <!-- BADGES-START -->
-[![Build Status](https://img.shields.io/github/actions/workflow/status/JosephGabito/roko/code-quality.yml?branch=main&label=build)](https://github.com/JosephGabito/roko/actions/workflows/code-quality.yml)
-[![Unit Tests](https://img.shields.io/github/actions/workflow/status/JosephGabito/roko/code-quality.yml?branch=main&label=tests&job=Unit%20Tests)](https://github.com/JosephGabito/roko/actions/workflows/code-quality.yml)
-[![WordPress Linting](https://img.shields.io/github/actions/workflow/status/JosephGabito/roko/code-quality.yml?branch=main&label=WordPress%20Linting&job=WordPress%20Linting)](https://github.com/JosephGabito/roko/actions/workflows/code-quality.yml)
-[![PHP 7.4 Compatibility](https://img.shields.io/github/actions/workflow/status/JosephGabito/roko/code-quality.yml?branch=main&label=PHP%207.4&job=PHP%207.4%20Compatibility)](https://github.com/JosephGabito/roko/actions/workflows/code-quality.yml)
+[![Code Quality](https://github.com/JosephGabito/roko/actions/workflows/code-quality.yml/badge.svg?branch=main)](https://github.com/JosephGabito/roko/actions/workflows/code-quality.yml)
 [![Last Commit](https://img.shields.io/github/last-commit/JosephGabito/roko)](https://github.com/JosephGabito/roko/commits/main)
 [![Issues](https://img.shields.io/github/issues/JosephGabito/roko)](https://github.com/JosephGabito/roko/issues)
+[![License](https://img.shields.io/badge/license-GPL--2.0--or--later-blue)](LICENSE)
 <!-- BADGES-END -->
 
 WordPress plugin - **Development in Progress**
