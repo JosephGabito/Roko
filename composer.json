@@ -13,7 +13,10 @@
     "require-dev": {
         "dealerdirect/phpcodesniffer-composer-installer": "^1.0",
         "phpcompatibility/php-compatibility": "^9.3",
-        "wp-coding-standards/wpcs": "^3.0"
+        "wp-coding-standards/wpcs": "^3.0",
+        "phpunit/phpunit": "^9.0",
+        "brain/monkey": "^2.6",
+        "mockery/mockery": "^1.4"
     },
     "config": {
         "allow-plugins": {
@@ -22,6 +25,21 @@
     },
     "scripts": {
         "phpcs": "phpcs --standard=WordPress",
-        "phpcbf": "phpcbf --standard=WordPress"
+        "phpcbf": "phpcbf --standard=WordPress",
+        "php74-compat": "phpcs --standard=PHPCompatibility --runtime-set testVersion 7.4- src/ roko.php",
+        "php70-compat": "phpcs --standard=PHPCompatibility --runtime-set testVersion 7.0- src/ roko.php",
+        "syntax-check": [
+            "find src/ -name '*.php' -exec php -l {} \\;",
+            "php -l roko.php"
+        ],
+        "test": [
+            "@syntax-check",
+            "@php74-compat",
+            "@phpcs"
+        ],
+        "fix": "@phpcbf",
+        "validate": "composer validate --strict",
+        "security-check": "composer audit",
+        "autoload-dump": "composer dump-autoload --optimize"
     }
 }
