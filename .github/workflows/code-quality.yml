@@ -7,6 +7,46 @@ on:
     branches: [ main, develop ]
 
 jobs:
+  php-compatibility:
+    runs-on: ubuntu-latest
+    name: PHP 7.4 Compatibility
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '7.4'
+        tools: composer:v2
+
+    - name: Install dependencies
+      run: composer install --prefer-dist --no-progress
+
+    - name: PHP 7.4 Compatibility Check
+      run: vendor/bin/phpcs --standard=PHPCompatibility --runtime-set testVersion 7.4- src/ roko.php
+
+  wordpress-compatibility:
+    runs-on: ubuntu-latest
+    name: WordPress Compatibility
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '7.4'
+        tools: composer:v2
+
+    - name: Install dependencies
+      run: composer install --prefer-dist --no-progress
+
+    - name: WordPress Coding Standards
+      run: vendor/bin/phpcs --standard=WordPress src/ roko.php
+
   code-quality:
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -59,14 +99,6 @@ jobs:
         find src/ -name "*.php" -exec php -l {} \;
         php -l roko.php
 
-    - name: WordPress Coding Standards
-      run: |
-        vendor/bin/phpcs --standard=WordPress src/ roko.php --report=checkstyle --report-file=phpcs-report.xml || true
-
-    - name: PHP 7.4 Compatibility Check
-      run: |
-        vendor/bin/phpcs --standard=PHPCompatibility --runtime-set testVersion 7.4- src/ roko.php --report=checkstyle --report-file=php74-compat-report.xml || true
-
     - name: Upload PHPCS results
       if: always()
       uses: actions/upload-artifact@v4
@@ -96,7 +128,7 @@ jobs:
         COMPOSER_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Install dependencies
-      run: composer install --prefer-dist --no-progress --no-interaction
+      run: composer install --prefer-dist --no-progress
 
     - name: Security Audit
       run: composer audit || true

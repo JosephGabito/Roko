@@ -1,8 +1,9 @@
 # Super Secret WordPress Plugin
 
 <!-- BADGES-START -->
-[![Code Quality](https://github.com/JosephGabito/roko/actions/workflows/code-quality.yml/badge.svg?branch=main)](https://github.com/JosephGabito/roko/actions/workflows/code-quality.yml)
-[![Security Audit](https://github.com/JosephGabito/roko/actions/workflows/code-quality.yml/badge.svg?branch=main&event=push)](https://github.com/JosephGabito/roko/actions/workflows/code-quality.yml)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/JosephGabito/roko/code-quality.yml?branch=main&label=build)](https://github.com/JosephGabito/roko/actions/workflows/code-quality.yml)
+[![WordPress Compatibility](https://img.shields.io/github/actions/workflow/status/JosephGabito/roko/code-quality.yml?branch=main&label=WordPress&job=WordPress%20Compatibility)](https://github.com/JosephGabito/roko/actions/workflows/code-quality.yml)
+[![PHP 7.4 Compatibility](https://img.shields.io/github/actions/workflow/status/JosephGabito/roko/code-quality.yml?branch=main&label=PHP%207.4&job=PHP%207.4%20Compatibility)](https://github.com/JosephGabito/roko/actions/workflows/code-quality.yml)
 [![Last Commit](https://img.shields.io/github/last-commit/JosephGabito/roko)](https://github.com/JosephGabito/roko/commits/main)
 [![Issues](https://img.shields.io/github/issues/JosephGabito/roko)](https://github.com/JosephGabito/roko/issues)
 <!-- BADGES-END -->
