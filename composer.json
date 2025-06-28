@@ -30,9 +30,9 @@
         }
     },
     "scripts": {
-        "phpcs": "phpcs --standard=phpcs.xml src/ roko.php",
+        "phpcs": "phpcs src/ roko.php",
         "phpcs-full": "phpcs --standard=phpcs.xml src/ roko.php",
-        "phpcbf": "phpcbf --standard=phpcs.xml src/ roko.php",
+        "phpcbf": "phpcbf src/ roko.php",
         "php74-compat": "phpcs --standard=PHPCompatibility --runtime-set testVersion 7.4- src/ roko.php --ignore=*/vendor/*",
         "php70-compat": "phpcs --standard=PHPCompatibility --runtime-set testVersion 7.0- src/ roko.php --ignore=*/vendor/*",
         "syntax-check": [
