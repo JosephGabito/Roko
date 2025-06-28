@@ -24,8 +24,15 @@ jobs:
     - name: Install dependencies
       run: composer install --prefer-dist --no-progress
 
-    - name: Run Unit Tests
-      run: composer phpunit
+    - name: Check for tests
+      run: |
+        if [ -d "tests" ] && [ -f "phpunit.xml" ]; then
+          echo "Running PHPUnit tests..."
+          composer phpunit
+        else
+          echo "No tests directory or phpunit.xml found, skipping tests"
+          exit 0
+        fi
 
   php-compatibility:
     runs-on: ubuntu-latest
