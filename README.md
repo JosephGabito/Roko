@@ -1,7 +1,7 @@
 # Super Secret WordPress Plugin
 
 <!-- BADGES-START -->
-[![Code Quality](https://github.com/JosephGabito/roko/actions/workflows/code-quality.yml/badge.svg?branch=main&v=2)](https://github.com/JosephGabito/roko/actions/workflows/code-quality.yml)
+[![Code Linting](https://github.com/JosephGabito/roko/actions/workflows/code-quality.yml/badge.svg?branch=main&v=2)](https://github.com/JosephGabito/roko/actions/workflows/code-quality.yml)
 [![Last Commit](https://img.shields.io/github/last-commit/JosephGabito/roko)](https://github.com/JosephGabito/roko/commits/main)
 [![Issues](https://img.shields.io/github/issues/JosephGabito/roko)](https://github.com/JosephGabito/roko/issues)
 [![License](https://img.shields.io/badge/license-GPL--2.0--or--later-blue)](LICENSE)
