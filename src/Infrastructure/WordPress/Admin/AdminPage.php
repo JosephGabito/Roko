@@ -73,9 +73,9 @@ class AdminPage {
 	}
 
 	public function render_admin_page() {
-		$current_tab = isset( $_GET['tab'] ) ? sanitize_text_field( $_GET['tab'] ) : 'overview';
+		$current_tab = roko_get_http_query( 'tab' ) ?? 'overview';
 		$environment = $this->get_environment_type();
-		$metrics = $this->get_instant_metrics();
+		$metrics     = $this->get_instant_metrics();
 		?>
 		<div class="roko-admin">
 			<div class="roko-container">

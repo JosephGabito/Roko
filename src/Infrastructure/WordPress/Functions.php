@@ -30,3 +30,31 @@ function roko_send_event( array $data ) {
 
 	do_action( 'roko_event_after_send', $hookArgs );
 }
+
+function roko_get_http_query( $query_string, $mode = INPUT_GET, $filter = FILTER_UNSAFE_RAW ) {
+	$value = sanitize_text_field( wp_unslash( filter_input( $mode, $query_string, $filter ) ) );
+	return roko_nullable( $value );
+}
+
+function roko_get_http_post( $post_string, $mode = INPUT_POST, $filter = FILTER_UNSAFE_RAW ) {
+	$value = sanitize_text_field( wp_unslash( filter_input( $mode, $post_string, $filter ) ) );
+	return roko_nullable( $value );
+}
+
+function roko_get_http_request_textarea( $request_string, $mode = INPUT_GET, $filter = FILTER_UNSAFE_RAW ) {
+	$value = sanitize_textarea_field( wp_unslash( filter_input( $mode, $request_string, $filter ) ) );
+	return roko_nullable( $value );
+}
+
+function roko_get_http_request_checkbox( $request_string, $mode = INPUT_POST, $filter = FILTER_UNSAFE_RAW ) {
+	$value = sanitize_textarea_field( wp_unslash( filter_input( $mode, $request_string, $filter ) ) );
+	return roko_nullable( $value );
+}
+
+function roko_nullable( $value ) {
+	if ( empty( $value ) ) {
+		return null;
+	}
+
+	return $value;
+}

@@ -1,368 +1,275 @@
-/**
- * Roko Admin - Modern JavaScript
- * Vercel/Clerk-inspired interactions
+/* Roko Admin – ES6+ Vanilla JavaScript
+ * Drop‑in replacement for the previous jQuery implementation.
+ * Zero external dependencies, fully modular, and tree‑shakeable.
  */
 
-jQuery(document).ready(function ($) {
-    'use strict';
+class RokoAdmin {
+    /* ──────────────────────────────
+     *  ENTRY POINT
+     * ─────────────────────────────*/
+    static init() {
+        if (!this.instance) {
+            this.instance = new RokoAdmin();
+            this.instance._init();
+        }
+    }
 
-    /**
-     * Initialize Roko Admin Interface
-     */
-    const RokoAdmin = {
+    /* ──────────────────────────────
+     *  INITIALISER
+     * ─────────────────────────────*/
+    _init() {
+        this._initTabNavigation();
+        this._initCardAnimations();
+        this._initFormInteractions();
+        this._initTooltips();
+        this._initLoadingStates();
+        this._initStatCounters();
+        this._initDropdowns();
+        this._registerGlobalShortcuts();
+        this._initSmoothScroll();
+    }
 
-        /**
-         * Initialize all components
-         */
-        init: function () {
-            this.initTabNavigation();
-            this.initCardAnimations();
-            this.initFormInteractions();
-            this.initTooltips();
-            this.initLoadingStates();
-            this.initStatCounters();
-            this.initDropdowns();            // Added dropdown initialization
-        },
+    /* Utility selectors */
+    _qs(sel, ctx = document) { return ctx.querySelector(sel); }
+    _qsa(sel, ctx = document) { return [...ctx.querySelectorAll(sel)]; }
 
-        /**
-         * Enhanced tab navigation with smooth transitions
-         */
-        initTabNavigation: function () {
-            $('.roko-tab-nav .roko-button').on('click', function (e) {
-                const $this = $(this);
-                const href = $this.attr('href');
-
-                // Add loading state
-                $this.addClass('roko-loading');
-
-                // Animate tab content
-                $('.roko-tab-content').fadeOut(150, function () {
-                    $(this).addClass('roko-fade-in').fadeIn(300);
-                });
-
-                // Remove loading state after animation
-                setTimeout(() => {
-                    $this.removeClass('roko-loading');
-                }, 400);
-            });
-        },
-
-        /**
-         * Card hover animations and interactions
-         */
-        initCardAnimations: function () {
-            // Add stagger animation to card groups
-            $('.roko-card-group .roko-card').each(function (index) {
-                $(this).css('animation-delay', (index * 0.1) + 's');
-                $(this).addClass('roko-fade-in');
-            });
-
-            // Enhanced hover states for interactive cards
-            $('.roko-card').hover(
-                function () {
-                    $(this).addClass('roko-card-hover');
-                },
-                function () {
-                    $(this).removeClass('roko-card-hover');
-                }
-            );
-
-            // Smooth scroll for card actions
-            $('.roko-card .roko-button').on('click', function (e) {
-                if ($(this).attr('href') === '#') {
-                    e.preventDefault();
-                    $(this).addClass('roko-loading');
-
-                    // Simulate action
+    /* ──────────────────────────────
+     *  TAB NAVIGATION
+     * ─────────────────────────────*/
+    _initTabNavigation() {
+        this._qsa('.roko-tab-nav .roko-button').forEach(btn => {
+            btn.addEventListener('click', () => {
+                btn.classList.add('roko-loading');
+                this._qsa('.roko-tab-content').forEach(content => {
+                    content.classList.remove('roko-fade-in');
+                    content.style.opacity = 0;
                     setTimeout(() => {
-                        $(this).removeClass('roko-loading');
-                        // Add success feedback
-                        RokoAdmin.showNotification('Action completed successfully!', 'success');
+                        content.classList.add('roko-fade-in');
+                        content.style.opacity = 1;
+                    }, 150);
+                });
+                setTimeout(() => btn.classList.remove('roko-loading'), 400);
+            });
+        });
+    }
+
+    /* ──────────────────────────────
+     *  CARD ANIMATIONS
+     * ─────────────────────────────*/
+    _initCardAnimations() {
+        this._qsa('.roko-card-group .roko-card').forEach((card, i) => {
+            card.style.animationDelay = `${i * 0.1}s`;
+            card.classList.add('roko-fade-in');
+            card.addEventListener('mouseenter', () => card.classList.add('roko-card-hover'));
+            card.addEventListener('mouseleave', () => card.classList.remove('roko-card-hover'));
+        });
+        this._qsa('.roko-card .roko-button').forEach(btn => {
+            btn.addEventListener('click', e => {
+                if (btn.getAttribute('href') === '#') {
+                    e.preventDefault();
+                    btn.classList.add('roko-loading');
+                    setTimeout(() => {
+                        btn.classList.remove('roko-loading');
+                        this._showNotification('Action completed successfully!', 'success');
                     }, 1500);
                 }
             });
-        },
+        });
+    }
 
-        /**
-         * Enhanced form interactions
-         */
-        initFormInteractions: function () {
-            // Floating labels effect
-            $('input, select, textarea').on('focus blur', function (e) {
-                const $label = $(this).siblings('label');
-                if (e.type === 'focus' || this.value.length > 0) {
-                    $label.addClass('roko-label-float');
-                } else {
-                    $label.removeClass('roko-label-float');
-                }
+    /* ──────────────────────────────
+     *  FORM INTERACTIONS
+     * ─────────────────────────────*/
+    _initFormInteractions() {
+        this._qsa('input, select, textarea').forEach(el => {
+            ['focus', 'blur', 'input'].forEach(ev => {
+                el.addEventListener(ev, () => {
+                    const label = el.parentElement.querySelector('label');
+                    if (!label) return;
+                    if (document.activeElement === el || el.value.length) {
+                        label.classList.add('roko-label-float');
+                    } else {
+                        label.classList.remove('roko-label-float');
+                    }
+                });
             });
-
-            // Form validation feedback
-            $('form').on('submit', function (e) {
-                const $form = $(this);
-                const $submitBtn = $form.find('button[type="submit"], input[type="submit"]');
-
-                $submitBtn.addClass('roko-loading');
-
-                // Add visual feedback
+        });
+        this._qsa('form').forEach(form => {
+            form.addEventListener('submit', () => {
+                const submit = form.querySelector('button[type="submit"], input[type="submit"]');
+                if (!submit) return;
+                submit.classList.add('roko-loading');
                 setTimeout(() => {
-                    $submitBtn.removeClass('roko-loading');
-                    RokoAdmin.showNotification('Settings saved successfully!', 'success');
+                    submit.classList.remove('roko-loading');
+                    this._showNotification('Settings saved successfully!', 'success');
                 }, 2000);
             });
-
-            // Real-time input validation
-            $('input[required]').on('blur', function () {
-                const $input = $(this);
-                if (!$input.val()) {
-                    $input.addClass('roko-input-error');
-                } else {
-                    $input.removeClass('roko-input-error');
-                }
+        });
+        this._qsa('input[required]').forEach(input => {
+            input.addEventListener('blur', () => {
+                input.classList.toggle('roko-input-error', !input.value.trim());
             });
-        },
+        });
+    }
 
-        /**
-         * Simple tooltip system
-         */
-        initTooltips: function () {
-            // Add tooltips to elements with title attributes
-            $('[title]').each(function () {
-                const $element = $(this);
-                const title = $element.attr('title');
+    /* ──────────────────────────────
+     *  TOOLTIPS
+     * ─────────────────────────────*/
+    _initTooltips() {
+        document.addEventListener('mouseenter', e => {
+            const tgt = e.target.closest('[data-roko-title]');
+            if (!tgt) return;
+            const tooltip = document.createElement('div');
+            tooltip.className = 'roko-tooltip roko-fade-in';
+            tooltip.textContent = tgt.dataset.rokoTitle;
+            document.body.appendChild(tooltip);
+            const { top, left, width } = tgt.getBoundingClientRect();
+            tooltip.style.position = 'absolute';
+            tooltip.style.top = `${window.scrollY + top - 35}px`;
+            tooltip.style.left = `${window.scrollX + left + width / 2 - tooltip.offsetWidth / 2}px`;
+            tgt._tooltip = tooltip;
+        }, true);
+        document.addEventListener('mouseleave', e => {
+            const tgt = e.target.closest('[data-roko-title]');
+            if (tgt && tgt._tooltip) {
+                tgt._tooltip.remove();
+                delete tgt._tooltip;
+            }
+        }, true);
+    }
 
-                $element.removeAttr('title'); // Remove default tooltip
-
-                $element.hover(
-                    function (e) {
-                        const tooltip = $('<div class="roko-tooltip">' + title + '</div>');
-                        $('body').append(tooltip);
-
-                        tooltip.css({
-                            position: 'absolute',
-                            top: e.pageY - 35,
-                            left: e.pageX - (tooltip.outerWidth() / 2),
-                            background: '#111827',
-                            color: '#ffffff',
-                            padding: '6px 12px',
-                            borderRadius: '6px',
-                            fontSize: '12px',
-                            whiteSpace: 'nowrap',
-                            zIndex: 9999,
-                            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)'
-                        }).addClass('roko-fade-in');
-                    },
-                    function () {
-                        $('.roko-tooltip').remove();
-                    }
-                );
-            });
-        },
-
-        /**
-         * Loading states for async actions
-         */
-        initLoadingStates: function () {
-            // Add loading state to buttons with data-loading attribute
-            $('[data-loading]').on('click', function () {
-                const $btn = $(this);
-                const loadingText = $btn.data('loading') || 'Loading...';
-                const originalText = $btn.text();
-
-                $btn.addClass('roko-loading')
-                    .text(loadingText)
-                    .prop('disabled', true);
-
-                // Simulate async operation
-                setTimeout(() => {
-                    $btn.removeClass('roko-loading')
-                        .text(originalText)
-                        .prop('disabled', false);
-                }, 2000);
-            });
-        },
-
-        /**
-         * Animated stat counters
-         */
-        initStatCounters: function () {
-            $('.roko-stat-number').each(function () {
-                const $counter = $(this);
-                const finalNumber = parseInt($counter.text().replace(/[^0-9]/g, ''));
-                const suffix = $counter.text().replace(/[0-9.,]/g, '');
-
-                if (!finalNumber) return;
-
-                let currentNumber = 0;
-                const increment = finalNumber / 30; // 30 frames for smooth animation
-
-                const timer = setInterval(() => {
-                    currentNumber += increment;
-                    if (currentNumber >= finalNumber) {
-                        currentNumber = finalNumber;
-                        clearInterval(timer);
-                    }
-
-                    // Format number with commas
-                    const formattedNumber = Math.floor(currentNumber).toLocaleString();
-                    $counter.text(formattedNumber + suffix);
-                }, 50);
-            });
-        },
-
-        /**
-         * Toggle the "More" dropdown on click, and close on outside click
-         */
-        initDropdowns: function () {
-            // Toggle on More ▾ button click
-            $(document).on('click', '.roko-actions-toggle', function (e) {
-                e.stopPropagation();
-                const $menu = $(this).siblings('.roko-actions-dropdown');
-                // Hide any other open menus
-                $('.roko-actions-dropdown').not($menu).removeClass('show');
-                $menu.toggleClass('show');
-            });
-
-            // Close when clicking anywhere else
-            $(document).on('click', function (e) {
-                if (!$(e.target).closest('.roko-actions-menu').length) {
-                    $('.roko-actions-dropdown').removeClass('show');
-                }
-            });
-        },
-
-        /**
-         * Show notification messages
-         */
-        showNotification: function (message, type = 'info') {
-            const notification = $(`
-                <div class="roko-notification roko-notification-${type}">
-                    <div class="roko-notification-content">
-                        <span class="roko-notification-icon">${this.getNotificationIcon(type)}</span>
-                        <span class="roko-notification-message">${message}</span>
-                        <button class="roko-notification-close">&times;</button>
-                    </div>
-                </div>
-            `);
-
-            // Add notification styles
-            notification.css({
-                position: 'fixed',
-                top: '20px',
-                right: '20px',
-                zIndex: 10000,
-                minWidth: '300px',
-                maxWidth: '500px',
-                backgroundColor: type === 'success' ? '#dcfce7' : type === 'error' ? '#fecaca' : '#dbeafe',
-                color: type === 'success' ? '#16a34a' : type === 'error' ? '#dc2626' : '#0ea5e9',
-                border: '1px solid ' + (type === 'success' ? '#bbf7d0' : type === 'error' ? '#fca5a5' : '#93c5fd'),
-                borderRadius: '8px',
-                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
-                transform: 'translateX(100%)',
-                opacity: 0
-            });
-
-            notification.find('.roko-notification-content').css({
-                display: 'flex',
-                alignItems: 'center',
-                padding: '12px 16px',
-                gap: '8px'
-            });
-
-            notification.find('.roko-notification-close').css({
-                background: 'none',
-                border: 'none',
-                fontSize: '18px',
-                cursor: 'pointer',
-                marginLeft: 'auto',
-                opacity: 0.7
-            });
-
-            $('body').append(notification);
-
-            // Animate in
-            notification.animate({
-                transform: 'translateX(0)',
-                opacity: 1
-            }, 300);
-
-            // Auto dismiss after 4 seconds
+    /* ──────────────────────────────
+     *  LOADING STATES
+     * ─────────────────────────────*/
+    _initLoadingStates() {
+        document.addEventListener('click', e => {
+            const btn = e.target.closest('[data-loading]');
+            if (!btn) return;
+            const loadingText = btn.dataset.loading || 'Loading…';
+            const original = btn.textContent;
+            btn.classList.add('roko-loading');
+            btn.textContent = loadingText;
+            btn.disabled = true;
             setTimeout(() => {
-                this.dismissNotification(notification);
-            }, 4000);
+                btn.classList.remove('roko-loading');
+                btn.textContent = original;
+                btn.disabled = false;
+            }, 2000);
+        });
+    }
 
-            // Manual dismiss
-            notification.find('.roko-notification-close').on('click', () => {
-                this.dismissNotification(notification);
-            });
-        },
+    /* ──────────────────────────────
+     *  STAT COUNTERS
+     * ─────────────────────────────*/
+    _initStatCounters() {
+        this._qsa('.roko-stat-number').forEach(counter => {
+            const raw = counter.textContent;
+            const finalNum = parseInt(raw.replace(/[^0-9]/g, ''), 10);
+            const suffix = raw.replace(/[0-9.,]/g, '');
+            if (!finalNum) return;
+            let current = 0;
+            const step = finalNum / 30;
+            const timer = setInterval(() => {
+                current += step;
+                if (current >= finalNum) {
+                    current = finalNum;
+                    clearInterval(timer);
+                }
+                counter.textContent = Math.floor(current).toLocaleString() + suffix;
+            }, 50);
+        });
+    }
 
-        /**
-         * Dismiss notification
-         */
-        dismissNotification: function (notification) {
-            notification.animate({
-                transform: 'translateX(100%)',
-                opacity: 0
-            }, 300, function () {
-                $(this).remove();
-            });
-        },
-
-        /**
-         * Get notification icon based on type
-         */
-        getNotificationIcon: function (type) {
-            switch (type) {
-                case 'success': return '✓';
-                case 'error': return '✕';
-                case 'warning': return '⚠';
-                default: return 'ℹ';
+    /* ────────────────────────════
+     *  DROPDOWNS
+     * ─────────────────────────────*/
+    _initDropdowns() {
+        document.addEventListener('click', e => {
+            const toggle = e.target.closest('.roko-actions-toggle');
+            const open = this._qsa('.roko-actions-dropdown.show');
+            if (toggle) {
+                e.stopPropagation();
+                const menu = toggle.parentElement.querySelector('.roko-actions-dropdown');
+                open.filter(d => d !== menu).forEach(d => d.classList.remove('show'));
+                menu?.classList.toggle('show');
+            } else {
+                open.forEach(d => d.classList.remove('show'));
             }
-        },
+        });
+    }
 
-        /**
-         * Utility: Debounce function for performance
-         */
-        debounce: function (func, wait) {
-            let timeout;
-            return function executedFunction(...args) {
-                const later = () => {
-                    clearTimeout(timeout);
-                    func(...args);
-                };
-                clearTimeout(timeout);
-                timeout = setTimeout(later, wait);
-            };
-        }
-    };
+    /* ──────────────────────────────
+     *  NOTIFICATIONS
+     * ─────────────────────────────*/
+    _showNotification(msg, type = 'info') {
+        const note = document.createElement('div');
+        note.className = `roko-notification roko-notification-${type}`;
+        note.innerHTML = `
+      <div class="roko-notification-content">
+        <span class="roko-notification-icon">${this._icon(type)}</span>
+        <span class="roko-notification-message">${msg}</span>
+        <button class="roko-notification-close">&times;</button>
+      </div>`;
+        Object.assign(note.style, {
+            position: 'fixed',
+            top: '20px',
+            right: '20px',
+            zIndex: 10000,
+            minWidth: '300px',
+            maxWidth: '500px',
+            backgroundColor: type === 'success' ? '#dcfce7' : type === 'error' ? '#fecaca' : '#dbeafe',
+            color: type === 'success' ? '#16a34a' : type === 'error' ? '#dc2626' : '#0ea5e9',
+            border: `1px solid ${type === 'success' ? '#bbf7d0' : type === 'error' ? '#fca5a5' : '#93c5fd'}`,
+            borderRadius: '8px',
+            boxShadow: '0 4px 12px rgba(0,0,0,.15)',
+            transform: 'translateX(100%)',
+            opacity: 0,
+            transition: 'transform .3s, opacity .3s'
+        });
+        document.body.appendChild(note);
+        requestAnimationFrame(() => {
+            note.style.transform = 'translateX(0)';
+            note.style.opacity = '1';
+        });
+        const dismiss = () => this._dismissNotification(note);
+        note.querySelector('.roko-notification-close').addEventListener('click', dismiss);
+        setTimeout(dismiss, 4000);
+    }
 
-    // Initialize when DOM is ready
+    _dismissNotification(el) {
+        el.style.transform = 'translateX(100%)';
+        el.style.opacity = '0';
+        setTimeout(() => el.remove(), 300);
+    }
+
+    _icon(type) {
+        return ({ success: '✓', error: '✕', warning: '⚠' }[type] || 'ℹ');
+    }
+
+    _registerGlobalShortcuts() {
+        document.addEventListener('keydown', e => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+                e.preventDefault();
+                this._qs('form')?.dispatchEvent(new Event('submit', { cancelable: true }));
+            }
+        });
+    }
+
+    _initSmoothScroll() {
+        document.addEventListener('click', e => {
+            const link = e.target.closest('a[href^="#"]');
+            if (!link) return;
+            const target = this._qs(link.getAttribute('href'));
+            if (target) {
+                e.preventDefault();
+                window.scrollTo({ top: target.offsetTop - 20, behavior: 'smooth' });
+            }
+        });
+    }
+}
+
+/* Boot */
+document.addEventListener('DOMContentLoaded', () => {
     RokoAdmin.init();
-
-    // Add some global utility functions to window
     window.RokoAdmin = RokoAdmin;
-
-    // Add keyboard shortcuts
-    $(document).on('keydown', function (e) {
-        // Ctrl/Cmd + S to save settings (prevent browser save)
-        if ((e.ctrlKey || e.metaKey) && e.key === 's') {
-            e.preventDefault();
-            const $form = $('form').first();
-            if ($form.length) {
-                $form.submit();
-            }
-        }
-    });
-
-    // Add smooth scrolling for anchor links
-    $('a[href^="#"]').on('click', function (e) {
-        const target = $(this.getAttribute('href'));
-        if (target.length) {
-            e.preventDefault();
-            $('html, body').animate({
-                scrollTop: target.offset().top - 20
-            }, 500);
-        }
-    });
 });
