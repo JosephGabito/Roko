@@ -68,6 +68,23 @@ final class FilePermission {
 		);
 	}
 
+	/**
+	 * Exposes the file permission as an array.
+	 *
+	 * @return array{
+	 *  directoryListingIsOn: IsDirectoryListingOn,
+	 *  wpDebugOn: IsWpDebugOn,
+	 *  editorOn: IsEditorOn,
+	 *  dashboardInstallsOn: IsDashboardInstallsOn,
+	 *  phpExecutionInUploadsDirOn: IsPHPExecutionInUploadsDirOn,
+	 *  doesSensitiveFilesExists: DoesSensitiveFilesExists,
+	 *  xmlrpcOn: IsXMLRPCOn,
+	 *  wpConfigPermission644: IsWpConfigPermission644,
+	 *  htAccessPermission644: IsHtAccessPermission644,
+	 *  anyBackupExposed: AnyBackupExposed,
+	 *  logFilesExposed: LogFilesExposed,
+	 * }
+	 */
 	public function toArray(): array {
 		return array(
 			'directoryListingIsOn'       => $this->directoryListingIsOn,
