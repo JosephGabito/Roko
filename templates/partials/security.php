@@ -1,3 +1,9 @@
+<?php
+// Exit if accessed directly.
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+?>
 <!-- templates/partials/security.php -->
 	<div class="roko-card" id="roko-security-dashboard"
 		data-endpoint="<?php echo esc_url( rest_url( 'roko/v1/security' ) ); ?>"
@@ -5,13 +11,13 @@
 
 		<div class="roko-card-header roko-d-flex roko-justify-content-between roko-align-items-center">
 		<div>
-			<h3 class="roko-card-title">Security Analysis</h3>
-			<p class="roko-card-subtitle">Live snapshot of your WordPress hardening state</p>
+			<h3 class="roko-card-title"><?php esc_html_e( 'Security Analysis', 'roko' ); ?></h3>
+			<p class="roko-card-subtitle"><?php esc_html_e( 'Live snapshot of your WordPress hardening state', 'roko' ); ?></p>
 		</div>
 		<!-- View mode toggle -->
-		<div class="roko-view-toggle" role="group" aria-label="View mode">
-			<button id="roko-pill-all" class="roko-button roko-button-outline active" aria-pressed="true">Show all checks</button>
-			<button id="roko-pill-need" class="roko-button roko-button-clear" aria-pressed="false">Show required actions</button>
+		<div class="roko-view-toggle" role="group" aria-label="<?php esc_attr_e( 'View mode', 'roko' ); ?>">
+			<button id="roko-pill-all" class="roko-button roko-button-outline active" aria-pressed="true"><?php esc_html_e( 'Show all checks', 'roko' ); ?></button>
+			<button id="roko-pill-need" class="roko-button roko-button-clear" aria-pressed="false"><?php esc_html_e( 'Show required actions', 'roko' ); ?></button>
 		</div>
 		</div>
 
@@ -23,8 +29,8 @@
 			<span class="score-label">/100</span>
 			</div>
 			<div class="score-details roko-ml-4">
-			<p class="roko-boost-score" id="roko-score-status">Loading…</p>
-			<p class="roko-text-muted"><span id="roko-critical-count">0</span> critical issues found</p>
+			<p class="roko-boost-score" id="roko-score-status"><?php esc_html_e( 'Loading…', 'roko' ); ?></p>
+			<p class="roko-text-muted"><span id="roko-critical-count">0</span> <?php esc_html_e( 'critical issues found', 'roko' ); ?></p>
 			</div>
 		</div>
 
@@ -35,9 +41,9 @@
 
 		<!-- Action buttons -->
 		<div class="roko-security-actions roko-mt-5 roko-d-flex">
-			<button class="roko-button roko-button-outline roko-mr-3">Safe‑update plugins</button>
-			<button class="roko-button roko-button-outline roko-mr-3">Auto‑fix issues</button>
-			<button class="roko-button roko-button-outline">Generate report</button>
+			<button class="roko-button roko-button-outline roko-mr-3"><?php esc_html_e( 'Safe-update plugins', 'roko' ); ?></button>
+			<button class="roko-button roko-button-outline roko-mr-3"><?php esc_html_e( 'Auto-fix issues', 'roko' ); ?></button>
+			<button class="roko-button roko-button-outline"><?php esc_html_e( 'Generate report', 'roko' ); ?></button>
 		</div>
 		</div>
 	</div>
@@ -135,6 +141,10 @@
 
 .security-item[data-status="ok"] .security-item-label {
 	color: #00a32a;
+}
+
+.security-item[data-status="pending"] .security-item-label {
+	color: #2271b1;
 }
 
 /* Vulnerability table specific styling */

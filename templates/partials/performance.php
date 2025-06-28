@@ -1,13 +1,20 @@
+<?php
+// Exit if accessed directly.
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+?>
+
 <div class="roko-card" id="roko-performance-dashboard">
   <div class="roko-card-header roko-d-flex roko-justify-content-between roko-align-items-center">
     <div>
-      <h3 class="roko-card-title">Performance Analysis</h3>
-      <p class="roko-card-subtitle">Detailed performance metrics for your WordPress site</p>
+      <h3 class="roko-card-title"><?php esc_html_e( 'Performance Analysis', 'roko' ); ?></h3>
+      <p class="roko-card-subtitle"><?php esc_html_e( 'Detailed performance metrics for your WordPress site', 'roko' ); ?></p>
     </div>
     <!-- View mode toggle -->
-    <div class="roko-view-toggle" role="group" aria-label="View mode">
-      <button id="roko-perf-pill-all" class="roko-button roko-button-outline active" aria-pressed="true">Show all metrics</button>
-      <button id="roko-perf-pill-need" class="roko-button roko-button-clear" aria-pressed="false">Show required actions</button>
+    <div class="roko-view-toggle" role="group" aria-label="<?php esc_attr_e( 'View mode', 'roko' ); ?>">
+      <button id="roko-perf-pill-all" class="roko-button roko-button-outline active" aria-pressed="true"><?php esc_html_e( 'Show all metrics', 'roko' ); ?></button>
+      <button id="roko-perf-pill-need" class="roko-button roko-button-clear" aria-pressed="false"><?php esc_html_e( 'Show required actions', 'roko' ); ?></button>
     </div>
   </div>
 

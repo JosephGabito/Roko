@@ -1,9 +1,16 @@
+<?php
+// Exit if accessed directly.
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+?>
+
 <!-- Global Critical Notice Bar -->
 <div class="roko-critical-notice" id="roko-critical-notice" style="display: none;">
 	<div class="roko-critical-notice-content">
 		<span class="roko-critical-icon">⚠️</span>
 		<span class="roko-critical-text">2 critical issues require attention</span>
-		<button class="roko-critical-dismiss" aria-label="Dismiss notice">×</button>
+		<button class="roko-critical-dismiss" aria-label="Dismiss notice">&times;</button>
 	</div>
 </div>
 
@@ -19,18 +26,18 @@
 					<path d="M12 6h.01M12 12h.01M12 18h.01"/>
 				</svg>
 				<h4 class="roko-card-title">AI Health Check</h4>
-				<button class="roko-info-btn roko-ml-2" title="How we compute Health Score - Click to learn more" data-docs="health-score">ⓘ</button>
-			</div>
+							<button class="roko-info-btn roko-ml-2" title="<?php esc_attr_e( 'How we compute Health Score - Click to learn more', 'roko' ); ?>" data-docs="health-score">ⓘ</button>
 		</div>
-		<div class="roko-card-body">
-			<div class="roko-health-score-wrapper roko-mb-3">
-				<div class="roko-health-score excellent" role="status" aria-live="polite" data-target="94">0</div>
-				<span class="roko-badge roko-badge-success roko-ml-2">Good</span>
-			</div>
-			<p class="roko-card-text roko-mb-3">
-				Your site looks <strong>healthy</strong>, yet <strong>two plugins add 380 ms to TTFB</strong>.
-			</p>
-			<button class="roko-button roko-button-outline roko-button-small">View 3 AI fixes</button>
+	</div>
+	<div class="roko-card-body">
+		<div class="roko-health-score-wrapper roko-mb-3">
+			<div class="roko-health-score excellent" role="status" aria-live="polite" data-target="94">0</div>
+			<span class="roko-badge roko-badge-success roko-ml-2"><?php esc_html_e( 'Good', 'roko' ); ?></span>
+		</div>
+		<p class="roko-card-text roko-mb-3">
+			<?php esc_html_e( 'Your site looks healthy, yet two plugins add 380 ms to TTFB.', 'roko' ); ?>
+		</p>
+		<button class="roko-button roko-button-outline roko-button-small"><?php esc_html_e( 'View 3 AI fixes', 'roko' ); ?></button>
 		</div>
 	</div>
 

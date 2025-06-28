@@ -456,35 +456,91 @@ class RokoSecurityDashboard {
     render_file_integrity_card() {
         const fileIntegrity = this.state.data.fileIntegrity || {};
 
+        // Handle async core checksum
+        const coreChecksumStatus = fileIntegrity.coreChecksumMismatch?.isAsync
+            ? 'pending'
+            : (fileIntegrity.coreChecksumMismatch?.hasMismatch ? 'critical' : 'ok');
+
         const items = [
             {
-                label: 'Core modified',
-                value: fileIntegrity.coreModified,
-                status: fileIntegrity.coreModified ? 'critical' : 'ok'
+                label: 'Core checksum',
+                value: fileIntegrity.coreChecksumMismatch?.isAsync ? 'Checking...' :
+                    fileIntegrity.coreChecksumMismatch?.hasMismatch ? 'Modified' : 'Intact',
+                status: coreChecksumStatus,
+                description: fileIntegrity.coreChecksumMismatch?.description || ''
             },
             {
-                label: 'Suspicious files',
-                value: fileIntegrity.suspiciousFiles || 0,
-                status: (fileIntegrity.suspiciousFiles || 0) > 0 ? 'warn' : 'ok'
+                label: 'Executable in uploads',
+                value: fileIntegrity.executableInUploads?.count || 0,
+                status: fileIntegrity.executableInUploads?.hasIssue ? 'critical' : 'ok',
+                description: fileIntegrity.executableInUploads?.description || ''
+            },
+            {
+                label: 'Dot files present',
+                value: fileIntegrity.dotFilesPresent?.count || 0,
+                status: fileIntegrity.dotFilesPresent?.hasIssue ? 'warn' : 'ok',
+                description: fileIntegrity.dotFilesPresent?.description || ''
+            },
+            {
+                label: 'Oversized files',
+                value: fileIntegrity.oversizedFilesFound?.count || 0,
+                status: fileIntegrity.oversizedFilesFound?.hasIssue ? 'warn' : 'ok',
+                description: fileIntegrity.oversizedFilesFound?.description || ''
+            },
+            {
+                label: 'Backup folders',
+                value: fileIntegrity.backupFoldersFound?.count || 0,
+                status: fileIntegrity.backupFoldersFound?.hasIssue ? 'warn' : 'ok',
+                description: fileIntegrity.backupFoldersFound?.description || ''
+            },
+            {
+                label: 'Recent changes',
+                value: fileIntegrity.recentFileChanges?.count || 0,
+                status: fileIntegrity.recentFileChanges?.hasIssue ? 'warn' : 'ok',
+                description: fileIntegrity.recentFileChanges?.description || ''
+            },
+            {
+                label: 'Malware patterns',
+                value: fileIntegrity.malwarePatternsFound?.count || 0,
+                status: fileIntegrity.malwarePatternsFound?.hasIssue ? 'critical' : 'ok',
+                description: fileIntegrity.malwarePatternsFound?.description || ''
             }
         ];
 
         const itemsHtml = items.map(item => {
-            const displayValue = typeof item.value === 'boolean'
-                ? this.create_badge(item.value ? 'Risk' : 'Secure', item.value ? 'error' : 'success')
-                : `<span class="roko-text-dark">${item.value}</span>`;
+            let displayValue;
+            let badge;
+
+            if (item.status === 'pending') {
+                badge = this.create_badge('Checking...', 'info');
+                displayValue = badge;
+            } else if (typeof item.value === 'number') {
+                if (item.value === 0) {
+                    badge = this.create_badge('Clean', 'success');
+                } else {
+                    badge = this.create_badge(`${item.value} found`, item.status === 'critical' ? 'error' : 'warning');
+                }
+                displayValue = badge;
+            } else {
+                badge = this.create_badge(item.value, item.status === 'critical' ? 'error' :
+                    item.status === 'warn' ? 'warning' : 'success');
+                displayValue = badge;
+            }
 
             return `
-                <div class="security-item" data-status="${item.status}">
+                <div class="security-item" data-status="${item.status}" title="${item.description}">
                     <div class="roko-d-flex roko-justify-content-between roko-align-items-center">
                         <span class="security-item-label">${item.label}</span>
                         ${displayValue}
+                    </div>
+                    <div class="security-item-description roko-text-muted roko-text-small roko-block roko-mt-3">
+                        ${item.description}
                     </div>
                 </div>
             `;
         }).join('');
 
-        return this.create_card('File Integrity', 'Core file changes and suspicious files', itemsHtml);
+        return this.create_card('File Integrity', 'Comprehensive file system security checks', itemsHtml);
     }
 
     /**

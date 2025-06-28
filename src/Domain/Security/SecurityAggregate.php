@@ -124,10 +124,13 @@ final class SecurityAggregate {
 				'sslValid'      => $networkState->sslValid,
 				'headersScore'  => $networkState->securityHeadersCount,
 			) : array(),
-			'fileIntegrity'        => $integrityScan ? array(
-				'coreModified'    => ! $integrityScan->coreIntact,
-				'suspiciousFiles' => $integrityScan->suspiciousCount,
-				'scannedAt'       => $integrityScan->scannedAt->format( \DateTimeInterface::ATOM ),
+			'fileIntegrity'        => $integrityScan ? array_merge(
+				array(
+					'coreModified'    => ! $integrityScan->coreIntact,
+					'suspiciousFiles' => $integrityScan->suspiciousCount,
+					'scannedAt'       => $integrityScan->scannedAt->format( \DateTimeInterface::ATOM ),
+				),
+				$integrityScan->toArray()
 			) : array(),
 			'knownVulnerabilities' => $vulns ? array_map(
 				static fn ( $v ) => array(

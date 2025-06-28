@@ -33,6 +33,17 @@ class RokoAdmin {
     _qs(sel, ctx = document) { return ctx.querySelector(sel); }
     _qsa(sel, ctx = document) { return [...ctx.querySelectorAll(sel)]; }
 
+    /* Safe closest - handles text nodes and other non-Element nodes */
+    _closest(target, selector) {
+        // If target is not an Element, get the parent Element
+        let element = target;
+        if (element.nodeType !== Node.ELEMENT_NODE) {
+            element = element.parentElement;
+        }
+        // Now safely call closest on the Element
+        return element ? element.closest(selector) : null;
+    }
+
     /* ──────────────────────────────
      *  TAB NAVIGATION
      * ─────────────────────────────*/
@@ -117,7 +128,7 @@ class RokoAdmin {
      * ─────────────────────────────*/
     _initTooltips() {
         document.addEventListener('mouseenter', e => {
-            const tgt = e.target.closest('[data-roko-title]');
+            const tgt = this._closest(e.target, '[data-roko-title]');
             if (!tgt) return;
             const tooltip = document.createElement('div');
             tooltip.className = 'roko-tooltip roko-fade-in';
@@ -130,7 +141,7 @@ class RokoAdmin {
             tgt._tooltip = tooltip;
         }, true);
         document.addEventListener('mouseleave', e => {
-            const tgt = e.target.closest('[data-roko-title]');
+            const tgt = this._closest(e.target, '[data-roko-title]');
             if (tgt && tgt._tooltip) {
                 tgt._tooltip.remove();
                 delete tgt._tooltip;
@@ -143,7 +154,7 @@ class RokoAdmin {
      * ─────────────────────────────*/
     _initLoadingStates() {
         document.addEventListener('click', e => {
-            const btn = e.target.closest('[data-loading]');
+            const btn = this._closest(e.target, '[data-loading]');
             if (!btn) return;
             const loadingText = btn.dataset.loading || 'Loading…';
             const original = btn.textContent;
@@ -185,7 +196,7 @@ class RokoAdmin {
      * ─────────────────────────────*/
     _initDropdowns() {
         document.addEventListener('click', e => {
-            const toggle = e.target.closest('.roko-actions-toggle');
+            const toggle = this._closest(e.target, '.roko-actions-toggle');
             const open = this._qsa('.roko-actions-dropdown.show');
             if (toggle) {
                 e.stopPropagation();
@@ -257,7 +268,7 @@ class RokoAdmin {
 
     _initSmoothScroll() {
         document.addEventListener('click', e => {
-            const link = e.target.closest('a[href^="#"]');
+            const link = this._closest(e.target, 'a[href^="#"]');
             if (!link) return;
             const target = this._qs(link.getAttribute('href'));
             if (target) {
