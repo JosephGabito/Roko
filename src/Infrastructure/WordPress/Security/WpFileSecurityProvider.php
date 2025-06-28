@@ -184,57 +184,57 @@ final class WpFileSecurityProvider implements FilePermissionInterface {
 	public function snapshot(): FilePermission {
 		$directoryListing = new IsDirectoryListingOn( $this->isDirectoryListingOn() );
 		$directoryListing->setDescription(
-			__( 'Your server allows directory listings—hackers can browse your folders for juicy files.', 'roko' )
+			__( 'Visitors can see all your site folders and files—bad actors might find secrets.', 'roko' )
 		);
 
 		$wpDebug = new IsWpDebugOn( $this->isWpDebugOn() );
 		$wpDebug->setDescription(
-			__( 'WP_DEBUG is on, potentially exposing SQL queries, filesystem paths, and credentials.', 'roko' )
+			__( 'Your site is showing technical details and errors that could help hackers.', 'roko' )
 		);
 
 		$editor = new IsEditorOn( $this->isEditorOn() );
 		$editor->setDescription(
-			__( 'The built-in file editor is enabled, letting anyone with dashboard access edit your PHP files.', 'roko' )
+			__( 'Anyone with dashboard access could edit your site code directly.', 'roko' )
 		);
 
 		$dashboardInstalls = new IsDashboardInstallsOn( $this->isDashboardInstallsOn() );
 		$dashboardInstalls->setDescription(
-			__( 'Dashboard installs are enabled, opening a door to unauthorized plugin/theme uploads.', 'roko' )
+			__( 'Logged-in users can install or update plugins and themes without your permission.', 'roko' )
 		);
 
 		$phpExecUploads = new IsPHPExecutionInUploadsDirOn( $this->isPHPExecutionInUploadsDirOn() );
 		$phpExecUploads->setDescription(
-			__( 'Uploads folder allows PHP execution—malicious scripts can run if uploaded.', 'roko' )
+			__( 'If someone uploads a PHP file, it may run and harm your site.', 'roko' )
 		);
 
 		$sensitiveFiles = new DoesSensitiveFilesExists( $this->doesSensitiveFilesExists() );
 		$sensitiveFiles->setDescription(
-			__( 'Core files like wp-config.php or .htaccess exist at web-root without extra protection.', 'roko' )
+			__( 'Important files like wp-config.php or .htaccess are sitting where anyone can access them.', 'roko' )
 		);
 
 		$xmlrpc = new IsXMLRPCOn( $this->isXMLRPCOn() );
 		$xmlrpc->setDescription(
-			__( 'XML-RPC is enabled, which is often abused for brute-force and DDoS attacks.', 'roko' )
+			__( 'An old API (XML-RPC) is active—hackers use it to guess passwords and overload sites.', 'roko' )
 		);
 
 		$wpConfigPerm = new IsWpConfigPermission644( $this->isWpConfigPermission644() );
 		$wpConfigPerm->setDescription(
-			__( 'wp-config.php permissions are misconfigured; should be 0644 to lock down credentials.', 'roko' )
+			__( 'Your main settings file is not locked down properly; info could leak.', 'roko' )
 		);
 
 		$htAccessPerm = new IsHtAccessPermission644( $this->isHtAccessPermission644() );
 		$htAccessPerm->setDescription(
-			__( 'Your .htaccess file isn\'t locked to 0644, so attackers might modify rewrite/security rules.', 'roko' )
+			__( 'Your security rules file can be changed by others—protections might be turned off.', 'roko' )
 		);
 
 		$backupExposed = new AnyBackupExposed( $this->anyBackupExposed() );
 		$backupExposed->setDescription(
-			__( 'Backup files (zip/sql/etc.) are publicly searchable and downloadable.', 'roko' )
+			__( 'Backup copies of your site are out in the open for anyone to download.', 'roko' )
 		);
 
 		$logsExposed = new LogFilesExposed( $this->logFilesExposed() );
 		$logsExposed->setDescription(
-			__( 'Log files are in web-root and can reveal error messages or stack traces.', 'roko' )
+			__( 'Your site error logs are exposed and could show private details.', 'roko' )
 		);
 
 		$filePermission = new FilePermission(
@@ -253,7 +253,7 @@ final class WpFileSecurityProvider implements FilePermissionInterface {
 
 		$filePermission->setSectionSummary(
 			__( 'File & System Protection', 'roko' ),
-			__( 'These checks verify your WP root and uploads directory are properly locked down—no public indexing, no exposed configs or logs, and no unwanted execution.', 'roko' )
+			__( 'We scan your important files and folders for security gaps and clearly flag anything that could let hackers in.', 'roko' )
 		);
 
 		return $filePermission;
