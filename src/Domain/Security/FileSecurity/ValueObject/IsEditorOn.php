@@ -14,7 +14,7 @@ final readonly class IsEditorOn {
 	public function isOn(): bool {
 		return $this->isOn;
 	}
-    
+
 	public function value(): bool {
 		return $this->isOn;
 	}

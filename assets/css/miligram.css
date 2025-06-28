@@ -9,6 +9,14 @@
 	box-sizing: border-box;
 }
 
+.roko-block {
+	display: block;
+}
+
+.roko-inline-block {
+	display: inline-block;
+}
+
 .roko-admin {
 	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, "Roboto", "Helvetica Neue", Arial, sans-serif;
 	font-size: 14px;

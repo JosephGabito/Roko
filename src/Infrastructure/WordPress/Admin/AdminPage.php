@@ -36,28 +36,49 @@ class AdminPage {
 			switch ( WP_ENVIRONMENT_TYPE ) {
 				case 'development':
 				case 'local':
-					return array( 'label' => 'DEV', 'class' => 'roko-env-dev' );
+					return array(
+						'label' => 'DEV',
+						'class' => 'roko-env-dev',
+					);
 				case 'staging':
-					return array( 'label' => 'STAGE', 'class' => 'roko-env-stage' );
+					return array(
+						'label' => 'STAGE',
+						'class' => 'roko-env-stage',
+					);
 				case 'production':
-					return array( 'label' => 'LIVE', 'class' => 'roko-env-live' );
+					return array(
+						'label' => 'LIVE',
+						'class' => 'roko-env-live',
+					);
 				default:
-					return array( 'label' => 'LIVE', 'class' => 'roko-env-live' );
+					return array(
+						'label' => 'LIVE',
+						'class' => 'roko-env-live',
+					);
 			}
 		}
 
 		// Fallback detection
 		$site_url = get_site_url();
-		if ( strpos( $site_url, 'localhost' ) !== false || 
-			 strpos( $site_url, '.local' ) !== false || 
-			 strpos( $site_url, '127.0.0.1' ) !== false ) {
-			return array( 'label' => 'DEV', 'class' => 'roko-env-dev' );
-		} elseif ( strpos( $site_url, 'staging' ) !== false || 
-				   strpos( $site_url, 'stage' ) !== false ) {
-			return array( 'label' => 'STAGE', 'class' => 'roko-env-stage' );
+		if ( strpos( $site_url, 'localhost' ) !== false ||
+			strpos( $site_url, '.local' ) !== false ||
+			strpos( $site_url, '127.0.0.1' ) !== false ) {
+			return array(
+				'label' => 'DEV',
+				'class' => 'roko-env-dev',
+			);
+		} elseif ( strpos( $site_url, 'staging' ) !== false ||
+					strpos( $site_url, 'stage' ) !== false ) {
+			return array(
+				'label' => 'STAGE',
+				'class' => 'roko-env-stage',
+			);
 		}
 
-		return array( 'label' => 'LIVE', 'class' => 'roko-env-live' );
+		return array(
+			'label' => 'LIVE',
+			'class' => 'roko-env-live',
+		);
 	}
 
 	/**
@@ -66,9 +87,15 @@ class AdminPage {
 	private function get_instant_metrics() {
 		// Mock data - in real implementation, get from your data sources
 		return array(
-			'security' => array( 'score' => 94, 'status' => 'good' ),
-			'performance' => array( 'score' => 88, 'status' => 'good' ),
-			'critical_alerts' => 1
+			'security'        => array(
+				'score'  => 94,
+				'status' => 'good',
+			),
+			'performance'     => array(
+				'score'  => 88,
+				'status' => 'good',
+			),
+			'critical_alerts' => 1,
 		);
 	}
 
@@ -129,7 +156,7 @@ class AdminPage {
 						'overview'    => 'Overview',
 						'performance' => 'Performance',
 						'security'    => 'Security',
-						'a11y'         => 'Accessibility',
+						'a11y'        => 'Accessibility',
 						'internals'   => 'Internals',
 						'automations' => 'Integrations',
 						'settings'    => 'Settings',

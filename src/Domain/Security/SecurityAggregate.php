@@ -31,6 +31,7 @@ final readonly class SecurityAggregate {
 	 * Returns a plain PHP array describing the current security posture.
 	 */
 	public function snapshot(): array {
+
 		$keys          = $this->securityKeysProvider->snapshot();
 		$fileSecurity  = $this->filePermissionProvider->snapshot();
 		$userProfile   = $this->userRepo->currentProfile();
@@ -38,27 +39,39 @@ final readonly class SecurityAggregate {
 		$integrityScan = $this->integrityRepo->latestScan();
 		$vulns         = $this->vulnRepo->latestKnown();
 
-		$securityKeys = array_map( function( $key ) {
-			return $key->strength();
-		}, $keys->toArray() );
+		$securityKeys = array_map(
+			function ( $value, $key ) {
+				// Get the array key.
+				return array(
+					'key'         => $key,
+					'strength'    => $value->strength(),
+					'description' => $value->description(),
+				);
+			},
+			$keys->toArray(),
+			array_keys( $keys->toArray() )
+		);
 
 		$fileSecurity = $fileSecurity->toArray();
 
 		return array(
 			'timestamp'            => ( new \DateTimeImmutable() )->format( \DateTimeInterface::ATOM ),
-			'securityKeys'         => $securityKeys,
+			'securityKeys'         => array(
+				'summary'      => $keys->getSectionSummary(),
+				'securityKeys' => $securityKeys,
+			),
 			'fileSecurity'         => array(
-				'directoryListingIsOn' => $fileSecurity['directoryListingIsOn']->value(),
-				'wpDebugOn' => $fileSecurity['wpDebugOn']->value(),
-				'editorOn' => $fileSecurity['editorOn']->value(),
-				'dashboardInstallsOn' => $fileSecurity['dashboardInstallsOn']->value(),
+				'directoryListingIsOn'       => $fileSecurity['directoryListingIsOn']->value(),
+				'wpDebugOn'                  => $fileSecurity['wpDebugOn']->value(),
+				'editorOn'                   => $fileSecurity['editorOn']->value(),
+				'dashboardInstallsOn'        => $fileSecurity['dashboardInstallsOn']->value(),
 				'phpExecutionInUploadsDirOn' => $fileSecurity['phpExecutionInUploadsDirOn']->value(),
-				'doesSensitiveFilesExists' => $fileSecurity['doesSensitiveFilesExists']->value(),
-				'xmlrpcOn' => $fileSecurity['xmlrpcOn']->value(),
-				'wpConfigPermission644' => $fileSecurity['wpConfigPermission644']->value(),
-				'htAccessPermission644' => $fileSecurity['htAccessPermission644']->value(),
-				'anyBackupExposed' => $fileSecurity['anyBackupExposed']->value(),
-				'logFilesExposed' => $fileSecurity['logFilesExposed']->value(),
+				'doesSensitiveFilesExists'   => $fileSecurity['doesSensitiveFilesExists']->value(),
+				'xmlrpcOn'                   => $fileSecurity['xmlrpcOn']->value(),
+				'wpConfigPermission644'      => $fileSecurity['wpConfigPermission644']->value(),
+				'htAccessPermission644'      => $fileSecurity['htAccessPermission644']->value(),
+				'anyBackupExposed'           => $fileSecurity['anyBackupExposed']->value(),
+				'logFilesExposed'            => $fileSecurity['logFilesExposed']->value(),
 			),
 			'userSecurity'         => array(
 				'adminUsernameRisk' => $userProfile->isDefaultAdmin(),

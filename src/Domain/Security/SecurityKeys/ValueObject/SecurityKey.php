@@ -11,105 +11,102 @@ namespace JosephG\Roko\Domain\Security\SecurityKeys\ValueObject;
  *  - WEAK  : too short OR low entropy OR lacks char-class variety
  *  - STRONG: ≥ 48 chars, includes upper+lower+digit+symbol, entropy ≥ 200 bits
  */
-final class SecurityKey
-{
-    /** Tune these two numbers to your policy */
-    private const MIN_LEN_STRONG   = 48;
-    private const ENTROPY_STRONG   = 200.0;   // Shannon bits
+final class SecurityKey {
 
-    /** @var string */
-    private $key;
+	/** Tune these two numbers to your policy */
+	private const MIN_LEN_STRONG = 48;
+	private const ENTROPY_STRONG = 200.0;   // Shannon bits
 
-    public function __construct(string $key)
-    {
-        $this->key = $key;
-    }
+	/** @var string */
+	private $key;
+	private $description;
 
-    public function value(): string
-    {
-        return $this->key;
-    }
+	public function __construct( string $key, string $description ) {
+		$this->key         = $key;
+		$this->description = $description;
+	}
 
-    public function __toString(): string
-    {
-        return $this->key;
-    }
+	public function description(): string {
+		return $this->description;
+	}
 
-    /**
-     * Returns one of: 'none', 'weak', 'strong'
-     */
-    public function strength(): string
-    {
-        if ($this->isEmpty()) {
-            return 'none';
-        }
+	public function value(): string {
+		return $this->key;
+	}
 
-        return $this->passesStrongRules() ? 'strong' : 'weak';
-    }
+	public function __toString(): string {
+		return $this->key;
+	}
 
-    public function isStrong(): bool
-    {
-        return $this->passesStrongRules();
-    }
+	/**
+	 * Returns one of: 'none', 'weak', 'strong'
+	 */
+	public function strength(): string {
+		if ( $this->isEmpty() ) {
+			return 'none';
+		}
 
-    public function isWeak(): bool
-    {
-        return ! $this->isEmpty() && ! $this->passesStrongRules();
-    }
+		return $this->passesStrongRules() ? 'strong' : 'weak';
+	}
 
-    public function isEmpty(): bool
-    {
-        return $this->key === '';
-    }
+	public function isStrong(): bool {
+		return $this->passesStrongRules();
+	}
 
-    /* --------------------------------------------------------------------- */
-    /*  Internal rule helpers                                                 */
-    /* --------------------------------------------------------------------- */
+	public function isWeak(): bool {
+		return ! $this->isEmpty() && ! $this->passesStrongRules();
+	}
 
-    private function passesStrongRules(): bool
-    {
-        return \strlen($this->key) >= self::MIN_LEN_STRONG
-            && $this->hasAllCharClasses()
-            && $this->entropyBits() >= self::ENTROPY_STRONG;
-    }
+	public function isEmpty(): bool {
+		return $this->key === '';
+	}
 
-    private function hasAllCharClasses(): bool
-    {
-        return (bool) (
-            \preg_match('/[A-Z]/', $this->key) &&
-            \preg_match('/[a-z]/', $this->key) &&
-            \preg_match('/[0-9]/', $this->key) &&
-            \preg_match('/[^A-Za-z0-9]/', $this->key)
-        );
-    }
+	/*
+	--------------------------------------------------------------------- */
+	/*
+		Internal rule helpers                                                 */
+	/* --------------------------------------------------------------------- */
 
-    /**
-     * Conservative Shannon–entropy estimate (bits).
-     */
-    private function entropyBits(): float
-    {
-        $len = \strlen($this->key);
-        if ($len === 0) {
-            return 0.0;
-        }
+	private function passesStrongRules(): bool {
+		return \strlen( $this->key ) >= self::MIN_LEN_STRONG
+			&& $this->hasAllCharClasses()
+			&& $this->entropyBits() >= self::ENTROPY_STRONG;
+	}
 
-        $freq = \array_count_values(\str_split($this->key));
-        $entropyPerChar = 0.0;
-        foreach ($freq as $count) {
-            $p = $count / $len;
-            $entropyPerChar -= $p * \log($p, 2);
-        }
+	private function hasAllCharClasses(): bool {
+		return (bool) (
+			\preg_match( '/[A-Z]/', $this->key ) &&
+			\preg_match( '/[a-z]/', $this->key ) &&
+			\preg_match( '/[0-9]/', $this->key ) &&
+			\preg_match( '/[^A-Za-z0-9]/', $this->key )
+		);
+	}
 
-        return $entropyPerChar * $len;
-    }
+	/**
+	 * Conservative Shannon–entropy estimate (bits).
+	 */
+	private function entropyBits(): float {
+		$len = \strlen( $this->key );
+		if ( $len === 0 ) {
+			return 0.0;
+		}
 
-    public static function generate(): self
-    {
-        // Inside WP runtime use wp_generate_password(); fallback to random_bytes.
-        $raw = \function_exists('wp_generate_password')
-            ? wp_generate_password(self::MIN_LEN_STRONG, true, true)
-            : \bin2hex(\random_bytes(self::MIN_LEN_STRONG / 2));
+		$freq           = \array_count_values( \str_split( $this->key ) );
+		$entropyPerChar = 0.0;
+		foreach ( $freq as $count ) {
+			$p               = $count / $len;
+			$entropyPerChar -= $p * \log( $p, 2 );
+		}
 
-        return new self($raw);
-    }
+		return $entropyPerChar * $len;
+	}
+
+	public static function generate(): self {
+		// Inside WP runtime use wp_generate_password(); fallback to random_bytes.
+		$raw = \function_exists( 'wp_generate_password' )
+			? wp_generate_password( self::MIN_LEN_STRONG, true, true )
+			: \bin2hex( \random_bytes( self::MIN_LEN_STRONG / 2 ) );
+
+		return new self( $raw, 'WordPress Auth Key' );
+	}
 }

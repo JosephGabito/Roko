@@ -18,5 +18,4 @@ final readonly class LogFilesExposed {
 	public function value(): bool {
 		return $this->exposed;
 	}
-
 }

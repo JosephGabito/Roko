@@ -40,32 +40,32 @@ final readonly class FilePermission {
 		AnyBackupExposed $anyBackupExposed,
 		LogFilesExposed $logFilesExposed
 	) {
-		$this->directoryListingIsOn = $directoryListingIsOn;
-		$this->wpDebugOn = $wpDebugOn;
-		$this->editorOn = $editorOn;
-		$this->dashboardInstallsOn = $dashboardInstallsOn;
+		$this->directoryListingIsOn       = $directoryListingIsOn;
+		$this->wpDebugOn                  = $wpDebugOn;
+		$this->editorOn                   = $editorOn;
+		$this->dashboardInstallsOn        = $dashboardInstallsOn;
 		$this->phpExecutionInUploadsDirOn = $phpExecutionInUploadsDirOn;
-		$this->doesSensitiveFilesExists = $doesSensitiveFilesExists;
-		$this->xmlrpcOn = $xmlrpcOn;
-		$this->wpConfigPermission644 = $wpConfigPermission644;
-		$this->htAccessPermission644 = $htAccessPermission644;
-		$this->anyBackupExposed = $anyBackupExposed;
-		$this->logFilesExposed = $logFilesExposed;
+		$this->doesSensitiveFilesExists   = $doesSensitiveFilesExists;
+		$this->xmlrpcOn                   = $xmlrpcOn;
+		$this->wpConfigPermission644      = $wpConfigPermission644;
+		$this->htAccessPermission644      = $htAccessPermission644;
+		$this->anyBackupExposed           = $anyBackupExposed;
+		$this->logFilesExposed            = $logFilesExposed;
 	}
 
 	public function toArray(): array {
-		return [
-			'directoryListingIsOn' => $this->directoryListingIsOn,
-			'wpDebugOn' => $this->wpDebugOn,
-			'editorOn' => $this->editorOn,
-			'dashboardInstallsOn' => $this->dashboardInstallsOn,
+		return array(
+			'directoryListingIsOn'       => $this->directoryListingIsOn,
+			'wpDebugOn'                  => $this->wpDebugOn,
+			'editorOn'                   => $this->editorOn,
+			'dashboardInstallsOn'        => $this->dashboardInstallsOn,
 			'phpExecutionInUploadsDirOn' => $this->phpExecutionInUploadsDirOn,
-			'doesSensitiveFilesExists' => $this->doesSensitiveFilesExists,
-			'xmlrpcOn' => $this->xmlrpcOn,
-			'wpConfigPermission644' => $this->wpConfigPermission644,
-			'htAccessPermission644' => $this->htAccessPermission644,
-			'anyBackupExposed' => $this->anyBackupExposed,
-			'logFilesExposed' => $this->logFilesExposed,
-		];
+			'doesSensitiveFilesExists'   => $this->doesSensitiveFilesExists,
+			'xmlrpcOn'                   => $this->xmlrpcOn,
+			'wpConfigPermission644'      => $this->wpConfigPermission644,
+			'htAccessPermission644'      => $this->htAccessPermission644,
+			'anyBackupExposed'           => $this->anyBackupExposed,
+			'logFilesExposed'            => $this->logFilesExposed,
+		);
 	}
 }

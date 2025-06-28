@@ -8,7 +8,7 @@ use JosephG\Roko\Domain\Security\SecurityKeys\Entity\SecurityKeys;
 /**
  * Provides the current set of keys/salts in a way that's storage-agnostic.
  */
-interface SecurityKeysProviderInterface
-{
-    public function snapshot(): SecurityKeys;
+interface SecurityKeysProviderInterface {
+
+	public function snapshot(): SecurityKeys;
 }

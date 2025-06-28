@@ -265,23 +265,30 @@ class RokoSecurityDashboard {
      * Render security keys card.
      */
     render_security_keys_card() {
-        const keys = this.state.data.securityKeys || {};
 
-        const items = Object.entries(keys).map(([key, strength]) => {
-            const status = this.get_key_status(strength);
-            const badge = this.create_badge(strength, this.get_badge_type(strength));
+        const keys = this.state.data.securityKeys.securityKeys || {};
+        const summary = this.state.data.securityKeys.summary || {};
+
+        const items = Object.entries(keys).map(([index, item]) => {
+
+            const status = this.get_key_status(item.strength);
+            const badge = this.create_badge(item.strength, this.get_badge_type(item.strength));
 
             return `
                 <div class="security-item" data-status="${status}">
                     <div class="roko-d-flex roko-justify-content-between roko-align-items-center">
-                        <span class="security-item-label">${key}</span>
+                        <span class="security-item-label">${item.key}</span>
                         ${badge}
                     </div>
+                    <span class="security-item-description roko-text-muted roko-text-small roko-block roko-mt-3">
+                        ${item.description}
+                    </span>
                 </div>
             `;
         }).join('');
 
-        return this.create_card('Security Keys', 'WordPress secret keys and salts', items);
+        return this.create_card(summary.title, summary.description, items);
+
     }
 
     /**
