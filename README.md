@@ -1,10 +1,10 @@
 # Super Secret WordPress Plugin
 
 <!-- BADGES-START -->
-[![Build Status](https://img.shields.io/badge/build-unknown-yellow)](https://github.com/JosephGabito/roko/actions/workflows/code-quality.yml)
-[![Unit Tests](https://img.shields.io/badge/unit%20tests-no%20tests-lightgrey)](https://github.com/JosephGabito/roko/actions/workflows/code-quality.yml)
-[![PHP 7.4 Compatibility](https://img.shields.io/badge/PHP%207.4-unknown-yellow)](https://github.com/JosephGabito/roko/actions/workflows/code-quality.yml)
-[![Coding Standards](https://img.shields.io/badge/coding%20standards-unknown-yellow)](https://github.com/JosephGabito/roko/actions/workflows/code-quality.yml)
+[![Code Quality](https://github.com/JosephGabito/roko/actions/workflows/code-quality.yml/badge.svg?branch=main)](https://github.com/JosephGabito/roko/actions/workflows/code-quality.yml)
+[![PHP Version](https://img.shields.io/badge/PHP-7.0%2B-blue)](https://php.net)
+[![WordPress](https://img.shields.io/badge/WordPress-5.0%2B-blue)](https://wordpress.org)
+[![License](https://img.shields.io/badge/license-GPL--2.0--or--later-blue)](LICENSE)
 <!-- BADGES-END -->
 
 WordPress plugin - **Development in Progress**
