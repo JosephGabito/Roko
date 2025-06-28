@@ -54,10 +54,9 @@ jobs:
     - name: PHP 7.4 Compatibility Check
       run: vendor/bin/phpcs --standard=PHPCompatibility --runtime-set testVersion 7.4- src/ roko.php
 
-  wordpress-compatibility:
+  wordpress-linting:
     runs-on: ubuntu-latest
-    name: WordPress Compatibility
-    continue-on-error: true
+    name: WordPress Linting
     
     steps:
     - name: Checkout code
