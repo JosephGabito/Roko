@@ -32,29 +32,51 @@ function roko_send_event( array $data ) {
 }
 
 function roko_get_http_query( $query_string, $mode = INPUT_GET, $filter = FILTER_UNSAFE_RAW ) {
-	$value = sanitize_text_field( wp_unslash( filter_input( $mode, $query_string, $filter ) ) );
-	return roko_nullable( $value );
-}
-
-function roko_get_http_post( $post_string, $mode = INPUT_POST, $filter = FILTER_UNSAFE_RAW ) {
-	$value = sanitize_text_field( wp_unslash( filter_input( $mode, $post_string, $filter ) ) );
-	return roko_nullable( $value );
-}
-
-function roko_get_http_request_textarea( $request_string, $mode = INPUT_GET, $filter = FILTER_UNSAFE_RAW ) {
-	$value = sanitize_textarea_field( wp_unslash( filter_input( $mode, $request_string, $filter ) ) );
-	return roko_nullable( $value );
-}
-
-function roko_get_http_request_checkbox( $request_string, $mode = INPUT_POST, $filter = FILTER_UNSAFE_RAW ) {
-	$value = sanitize_textarea_field( wp_unslash( filter_input( $mode, $request_string, $filter ) ) );
-	return roko_nullable( $value );
-}
-
-function roko_nullable( $value ) {
-	if ( empty( $value ) ) {
+	// Check if the input exists first
+	if ( ! filter_has_var( $mode, $query_string ) ) {
 		return null;
 	}
 
-	return $value;
+	$value = filter_input( $mode, $query_string, $filter );
+	if ( $value === null || $value === false ) {
+		return null;
+	}
+
+	return sanitize_text_field( wp_unslash( $value ) );
+}
+
+function roko_get_http_post( $post_string, $mode = INPUT_POST, $filter = FILTER_UNSAFE_RAW ) {
+	// Check if the input exists first
+	if ( ! filter_has_var( $mode, $post_string ) ) {
+		return null;
+	}
+
+	$value = filter_input( $mode, $post_string, $filter );
+	if ( $value === null || $value === false ) {
+		return null;
+	}
+
+	return sanitize_text_field( wp_unslash( $value ) );
+}
+
+function roko_get_http_request_textarea( $request_string, $mode = INPUT_GET, $filter = FILTER_UNSAFE_RAW ) {
+	if ( ! filter_has_var( $mode, $request_string ) ) {
+		return null;
+	}
+
+	$value = filter_input( $mode, $request_string, $filter );
+	if ( $value === null || $value === false ) {
+		return null;
+	}
+
+	return sanitize_textarea_field( wp_unslash( $value ) );
+}
+
+function roko_get_http_request_checkbox( $request_string, $mode = INPUT_POST, $filter = FILTER_VALIDATE_BOOLEAN ) {
+	if ( ! filter_has_var( $mode, $request_string ) ) {
+		return false; // Checkboxes default to false when not present
+	}
+
+	$value = filter_input( $mode, $request_string, $filter, FILTER_NULL_ON_FAILURE );
+	return $value !== null ? (bool) $value : false;
 }

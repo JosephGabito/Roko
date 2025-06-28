@@ -2,6 +2,7 @@
 namespace JosephG\Roko\Infrastructure\WordPress\Integration\QueryMonitor;
 
 use function roko_send_event;
+use function roko_get_http_post;
 
 class Bridge {
 
@@ -43,13 +44,13 @@ class Bridge {
 	public static function render_tools_middle() {
 		// If form was submitted, process it first:
 		if ( ! empty( $_POST['roko_profiler_submit'] ) && check_admin_referer( 'roko_profiler_action', 'roko_profiler_nonce' ) ) {
-			$urls  = array_filter( array_map( 'trim', explode( ',', sanitize_text_field( $_POST['roko_profiler_urls'] ) ) ) );
-			$count = max( 1, absint( $_POST['roko_profiler_count'] ) );
+			$profilerUrls = roko_get_http_post( 'roko_profiler_urls', INPUT_POST, FILTER_UNSAFE_RAW );
+			$profilerCount = roko_get_http_post( 'roko_profiler_count', INPUT_POST, FILTER_VALIDATE_INT );
 
 			echo '<div class="roko-notice roko-notice-success"><p>Profiling started:</p><ul>';
-			foreach ( $urls as $url ) {
+			foreach ( $profilerUrls as $url ) {
 				$full = home_url( ltrim( $url, '/' ) );
-				for ( $i = 0; $i < $count; $i++ ) {
+				for ( $i = 0; $i < $profilerCount; $i++ ) {
 					// Trigger Query Monitor with our flag
 					$profile_url = add_query_arg( 'roko_qm_profile', '1', $full );
 					wp_remote_get( $profile_url, array( 'timeout' => 30 ) );

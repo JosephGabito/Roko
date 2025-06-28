@@ -38,15 +38,75 @@ class WpEventRespority implements EventRepositoryInterface {
 		);
 	}
 
+	private function getTableName() {
+		global $wpdb;
+		// Validate the table name exists to prevent injection
+		$table_name = $wpdb->prefix . 'roko_events';
+
+		// Optional: Verify table exists
+		$table_exists = $wpdb->get_var(
+			$wpdb->prepare(
+				'SHOW TABLES LIKE %s',
+				$table_name
+			)
+		);
+
+		if ( ! $table_exists ) {
+			throw new \Exception( 'Table does not exist' );
+		}
+
+		return $table_name;
+	}
+
 	public function findAll(): array {
-		return $this->wpdb->get_results(
-			"SELECT * FROM {$this->table}"
+		global $wpdb;
+
+		$table_name = $this->getTableName();
+		$results = $wpdb->get_results(
+			$wpdb->prepare(
+				'SELECT * FROM %s',
+				$table_name
+			)
+		);
+
+		return $results;
+	}
+
+	public function findPending(): array {
+		global $wpdb;
+
+		$table_name = $this->getTableName();
+		$results = $wpdb->get_results(
+			$wpdb->prepare(
+				'SELECT * FROM %s WHERE sent_at IS NULL',
+				$table_name
+			)
+		);
+
+		return $results;
+	}
+
+	public function findById( $id ) {
+		global $wpdb;
+
+		$table_name = $this->getTableName();
+
+		return $wpdb->get_row(
+			$wpdb->prepare(
+				'SELECT * FROM %s WHERE id = %d',
+				$table_name,
+				$id
+			)
 		);
 	}
 
 	public function findUnsent(): array {
 		$events_raw = $this->wpdb->get_results(
-			"SELECT * FROM {$this->table} WHERE sent_at IS NULL",
+			// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+			$this->wpdb->prepare(
+				'SELECT * FROM %s WHERE sent_at IS NULL',
+				$this->table // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+			),
 			ARRAY_A
 		);
 

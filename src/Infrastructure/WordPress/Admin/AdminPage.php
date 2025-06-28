@@ -166,7 +166,7 @@ class AdminPage {
 						printf(
 							'<a href="%s" class="roko-button %s">%s</a>',
 							esc_url( add_query_arg( 'tab', $slug, admin_url( 'admin.php?page=roko-admin' ) ) ),
-							$class,
+							esc_html( $class ),
 							esc_html( $label )
 						);
 					}
@@ -175,7 +175,7 @@ class AdminPage {
 
 				<div class="roko-tab-content roko-mt-6">
 					<?php if ( 'internals' === $current_tab ) : ?>
-							<?php $internal_tab = isset( $_GET['internal_tab'] ) ? sanitize_text_field( $_GET['internal_tab'] ) : 'transients'; ?>
+							<?php $internal_tab = roko_get_http_query( 'internal_tab' ); ?>
 						<?php
 						$all_internal_tabs = array(
 							'transients'   => 'Transients',

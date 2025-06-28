@@ -11,7 +11,7 @@ return array(
 		$charset_collate = $wpdb->get_charset_collate();
 
 		// Fetch the DB version string (e.g. "10.4.17-MariaDB" or "8.0.23")
-		$version_string = $wpdb->get_var( 'SELECT VERSION()' ) ?: '';
+		$version_string = $wpdb->get_var( 'SELECT VERSION()' ) ?? '';
 
 		// Detect MariaDB by checking for "mariadb" in the version string
 		$is_maria = stripos( $version_string, 'mariadb' ) !== false;

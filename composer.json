@@ -30,22 +30,22 @@
         }
     },
     "scripts": {
-        "phpcs": "phpcs --standard=WordPress src/ roko.php",
-        "phpcbf": "phpcbf --standard=WordPress src/ roko.php",
-        "php74-compat": "phpcs --standard=PHPCompatibility --runtime-set testVersion 7.4- src/ roko.php",
-        "php70-compat": "phpcs --standard=PHPCompatibility --runtime-set testVersion 7.0- src/ roko.php",
+        "phpcs": "phpcs --standard=phpcs.xml src/ roko.php",
+        "phpcs-full": "phpcs --standard=phpcs.xml src/ roko.php",
+        "phpcbf": "phpcbf --standard=phpcs.xml src/ roko.php",
+        "php74-compat": "phpcs --standard=PHPCompatibility --runtime-set testVersion 7.4- src/ roko.php --ignore=*/vendor/*",
+        "php70-compat": "phpcs --standard=PHPCompatibility --runtime-set testVersion 7.0- src/ roko.php --ignore=*/vendor/*",
         "syntax-check": [
             "find src/ -name '*.php' -exec php -l {} \\;",
             "php -l roko.php"
         ],
         "test": [
             "@syntax-check",
-            "@php74-compat",
             "@phpcs",
             "@phpunit"
         ],
-        "phpunit": "[ -d tests ] && phpunit tests/ || echo 'No tests directory found'",
-        "test-unit": "[ -d tests/Unit ] && phpunit tests/Unit/ || echo 'No unit tests found'",
+        "phpunit": "phpunit --configuration phpunit.xml",
+        "test-unit": "phpunit --testsuite unit",
         "fix": "@phpcbf",
         "validate-composer": "composer validate --strict",
         "security-check": "composer audit",

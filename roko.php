@@ -17,15 +17,15 @@
 
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
-    exit;
+	exit;
 }
 
-define( 'ROKO_PLUGIN_FILE',   __FILE__ );
-define( 'ROKO_PLUGIN_URL',    plugin_dir_url( __FILE__ ) );
-define( 'ROKO_PLUGIN_DIR',    __DIR__ );
+define( 'ROKO_PLUGIN_FILE', __FILE__ );
+define( 'ROKO_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
+define( 'ROKO_PLUGIN_DIR', __DIR__ );
 define( 'ROKO_PLUGIN_VERSION', '0.1.0' );
 
 require_once __DIR__ . '/vendor/autoload.php';
 
-$plugin = new JosephG\Roko\Infrastructure\WordPress\Plugin();
-$plugin->init();
+$roko_plugin_instance = new \JosephG\Roko\Infrastructure\WordPress\Plugin();
+$roko_plugin_instance->init();
