@@ -1,7 +1,9 @@
 <?php
 namespace JosephG\Roko\Domain\Security\FileSecurity\ValueObject;
 
-final readonly class IsWpConfigPermission644 {
+final class IsWpConfigPermission644 {
+
+	use SharedFileSecurityDescriptionTrait;
 
 	private bool $is644;
 

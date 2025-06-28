@@ -1,7 +1,9 @@
 <?php
 namespace JosephG\Roko\Domain\Security\FileSecurity\ValueObject;
 
-final readonly class IsHtAccessPermission644 {
+final class IsHtAccessPermission644 {
+
+	use SharedFileSecurityDescriptionTrait;
 
 	private bool $is644;
 

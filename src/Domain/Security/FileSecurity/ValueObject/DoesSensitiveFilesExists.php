@@ -1,7 +1,9 @@
 <?php
 namespace JosephG\Roko\Domain\Security\FileSecurity\ValueObject;
 
-final readonly class DoesSensitiveFilesExists {
+final class DoesSensitiveFilesExists {
+
+	use SharedFileSecurityDescriptionTrait;
 
 	private bool $exists;
 

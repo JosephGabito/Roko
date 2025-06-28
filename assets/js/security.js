@@ -295,37 +295,86 @@ class RokoSecurityDashboard {
      * Render file security card.
      */
     render_file_security_card() {
-        const fileSecurity = this.state.data.fileSecurity || {};
+
+        const fileSecurity = this.state.data.fileSecurity.fileSecurity || {};
+        const cardSummary = this.state.data.fileSecurity.summary;
 
         const checks = [
-            ['Directory listing', !fileSecurity.directoryListingIsOn],
-            ['WP Debug', !fileSecurity.wpDebugOn],
-            ['File editor', !fileSecurity.editorOn],
-            ['Dashboard installs', !fileSecurity.dashboardInstallsOn],
-            ['Backup files exposed', !fileSecurity.anyBackupExposed],
-            ['Sensitive files present', !fileSecurity.doesSensitiveFilesExists],
-            ['htaccess permissions', fileSecurity.htAccessPermission644],
-            ['Log files exposed', !fileSecurity.logFilesExposed],
-            ['PHP execution in uploads', !fileSecurity.phpExecutionInUploadsDirOn],
-            ['wp-config permissions', fileSecurity.wpConfigPermission644],
-            ['XML-RPC', !fileSecurity.xmlrpcOn]
+            {
+                label: 'Directory listing',
+                isSecure: !fileSecurity.directoryListingIsOn.value,
+                description: fileSecurity.directoryListingIsOn.description
+            },
+            {
+                label: 'WP Debug',
+                isSecure: !fileSecurity.wpDebugOn.value,
+                description: fileSecurity.wpDebugOn.description
+            },
+            {
+                label: 'File editor',
+                isSecure: !fileSecurity.editorOn.value,
+                description: fileSecurity.editorOn.description
+            },
+            {
+                label: 'Dashboard installs',
+                isSecure: !fileSecurity.dashboardInstallsOn.value,
+                description: fileSecurity.dashboardInstallsOn.description
+            },
+            {
+                label: 'Backup files exposed',
+                isSecure: !fileSecurity.anyBackupExposed.value,
+                description: fileSecurity.anyBackupExposed.description
+            },
+            {
+                label: 'Sensitive files present',
+                isSecure: !fileSecurity.doesSensitiveFilesExists.value,
+                description: fileSecurity.doesSensitiveFilesExists.description
+            },
+            {
+                label: 'htaccess permissions',
+                isSecure: fileSecurity.htAccessPermission644.value,
+                description: fileSecurity.htAccessPermission644.description
+            },
+            {
+                label: 'Log files exposed',
+                isSecure: !fileSecurity.logFilesExposed.value,
+                description: fileSecurity.logFilesExposed.description
+            },
+            {
+                label: 'PHP execution in uploads',
+                isSecure: !fileSecurity.phpExecutionInUploadsDirOn.value,
+                description: fileSecurity.phpExecutionInUploadsDirOn.description
+            },
+            {
+                label: 'wp-config permissions',
+                isSecure: fileSecurity.wpConfigPermission644.value,
+                description: fileSecurity.wpConfigPermission644.description
+            },
+            {
+                label: 'XML-RPC',
+                isSecure: !fileSecurity.xmlrpcOn.value,
+                description: fileSecurity.xmlrpcOn.description
+            }
         ];
 
-        const items = checks.map(([label, isSecure]) => {
-            const status = isSecure ? 'ok' : 'warn';
-            const badge = this.create_badge(isSecure ? 'Secure' : 'Risk', isSecure ? 'success' : 'error');
-
+        const items = checks.map(check => {
+            const status = check.isSecure ? 'ok' : 'warn';
+            const badge = this.create_badge(check.isSecure ? 'Secure' : 'Risk', check.isSecure ? 'success' : 'error');
+            const description = check.description;
             return `
-                <div class="security-item" data-status="${status}">
+                <div class="security-item" data-status="${status}" title="${check.description}">
                     <div class="roko-d-flex roko-justify-content-between roko-align-items-center">
-                        <span class="security-item-label">${label}</span>
+                        <span class="security-item-label">${check.label}</span>
                         ${badge}
+                    </div>
+                    <div class="security-item-description roko-text-muted roko-text-small roko-block roko-mt-3">
+                        ${description}
                     </div>
                 </div>
             `;
         }).join('');
 
-        return this.create_card('File Security', 'File permissions and system settings', items);
+        return this.create_card(cardSummary.title, cardSummary.description, items);
     }
 
     /**

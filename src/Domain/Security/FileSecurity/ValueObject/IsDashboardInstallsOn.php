@@ -1,7 +1,9 @@
 <?php
 namespace JosephG\Roko\Domain\Security\FileSecurity\ValueObject;
 
-final readonly class IsDashboardInstallsOn {
+final class IsDashboardInstallsOn {
+
+	use SharedFileSecurityDescriptionTrait;
 
 	private bool $isOn;
 

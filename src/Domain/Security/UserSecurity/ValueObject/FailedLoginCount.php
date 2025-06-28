@@ -1,7 +1,7 @@
 <?php
 namespace JosephG\Roko\Domain\Security\UserSecurity\ValueObject;
 
-final readonly class FailedLoginCount {
+final class FailedLoginCount {
 
 	public function __construct( public int $value ) {}
 }

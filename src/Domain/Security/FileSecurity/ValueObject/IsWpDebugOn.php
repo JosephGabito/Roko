@@ -1,7 +1,9 @@
 <?php
 namespace JosephG\Roko\Domain\Security\FileSecurity\ValueObject;
 
-final readonly class IsWpDebugOn {
+final class IsWpDebugOn {
+
+	use SharedFileSecurityDescriptionTrait;
 
 	private bool $isOn;
 

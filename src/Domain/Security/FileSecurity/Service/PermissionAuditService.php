@@ -3,7 +3,7 @@ namespace JosephG\Roko\Domain\Security\FileSecurity\Service;
 
 use JosephG\Roko\Domain\Security\FileSecurity\Repository\FileSecurityRepositoryInterface;
 
-final readonly class PermissionAuditService {
+final class PermissionAuditService {
 
 	public function __construct( private FileSecurityRepositoryInterface $repo ) {}
 

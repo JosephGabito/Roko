@@ -1,7 +1,7 @@
 <?php
 namespace JosephG\Roko\Domain\Security\UserSecurity\ValueObject;
 
-final readonly class Username {
+final class Username {
 
 	public function __construct( public string $value ) {}
 

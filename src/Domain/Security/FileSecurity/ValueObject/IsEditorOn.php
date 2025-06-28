@@ -1,7 +1,9 @@
 <?php
 namespace JosephG\Roko\Domain\Security\FileSecurity\ValueObject;
 
-final readonly class IsEditorOn {
+final class IsEditorOn {
+
+	use SharedFileSecurityDescriptionTrait;
 
 	private bool $isOn;
 

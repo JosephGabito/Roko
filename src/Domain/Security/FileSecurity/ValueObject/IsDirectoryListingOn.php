@@ -1,7 +1,9 @@
 <?php
 namespace JosephG\Roko\Domain\Security\FileSecurity\ValueObject;
 
-final readonly class IsDirectoryListingOn {
+final class IsDirectoryListingOn {
+
+	use SharedFileSecurityDescriptionTrait;
 
 	private bool $isOn;
 

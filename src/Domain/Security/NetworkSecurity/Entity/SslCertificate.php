@@ -3,7 +3,7 @@ namespace JosephG\Roko\Domain\Security\NetworkSecurity\Entity;
 
 use JosephG\Roko\Domain\Security\NetworkSecurity\ValueObject\DomainName;
 
-final readonly class SslCertificate {
+final class SslCertificate {
 
 	public function __construct(
 		public DomainName $domain,

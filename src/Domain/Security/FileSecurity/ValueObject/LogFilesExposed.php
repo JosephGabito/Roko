@@ -1,7 +1,9 @@
 <?php
 namespace JosephG\Roko\Domain\Security\FileSecurity\ValueObject;
 
-final readonly class LogFilesExposed {
+final class LogFilesExposed {
+
+	use SharedFileSecurityDescriptionTrait;
 
 	private bool $exposed;
 

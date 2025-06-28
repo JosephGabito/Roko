@@ -3,7 +3,7 @@ namespace JosephG\Roko\Domain\Security\FileIntegrity\Service;
 
 use JosephG\Roko\Domain\Security\FileIntegrity\Repository\FileIntegrityRepositoryInterface;
 
-final readonly class IntegrityScanner {
+final class IntegrityScanner {
 
 	public function __construct( private FileIntegrityRepositoryInterface $repo ) {}
 

@@ -1,7 +1,9 @@
 <?php
 namespace JosephG\Roko\Domain\Security\FileSecurity\ValueObject;
 
-final readonly class AnyBackupExposed {
+final class AnyBackupExposed {
+
+	use SharedFileSecurityDescriptionTrait;
 
 	private bool $exposed;
 

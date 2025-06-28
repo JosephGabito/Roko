@@ -1,7 +1,9 @@
 <?php
 namespace JosephG\Roko\Domain\Security\FileSecurity\ValueObject;
 
-final readonly class IsPHPExecutionInUploadsDirOn {
+final class IsPHPExecutionInUploadsDirOn {
+
+	use SharedFileSecurityDescriptionTrait;
 
 	private bool $isOn;
 

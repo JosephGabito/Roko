@@ -1,7 +1,9 @@
 <?php
 namespace JosephG\Roko\Domain\Security\FileSecurity\ValueObject;
 
-final readonly class IsXMLRPCOn {
+final class IsXMLRPCOn {
+
+	use SharedFileSecurityDescriptionTrait;
 
 	private bool $isOn;
 

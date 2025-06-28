@@ -1,7 +1,7 @@
 <?php
 namespace JosephG\Roko\Domain\Security\FileIntegrity\Entity;
 
-final readonly class IntegrityScan {
+final class IntegrityScan {
 
 	public function __construct(
 		public bool $coreIntact,

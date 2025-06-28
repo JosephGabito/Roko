@@ -4,7 +4,7 @@ namespace JosephG\Roko\Domain\Security\UserSecurity\Entity;
 use JosephG\Roko\Domain\Security\UserSecurity\ValueObject\Username;
 use JosephG\Roko\Domain\Security\UserSecurity\ValueObject\FailedLoginCount;
 
-final readonly class UserSecurityProfile {
+final class UserSecurityProfile {
 
 	public function __construct(
 		public Username $adminUsername,

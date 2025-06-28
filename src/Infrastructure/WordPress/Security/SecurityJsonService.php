@@ -53,9 +53,14 @@ final class SecurityJsonService {
 		try {
 			return rest_ensure_response( $this->aggregate->snapshot() );
 		} catch ( \Throwable $e ) {
+			// Enhanced error logging
+			error_log( 'Roko Security Error: ' . $e->getMessage() );
+			error_log( 'File: ' . $e->getFile() . ' Line: ' . $e->getLine() );
+			error_log( 'Stack trace: ' . $e->getTraceAsString() );
+
 			return new \WP_Error(
 				'roko_security_error',
-				$e->getMessage() . ' ' . $e->getFile() . ' ' . $e->getLine(),
+				'Security data collection failed: ' . $e->getMessage(),
 				array( 'status' => 422 )
 			);
 		}

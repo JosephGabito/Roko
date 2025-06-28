@@ -77,7 +77,85 @@ final class WpFileSecurityProvider implements FilePermissionInterface {
 		$anyBackupExposed           = new AnyBackupExposed( $this->anyBackupExposed() );
 		$logFilesExposed            = new LogFilesExposed( $this->logFilesExposed() );
 
-		return new FilePermission(
+		// In each Value Object class, add the proper descriptions:
+		$directoryListingIsOff->setDescription(
+			__(
+				'Your server shows folder contents to visitors, making it easy for hackers to find sensitive files.',
+				'roko'
+			)
+		);
+
+		$wpDebugOn->setDescription(
+			__(
+				'Debug mode is enabled, which can expose sensitive information about your site to attackers.',
+				'roko'
+			)
+		);
+
+		$editorOn->setDescription(
+			__(
+				'WordPress file editor is enabled, allowing hackers to edit your files through the dashboard.',
+				'roko'
+			)
+		);
+
+		$dashboardInstallsOn->setDescription(
+			__(
+				'Plugin/theme installation from dashboard is enabled, allowing unauthorized software installs.',
+				'roko'
+			)
+		);
+
+		$phpExecutionInUploadsDirOn->setDescription(
+			__(
+				'PHP execution is allowed in uploads folder, letting hackers run malicious code.',
+				'roko'
+			)
+		);
+
+		$doesSensitiveFilesExists->setDescription(
+			__(
+				'Configuration files like wp-config.php are exposed, giving hackers access to your database passwords.',
+				'roko'
+			)
+		);
+
+		$xmlrpcOn->setDescription(
+			__(
+				'XML-RPC is enabled and vulnerable to brute force attacks and unauthorized remote access.',
+				'roko'
+			)
+		);
+
+		$wpConfigPermission644->setDescription(
+			__(
+				'Your wp-config.php file has wrong permissions, potentially exposing your database credentials.',
+				'roko'
+			)
+		);
+
+		$htAccessPermission644->setDescription(
+			__(
+				'Your .htaccess file has wrong permissions, allowing hackers to modify your site\'s security rules.',
+				'roko'
+			)
+		);
+
+		$anyBackupExposed->setDescription(
+			__(
+				'Your backup files are publicly accessible and can be downloaded by hackers.',
+				'roko'
+			)
+		);
+
+		$logFilesExposed->setDescription(
+			__(
+				'Your error logs are publicly accessible and can reveal sensitive information to hackers.',
+				'roko'
+			)
+		);
+
+		$filePermission = new FilePermission(
 			$directoryListingIsOff,
 			$wpDebugOn,
 			$editorOn,
@@ -90,5 +168,12 @@ final class WpFileSecurityProvider implements FilePermissionInterface {
 			$anyBackupExposed,
 			$logFilesExposed
 		);
+
+		$filePermission->setSectionSummary(
+			__( 'File & System Protection', 'roko' ),
+			__( 'Your server has security settings that act like locks on your doors. When these are misconfigured, hackers can steal your data, break your site, or plant malicious code. These checks make sure your digital doors are properly locked.', 'roko' )
+		);
+
+		return $filePermission;
 	}
 }

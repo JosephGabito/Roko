@@ -13,7 +13,7 @@ use JosephG\Roko\Domain\Security\FileSecurity\ValueObject\IsHtAccessPermission64
 use JosephG\Roko\Domain\Security\FileSecurity\ValueObject\AnyBackupExposed;
 use JosephG\Roko\Domain\Security\FileSecurity\ValueObject\LogFilesExposed;
 
-final readonly class FilePermission {
+final class FilePermission {
 
 	private IsDirectoryListingOn $directoryListingIsOn;
 	private IsWpDebugOn $wpDebugOn;
@@ -26,6 +26,9 @@ final readonly class FilePermission {
 	private IsHtAccessPermission644 $htAccessPermission644;
 	private AnyBackupExposed $anyBackupExposed;
 	private LogFilesExposed $logFilesExposed;
+
+	private $title;
+	private $description;
 
 	public function __construct(
 		IsDirectoryListingOn $directoryListingIsOn,
@@ -51,6 +54,18 @@ final readonly class FilePermission {
 		$this->htAccessPermission644      = $htAccessPermission644;
 		$this->anyBackupExposed           = $anyBackupExposed;
 		$this->logFilesExposed            = $logFilesExposed;
+	}
+
+	public function setSectionSummary( $title, $description ) {
+		$this->title       = $title;
+		$this->description = $description;
+	}
+
+	public function getSectionSummary(): array {
+		return array(
+			'title'       => $this->title,
+			'description' => $this->description,
+		);
 	}
 
 	public function toArray(): array {
