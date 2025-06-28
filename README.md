@@ -2,9 +2,9 @@
 
 <!-- BADGES-START -->
 [![Code Quality](https://github.com/JosephGabito/roko/actions/workflows/code-quality.yml/badge.svg?branch=main)](https://github.com/JosephGabito/roko/actions/workflows/code-quality.yml)
-[![PHP Version](https://img.shields.io/badge/PHP-7.0%2B-blue)](https://php.net)
-[![WordPress](https://img.shields.io/badge/WordPress-5.0%2B-blue)](https://wordpress.org)
-[![License](https://img.shields.io/badge/license-GPL--2.0--or--later-blue)](LICENSE)
+[![Security Audit](https://github.com/JosephGabito/roko/actions/workflows/code-quality.yml/badge.svg?branch=main&event=push)](https://github.com/JosephGabito/roko/actions/workflows/code-quality.yml)
+[![Last Commit](https://img.shields.io/github/last-commit/JosephGabito/roko)](https://github.com/JosephGabito/roko/commits/main)
+[![Issues](https://img.shields.io/github/issues/JosephGabito/roko)](https://github.com/JosephGabito/roko/issues)
 <!-- BADGES-END -->
 
 WordPress plugin - **Development in Progress**
