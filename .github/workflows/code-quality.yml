@@ -7,6 +7,26 @@ on:
     branches: [ main, develop ]
 
 jobs:
+  unit-tests:
+    runs-on: ubuntu-latest
+    name: Unit Tests
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '7.4'
+        tools: composer:v2
+
+    - name: Install dependencies
+      run: composer install --prefer-dist --no-progress
+
+    - name: Run Unit Tests
+      run: composer phpunit
+
   php-compatibility:
     runs-on: ubuntu-latest
     name: PHP 7.4 Compatibility

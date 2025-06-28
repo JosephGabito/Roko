@@ -10,11 +10,19 @@
             "src/Infrastructure/WordPress/Functions.php"
         ]
     },
+    "autoload-dev": {
+        "psr-4": {
+            "JosephG\\Roko\\Tests\\": "tests/"
+        }
+    },
     "require": {},
     "require-dev": {
         "dealerdirect/phpcodesniffer-composer-installer": "^1.0",
         "phpcompatibility/php-compatibility": "^9.3",
-        "wp-coding-standards/wpcs": "^3.0"
+        "wp-coding-standards/wpcs": "^3.0",
+        "phpunit/phpunit": "^9.6",
+        "brain/monkey": "^2.6",
+        "mockery/mockery": "^1.4"
     },
     "config": {
         "allow-plugins": {
@@ -33,8 +41,11 @@
         "test": [
             "@syntax-check",
             "@php74-compat",
-            "@phpcs"
+            "@phpcs",
+            "@phpunit"
         ],
+        "phpunit": "phpunit --configuration phpunit.xml",
+        "test-unit": "phpunit --testsuite unit",
         "fix": "@phpcbf",
         "validate-composer": "composer validate --strict",
         "security-check": "composer audit",
