@@ -1,6 +1,7 @@
 {
     "name": "josephg/roko",
     "description": "Giving your WordPress sites the sanity it needs",
+    "license": "GPL-2.0-or-later",
     "autoload": {
         "psr-4": {
             "JosephG\\Roko\\": "src/"
@@ -38,7 +39,7 @@
             "@phpcs"
         ],
         "fix": "@phpcbf",
-        "validate": "composer validate --strict",
+        "validate-composer": "composer validate --strict",
         "security-check": "composer audit",
         "autoload-dump": "composer dump-autoload --optimize"
     }
