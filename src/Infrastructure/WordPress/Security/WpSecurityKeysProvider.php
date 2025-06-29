@@ -4,7 +4,7 @@ namespace JosephG\Roko\Infrastructure\WordPress\Security;
 use JosephG\Roko\Domain\Security\SecurityKeys\Entity\SecurityKeysProviderInterface;
 use JosephG\Roko\Domain\Security\SecurityKeys\Entity\SecurityKeys;
 use JosephG\Roko\Domain\Security\SecurityKeys\ValueObject\SecurityKey;
-use JosephG\Roko\Infrastructure\WordPress\Security\I18n\SecurityKeys as I18nSecurityKeys;
+use JosephG\Roko\Infrastructure\WordPress\Security\I18n\SecurityKeysI18n;
 
 final class WpSecurityKeysProvider implements SecurityKeysProviderInterface {
 
@@ -19,14 +19,14 @@ final class WpSecurityKeysProvider implements SecurityKeysProviderInterface {
 		$wpConfigLoggedInSalt   = defined( 'LOGGED_IN_SALT' ) ? LOGGED_IN_SALT : '';
 		$wpConfigNonceSalt      = defined( 'NONCE_SALT' ) ? NONCE_SALT : '';
 
-		$authKey        = new SecurityKey( $wpConfigAuthKey, I18nSecurityKeys::description( 'authKey' ) );
-		$secureAuthKey  = new SecurityKey( $wpConfigSecureAuthKey, I18nSecurityKeys::description( 'secureAuthKey' ) );
-		$loggedInKey    = new SecurityKey( $wpConfigLoggedInKey, I18nSecurityKeys::description( 'loggedInKey' ) );
-		$nonceKey       = new SecurityKey( $wpConfigNonceKey, I18nSecurityKeys::description( 'nonceKey' ) );
-		$authSalt       = new SecurityKey( $wpConfigAuthSalt, I18nSecurityKeys::description( 'authSalt' ) );
-		$secureAuthSalt = new SecurityKey( $wpConfigSecureAuthSalt, I18nSecurityKeys::description( 'secureAuthSalt' ) );
-		$loggedInSalt   = new SecurityKey( $wpConfigLoggedInSalt, I18nSecurityKeys::description( 'loggedInSalt' ) );
-		$nonceSalt      = new SecurityKey( $wpConfigNonceSalt, I18nSecurityKeys::description( 'nonceSalt' ) );
+		$authKey        = new SecurityKey( $wpConfigAuthKey, SecurityKeysI18n::description( 'authKey' ) );
+		$secureAuthKey  = new SecurityKey( $wpConfigSecureAuthKey, SecurityKeysI18n::description( 'secureAuthKey' ) );
+		$loggedInKey    = new SecurityKey( $wpConfigLoggedInKey, SecurityKeysI18n::description( 'loggedInKey' ) );
+		$nonceKey       = new SecurityKey( $wpConfigNonceKey, SecurityKeysI18n::description( 'nonceKey' ) );
+		$authSalt       = new SecurityKey( $wpConfigAuthSalt, SecurityKeysI18n::description( 'authSalt' ) );
+		$secureAuthSalt = new SecurityKey( $wpConfigSecureAuthSalt, SecurityKeysI18n::description( 'secureAuthSalt' ) );
+		$loggedInSalt   = new SecurityKey( $wpConfigLoggedInSalt, SecurityKeysI18n::description( 'loggedInSalt' ) );
+		$nonceSalt      = new SecurityKey( $wpConfigNonceSalt, SecurityKeysI18n::description( 'nonceSalt' ) );
 
 		$securityKeys = new SecurityKeys(
 			$authKey,

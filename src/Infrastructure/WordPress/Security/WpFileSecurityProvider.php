@@ -14,6 +14,7 @@ use JosephG\Roko\Domain\Security\FileSecurity\ValueObject\IsWpConfigPermission64
 use JosephG\Roko\Domain\Security\FileSecurity\ValueObject\IsHtAccessPermission644;
 use JosephG\Roko\Domain\Security\FileSecurity\ValueObject\AnyBackupExposed;
 use JosephG\Roko\Domain\Security\FileSecurity\ValueObject\LogFilesExposed;
+use JosephG\Roko\Infrastructure\WordPress\Security\I18n\FileSecurityI18n;
 
 /**
  * WpFileSecurityProvider
@@ -182,60 +183,30 @@ final class WpFileSecurityProvider implements FilePermissionInterface {
 	 * @return FilePermission
 	 */
 	public function snapshot(): FilePermission {
-		$directoryListing = new IsDirectoryListingOn( $this->isDirectoryListingOn() );
-		$directoryListing->setDescription(
-			__( 'Visitors can see all your site folders and files—bad actors might find secrets.', 'roko' )
-		);
-
-		$wpDebug = new IsWpDebugOn( $this->isWpDebugOn() );
-		$wpDebug->setDescription(
-			__( 'Your site is showing technical details and errors that could help hackers.', 'roko' )
-		);
-
-		$editor = new IsEditorOn( $this->isEditorOn() );
-		$editor->setDescription(
-			__( 'Anyone with dashboard access could edit your site code directly.', 'roko' )
-		);
-
+		
+		$directoryListing  = new IsDirectoryListingOn( $this->isDirectoryListingOn() );
+		$wpDebug           = new IsWpDebugOn( $this->isWpDebugOn() );
+		$editor            = new IsEditorOn( $this->isEditorOn() );
 		$dashboardInstalls = new IsDashboardInstallsOn( $this->isDashboardInstallsOn() );
-		$dashboardInstalls->setDescription(
-			__( 'Logged-in users can install or update plugins and themes without your permission.', 'roko' )
-		);
+		$phpExecUploads    = new IsPHPExecutionInUploadsDirOn( $this->isPHPExecutionInUploadsDirOn() );
+		$sensitiveFiles    = new DoesSensitiveFilesExists( $this->doesSensitiveFilesExists() );
+		$xmlrpc            = new IsXMLRPCOn( $this->isXMLRPCOn() );
+		$wpConfigPerm      = new IsWpConfigPermission644( $this->isWpConfigPermission644() );
+		$htAccessPerm      = new IsHtAccessPermission644( $this->isHtAccessPermission644() );
+		$backupExposed     = new AnyBackupExposed( $this->anyBackupExposed() );
+		$logsExposed       = new LogFilesExposed( $this->logFilesExposed() );
 
-		$phpExecUploads = new IsPHPExecutionInUploadsDirOn( $this->isPHPExecutionInUploadsDirOn() );
-		$phpExecUploads->setDescription(
-			__( 'If someone uploads a PHP file, it may run and harm your site.', 'roko' )
-		);
-
-		$sensitiveFiles = new DoesSensitiveFilesExists( $this->doesSensitiveFilesExists() );
-		$sensitiveFiles->setDescription(
-			__( 'Important files like wp-config.php or .htaccess are sitting where anyone can access them.', 'roko' )
-		);
-
-		$xmlrpc = new IsXMLRPCOn( $this->isXMLRPCOn() );
-		$xmlrpc->setDescription(
-			__( 'An old API (XML-RPC) is active—hackers use it to guess passwords and overload sites.', 'roko' )
-		);
-
-		$wpConfigPerm = new IsWpConfigPermission644( $this->isWpConfigPermission644() );
-		$wpConfigPerm->setDescription(
-			__( 'Your main settings file is not locked down properly; info could leak.', 'roko' )
-		);
-
-		$htAccessPerm = new IsHtAccessPermission644( $this->isHtAccessPermission644() );
-		$htAccessPerm->setDescription(
-			__( 'Your security rules file can be changed by others—protections might be turned off.', 'roko' )
-		);
-
-		$backupExposed = new AnyBackupExposed( $this->anyBackupExposed() );
-		$backupExposed->setDescription(
-			__( 'Backup copies of your site are out in the open for anyone to download.', 'roko' )
-		);
-
-		$logsExposed = new LogFilesExposed( $this->logFilesExposed() );
-		$logsExposed->setDescription(
-			__( 'Your site error logs are exposed and could show private details.', 'roko' )
-		);
+		$directoryListing->setDescription( FileSecurityI18n::description( 'directoryListing' ) );
+		$phpExecUploads->setDescription( FileSecurityI18n::description( 'phpExecUploads' ) );
+		$wpDebug->setDescription( FileSecurityI18n::description( 'wpDebug' ) );
+		$editor->setDescription( FileSecurityI18n::description( 'editor' ) );
+		$dashboardInstalls->setDescription( FileSecurityI18n::description( 'dashboardInstalls' ) );
+		$sensitiveFiles->setDescription( FileSecurityI18n::description( 'sensitiveFiles' ) );
+		$xmlrpc->setDescription( FileSecurityI18n::description( 'xmlrpc' ) );
+		$wpConfigPerm->setDescription( FileSecurityI18n::description( 'wpConfigPerm' ) );
+		$htAccessPerm->setDescription( FileSecurityI18n::description( 'htAccessPerm' ) );
+		$backupExposed->setDescription( FileSecurityI18n::description( 'backupExposed' ) );
+		$logsExposed->setDescription( FileSecurityI18n::description( 'logsExposed' ) );
 
 		$filePermission = new FilePermission(
 			$directoryListing,
