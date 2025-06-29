@@ -40,9 +40,7 @@ class Plugin {
 
 		// Also run on every init to catch upgrades without reactivating
 		add_action( 'init', array( __CLASS__, 'runMigrations' ) );
-
 		add_action( 'admin_menu', array( new AdminPage(), 'add_admin_page' ) );
-
 		add_action( 'admin_enqueue_scripts', array( new AdminPage(), 'enqueue_admin_assets' ) );
 	}
 

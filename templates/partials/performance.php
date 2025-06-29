@@ -8,8 +8,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 <div class="roko-card" id="roko-performance-dashboard">
   <div class="roko-card-header roko-d-flex roko-justify-content-between roko-align-items-center">
     <div>
-      <h3 class="roko-card-title"><?php esc_html_e( 'Performance Analysis', 'roko' ); ?></h3>
-      <p class="roko-card-subtitle"><?php esc_html_e( 'Detailed performance metrics for your WordPress site', 'roko' ); ?></p>
+      <h3 class="roko-card-title"><?php esc_html_e( 'Performance Pit Stop', 'roko' ); ?></h3>
+      <p class="roko-card-subtitle roko-mr-4">
+        <?php esc_html_e( 'Need to know what\'s slowing you down or helping you speed ahead? Roko lays out the winners and the troublemakers in plain sight, so you can make smart decisions to keep your site smooth and fast', 'roko' ); ?>
+      </p>
     </div>
     <!-- View mode toggle -->
     <div class="roko-view-toggle" role="group" aria-label="<?php esc_attr_e( 'View mode', 'roko' ); ?>">

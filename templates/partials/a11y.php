@@ -26,6 +26,9 @@
             </div>
           </div>
         </h3>
+        <p class="roko-card-subtitle roko-mr-4">
+          <?php esc_html_e( 'Everyone deserves a clear path to your content. Roko checks for invisible hurdles, missing labels, tricky navigation, hard-to-read text and helps you turn your site into a welcoming place. If there\'s a barrier, you\'ll see it and know what to do next', 'roko' ); ?>
+        </p>
         <p class="roko-card-subtitle roko-mt-1">
           <button class="roko-badge roko-badge-info" style="cursor: pointer;" 
                   title="Click to view scan coverage details" 

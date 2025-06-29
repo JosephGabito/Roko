@@ -11,9 +11,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 		<div class="roko-card-header roko-d-flex roko-justify-content-between roko-align-items-center">
 		<div>
-			<h3 class="roko-card-title"><?php esc_html_e( 'Security Analysis', 'roko' ); ?></h3>
-			<p class="roko-card-subtitle"><?php esc_html_e( 'Live snapshot of your WordPress hardening state', 'roko' ); ?></p>
+			<h3 class="roko-card-title"><?php esc_html_e( 'Site Foundation', 'roko' ); ?></h3>
+			<p class="roko-card-subtitle roko-mr-4">
+				<?php esc_html_e( 'Everything that holds your site together: core health, essential security checks, and the basics that keep you from waking up to a mess. Roko finds weak spots, gives you fixes, or tells you exactly who to tap for help', 'roko' ); ?>
+			</p>
 		</div>
+
 		<!-- View mode toggle -->
 		<div class="roko-view-toggle" role="group" aria-label="<?php esc_attr_e( 'View mode', 'roko' ); ?>">
 			<button id="roko-pill-all" class="roko-button roko-button-outline active" aria-pressed="true"><?php esc_html_e( 'Show all checks', 'roko' ); ?></button>
@@ -176,6 +179,3 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 </style>
-
-<!-- Load the external JavaScript file -->
-<script type="module" src="<?php echo plugin_dir_url( __FILE__ ) . '../../assets/js/security.js'; ?>"></script>

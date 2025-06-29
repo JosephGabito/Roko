@@ -242,12 +242,12 @@ class RokoSecurityDashboard {
      */
     render_security_cards() {
         const cards = [
+            this.render_site_health_card(), // First - shows loading, fast to render
             this.render_security_keys_card(),
             this.render_file_security_card(),
             this.render_user_security_card(),
             this.render_network_security_card(),
-            this.render_file_integrity_card(),
-            '' // Empty spot for 2x3 grid
+            this.render_file_integrity_card()
         ];
 
         // Add vulnerabilities section
@@ -259,6 +259,15 @@ class RokoSecurityDashboard {
 
         this.elements.detailsGrid.innerHTML = cards.join('');
         this.elements.detailsGrid.insertAdjacentHTML('afterend', vulnerabilitiesSection);
+
+        // Now start the slow WordPress Site Health fetch in the background
+        // This happens after our fast security checks are already displayed
+        setTimeout(() => {
+            // Update loading message to show we're now fetching WordPress data
+            const i18n = this.get_site_health_i18n();
+            this.update_site_health_loading_message(i18n.loadingFetching);
+            this.fetch_site_health_data();
+        }, 100); // Small delay to ensure our cards are rendered first
     }
 
     /**
@@ -541,6 +550,319 @@ class RokoSecurityDashboard {
         }).join('');
 
         return this.create_card('File Integrity', 'Comprehensive file system security checks', itemsHtml);
+    }
+
+    /**
+     * Render Site Health card.
+     */
+    render_site_health_card() {
+        const i18n = this.get_site_health_i18n();
+
+        // Return loading state initially - we'll fetch data later
+        const loadingContent = `
+            <div class="security-item" data-status="pending">
+                <div class="roko-d-flex roko-justify-content-between roko-align-items-center">
+                    <span class="security-item-label">${i18n.labelHealthCheck}</span>
+                    ${this.create_badge(i18n.badgeLoading, 'info')}
+                </div>
+                <div class="security-item-description roko-text-muted roko-text-small roko-block roko-mt-3">
+                    ${i18n.loadingInitial}
+                </div>
+            </div>
+        `;
+
+        return this.create_card(i18n.title, i18n.description, loadingContent);
+    }
+
+    /**
+     * Get Site Health i18n strings.
+     */
+    get_site_health_i18n() {
+        return window.rokoSecurity?.siteHealth || {
+            title: 'Core Site Health Overview',
+            description: 'See how your site measures up with WordPress\'s own health checks. Roko adds deeper insights and extra recommendations.',
+            loadingInitial: 'Running WordPress core health checks...',
+            loadingFetching: 'Fetching WordPress Site Health data...',
+            loadingRunning: 'Running %d WordPress health checks...',
+            loadingCompleted: 'Completed %d/%d health checks...',
+            labelHealthCheck: 'WordPress Health Check',
+            badgeLoading: 'Loading...',
+            badgeIssuesFound: 'Issues found',
+            badgeRecommendations: 'Recommendations',
+            badgeError: 'Error',
+            descriptionPassed: '%d of %d WordPress core health checks passed',
+            descriptionError: 'Unable to load WordPress health checks',
+            testLabels: {
+                'background-updates': 'Background Updates',
+                'loopback-requests': 'Loopback Requests',
+                'https-status': 'HTTPS Status',
+                'dotorg-communication': 'WordPress.org Communication',
+                'authorization-header': 'Authorization Header'
+            }
+        };
+    }
+
+    /**
+     * Update Site Health card loading message.
+     */
+    update_site_health_loading_message(message) {
+        const i18n = this.get_site_health_i18n();
+        const cards = this.elements.detailsGrid.querySelectorAll('.roko-detail-card');
+        cards.forEach(card => {
+            const title = card.querySelector('h4');
+            if (title && title.textContent.trim() === i18n.title) {
+                const description = card.querySelector('.security-item-description');
+                if (description) {
+                    description.textContent = message;
+                }
+            }
+        });
+    }
+
+    /**
+     * Fetch Site Health data and update the card.
+     */
+    async fetch_site_health_data() {
+        try {
+            const i18n = this.get_site_health_i18n();
+
+            // Use individual tests - these are the actual WordPress Site Health API endpoints
+            const tests = ['background-updates', 'loopback-requests', 'https-status', 'dotorg-communication', 'authorization-header'];
+
+            // Show progress as we fetch each test
+            this.update_site_health_loading_message(this.sprintf(i18n.loadingRunning, tests.length));
+
+            const promises = tests.map((test, index) =>
+                this.fetch_single_site_health_test(test).then(result => {
+                    // Update progress
+                    this.update_site_health_loading_message(this.sprintf(i18n.loadingCompleted, index + 1, tests.length));
+                    return result;
+                })
+            );
+
+            const results = await Promise.allSettled(promises);
+
+            // Process results
+            const siteHealthData = {};
+            results.forEach((result, index) => {
+                const testName = tests[index];
+                if (result.status === 'fulfilled') {
+                    siteHealthData[testName] = result.value;
+                } else {
+                    console.error(`Failed to fetch ${testName}:`, result.reason);
+                    siteHealthData[testName] = {
+                        test: testName,
+                        label: this.get_site_health_test_label(testName),
+                        status: 'critical',
+                        description: 'Test failed to run: ' + (result.reason?.message || 'Unknown error')
+                    };
+                }
+            });
+
+            // Update the Site Health card with real data
+            this.update_site_health_card(siteHealthData);
+
+        } catch (error) {
+            console.error('Site Health error:', error);
+            this.update_site_health_card_error();
+        }
+    }
+
+
+
+    /**
+     * Fetch a single Site Health test.
+     */
+    async fetch_single_site_health_test(testName) {
+        const url = `/wp-json/wp-site-health/v1/tests/${testName}`;
+
+        const response = await fetch(url, {
+            credentials: 'same-origin',
+            headers: {
+                'X-WP-Nonce': this.get_wp_nonce()
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status} for test ${testName}`);
+        }
+
+        return await response.json();
+    }
+
+    /**
+     * Get WordPress nonce for Site Health API requests.
+     */
+    get_wp_nonce() {
+        // Try to get from security dashboard
+        return this.config.nonce || window.wpApiSettings?.nonce || '';
+    }
+
+    /**
+     * Get human-readable label for Site Health test.
+     */
+    get_site_health_test_label(testName) {
+        const i18n = this.get_site_health_i18n();
+
+        // Convert hyphenated test names (from API) to underscored (for our labels)
+        const normalizedTestName = testName.replace(/-/g, '_');
+
+        return i18n.testLabels[normalizedTestName] || testName.replace(/[-_]/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+    }
+
+    /**
+     * Get user-friendly description for Site Health test results.
+     */
+    get_site_health_description(test) {
+        // Clean up WordPress's HTML description to plain text
+        let description = test.description || '';
+        if (description) {
+            // Remove HTML tags and clean up the description
+            description = description.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
+
+            // Limit length for better UX
+            if (description.length > 200) {
+                description = description.substring(0, 200) + '...';
+            }
+        }
+
+        // If test passed, show success message
+        if (test.status === 'good') {
+            switch (test.test) {
+                case 'background_updates':
+                    return description || 'WordPress can automatically update itself and plugins securely.';
+                case 'loopback_requests':
+                    return description || 'Your site can communicate with itself properly for scheduled tasks.';
+                case 'https_status':
+                    return description || 'Your site is properly secured with HTTPS encryption.';
+                case 'dotorg_communication':
+                    return description || 'Your site can connect to WordPress.org for updates and security patches.';
+                case 'authorization_header':
+                    return description || 'REST API authentication is working correctly.';
+                default:
+                    return description || 'This health check passed successfully.';
+            }
+        }
+
+        // For failures, show WordPress description plus context
+        let result = description;
+
+        // Add helpful context about potential differences with the main Site Health page
+        if (test.status === 'critical' || test.status === 'recommended') {
+            switch (test.test) {
+                case 'loopback_requests':
+                    result += ' Note: This API test may be more strict than the main Site Health page. If your site functions normally, this might be a false positive.';
+                    break;
+                case 'authorization_header':
+                    result += ' Note: This mainly affects REST API usage. If you\'re not using API integrations, this warning can often be ignored.';
+                    break;
+                case 'background_updates':
+                    result += ' Fix: Check file permissions on wp-content and ensure WordPress can write files.';
+                    break;
+                case 'https_status':
+                    result += ' Fix: Enable SSL in your hosting control panel.';
+                    break;
+                case 'dotorg_communication':
+                    result += ' Fix: Check if your firewall is blocking connections to WordPress.org.';
+                    break;
+            }
+        }
+
+        return result || 'This health check needs attention.';
+    }
+
+    /**
+     * Simple sprintf implementation for translated strings.
+     */
+    sprintf(str, ...args) {
+        return str.replace(/%d/g, () => args.shift());
+    }
+
+    /**
+     * Update Site Health card with fetched data.
+     */
+    update_site_health_card(siteHealthData) {
+        const i18n = this.get_site_health_i18n();
+        const tests = Object.values(siteHealthData);
+
+        // Create individual items for each health check
+        const items = tests.map(test => {
+            let status = 'ok';
+            let badgeText = 'Passed';
+            let badgeType = 'success';
+
+            if (test.status === 'critical') {
+                status = 'critical';
+                badgeText = 'Failed';
+                badgeType = 'error';
+            } else if (test.status === 'recommended') {
+                status = 'warn';
+                badgeText = 'Warning';
+                badgeType = 'warning';
+            }
+
+            // Get a more user-friendly description
+            const description = this.get_site_health_description(test);
+
+            return `
+                <div class="security-item" data-status="${status}">
+                    <div class="roko-d-flex roko-justify-content-between roko-align-items-center">
+                        <span class="security-item-label">${test.label || this.get_site_health_test_label(test.test)}</span>
+                        ${this.create_badge(badgeText, badgeType)}
+                    </div>
+                    <div class="security-item-description roko-text-muted roko-text-small roko-block roko-mt-3">
+                        ${description}
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        // Find and update the Site Health card
+        const cards = this.elements.detailsGrid.querySelectorAll('.roko-detail-card');
+        cards.forEach(card => {
+            const title = card.querySelector('h4');
+            if (title && title.textContent.trim() === i18n.title) {
+                // Replace the entire card content to show individual items
+                const cardBody = card.querySelector('.roko-card-body') || card;
+                const existingItems = cardBody.querySelectorAll('.security-item');
+
+                // Remove old items
+                existingItems.forEach(item => item.remove());
+
+                // Add new items
+                cardBody.insertAdjacentHTML('beforeend', items);
+            }
+        });
+    }
+
+    /**
+     * Update Site Health card with error state.
+     */
+    update_site_health_card_error() {
+        const i18n = this.get_site_health_i18n();
+        const content = `
+            <div class="security-item" data-status="critical">
+                <div class="roko-d-flex roko-justify-content-between roko-align-items-center">
+                    <span class="security-item-label">${i18n.labelHealthCheck}</span>
+                    ${this.create_badge(i18n.badgeError, 'error')}
+                </div>
+                <div class="security-item-description roko-text-muted roko-text-small roko-block roko-mt-3">
+                    ${i18n.descriptionError}
+                </div>
+            </div>
+        `;
+
+        // Find and update the Site Health card
+        const cards = this.elements.detailsGrid.querySelectorAll('.roko-detail-card');
+        cards.forEach(card => {
+            const title = card.querySelector('h4');
+            if (title && title.textContent.trim() === i18n.title) {
+                const oldContent = card.querySelector('.security-item');
+                if (oldContent) {
+                    oldContent.outerHTML = content;
+                }
+            }
+        });
     }
 
     /**

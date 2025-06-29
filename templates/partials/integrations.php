@@ -1,7 +1,7 @@
 <div class="roko-card">
 	<div class="roko-card-header">
-		<h3 class="roko-card-title">Integrations & Automations</h3>
-		<p class="roko-card-subtitle">Connect Roko with external services and automate workflows</p>
+		<h3 class="roko-card-title">Gadgets & Gizmos</h3>
+		<p class="roko-card-subtitle">Connect Roko to your favorite tools. Set up alerts, automate your routine, or add new tricks to your workflow—all designed to make managing your site less hassle, more high fives</p>
 	</div>
 	<div class="roko-card-body">
 		

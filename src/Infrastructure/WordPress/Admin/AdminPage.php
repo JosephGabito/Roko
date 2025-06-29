@@ -25,6 +25,37 @@ class AdminPage {
 		}
 		wp_enqueue_style( 'roko-admin', ROKO_PLUGIN_URL . 'assets/css/miligram.css', array(), '1.0.0' );
 		wp_enqueue_script( 'roko-admin', ROKO_PLUGIN_URL . 'assets/js/admin.js', array( 'jquery' ), '1.0.0', true );
+		wp_enqueue_script( 'roko-security', ROKO_PLUGIN_URL . 'assets/js/security.js', array(), '1.0.0', true );
+
+		// Localize security script with translated strings
+		wp_localize_script(
+			'roko-security',
+			'rokoSecurity',
+			array(
+				'siteHealth' => array(
+					'title'                => __( 'Core Site Health Overview', 'roko' ),
+					'description'          => __( 'See how your site measures up with WordPress\'s own health checks. Roko adds deeper insights and extra recommendations.', 'roko' ),
+					'loadingInitial'       => __( 'Running WordPress core health checks...', 'roko' ),
+					'loadingFetching'      => __( 'Fetching WordPress Site Health data...', 'roko' ),
+					'loadingRunning'       => __( 'Running %d WordPress health checks...', 'roko' ),
+					'loadingCompleted'     => __( 'Completed %1$d/%2$d health checks...', 'roko' ),
+					'labelHealthCheck'     => __( 'WordPress Health Check', 'roko' ),
+					'badgeLoading'         => __( 'Loading...', 'roko' ),
+					'badgeIssuesFound'     => __( 'Issues found', 'roko' ),
+					'badgeRecommendations' => __( 'Recommendations', 'roko' ),
+					'badgeError'           => __( 'Error', 'roko' ),
+					'descriptionPassed'    => __( '%1$d of %2$d WordPress core health checks passed', 'roko' ),
+					'descriptionError'     => __( 'Unable to load WordPress health checks', 'roko' ),
+					'testLabels'           => array(
+						'background_updates'   => __( 'Background Updates', 'roko' ),
+						'loopback_requests'    => __( 'Loopback Requests', 'roko' ),
+						'https_status'         => __( 'HTTPS Status', 'roko' ),
+						'dotorg_communication' => __( 'WordPress.org Communication', 'roko' ),
+						'authorization_header' => __( 'Authorization Header', 'roko' ),
+					),
+				),
+			)
+		);
 	}
 
 	/**
@@ -33,7 +64,7 @@ class AdminPage {
 	private function get_environment_type() {
 		// Detect environment
 		if ( defined( 'WP_ENVIRONMENT_TYPE' ) ) {
-			switch ( WP_ENVIRONMENT_TYPE ) {
+			switch ( constant( 'WP_ENVIRONMENT_TYPE' ) ) {
 				case 'development':
 				case 'local':
 					return array(
@@ -110,13 +141,21 @@ class AdminPage {
 				<!-- Confident Header with Instant Value -->
 				<div class="roko-header-section roko-mb-6">
 					<div class="roko-header-main">
+						<img 
+						src="<?php echo esc_url( ROKO_PLUGIN_URL . 'assets/images/roko.png' ); ?>" 
+						alt="Roko" 
+						class="roko-header-logo"
+						style="width: 150px; float: left; margin: -20px 10px -20px -20px"
+						>
 						<h1 class="roko-header-title">
-							Roko Insights
+							Watchtower
 							<span class="roko-env-pill <?php echo esc_attr( $environment['class'] ); ?>">
 								<?php echo esc_html( $environment['label'] ); ?>
 							</span>
 						</h1>
-						<p class="roko-header-subtitle">Security, speed & insights—sorted.</p>
+						<p class="roko-header-subtitle">
+							<?php esc_html_e( 'Get early warnings, clear answers, and simple wins.', 'roko' ); ?>
+						</p>
 					</div>
 					
 					<!-- Instant Value String -->
@@ -154,11 +193,11 @@ class AdminPage {
 					<?php
 					$tabs = array(
 						'overview'    => 'Overview',
-						'performance' => 'Performance',
-						'security'    => 'Security',
+						'security'    => 'Site Foundation',
+						'performance' => 'Performance Pit Stop',
 						'a11y'        => 'Accessibility',
-						'internals'   => 'Internals',
-						'automations' => 'Integrations',
+						'internals'   => 'Under the Hood',
+						'automations' => 'Gadgets & Gizmos',
 						'settings'    => 'Settings',
 					);
 					foreach ( $tabs as $slug => $label ) {
@@ -194,6 +233,14 @@ class AdminPage {
 						$primary           = array( 'transients', 'cron', 'database', 'environment', 'http' );
 						$advanced          = array_diff( array_keys( $all_internal_tabs ), $primary );
 						?>
+						<div class="roko-card">
+							<div class="roko-card-header">
+								<h3 class="roko-card-title">Under the Hood</h3>
+								<p class="roko-card-subtitle">
+									This is for those who like knowing exactly what's happening behind the scenes. Dive into logs, caches, transients, and other advanced details. Perfect for developers, or anyone who loves the nitty-gritty
+								</p>
+							</div>
+						</div>
 						<nav class="roko-subtab-nav roko-mt-2 roko-pl-4">
 							<ul class="roko-d-flex" style="list-style:none; margin:0; padding:0; gap:16px;">
 							<?php foreach ( $primary as $slug ) : ?>
