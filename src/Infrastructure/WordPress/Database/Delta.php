@@ -21,7 +21,7 @@ class Delta {
 
 		$this->wpdb            = $wpdb;
 		$this->charset         = $wpdb->get_charset_collate();
-		$this->migrations_path = __DIR__ . '/Migrations';
+		$this->migrations_path = trailingslashit( ROKO_PLUGIN_DIR ) . 'src/Infrastructure/WordPress/Database/Migrations';
 	}
 
 	/**

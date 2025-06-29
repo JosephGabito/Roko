@@ -520,15 +520,12 @@ class AdminPage {
 		/* Enhanced Tab Navigation */
 		.roko-tab-nav {
 			background: #ffffff;
-			border: 1px solid #e0e0e0;
-			border-radius: 6px;
 			padding: 4px;
 			display: flex;
 			gap: 2px;
 		}
 
 		.roko-tab-nav .roko-button {
-			border-radius: 4px;
 			font-weight: 500;
 			transition: all 0.2s ease;
 		}
