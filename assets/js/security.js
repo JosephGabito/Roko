@@ -160,7 +160,7 @@ class RokoSecurityDashboard {
     }
 
     /**
-     * Calculate overall security score based on API data.
+     * Calculate security score based on various factors.
      */
     calculate_security_score() {
         let score = 100;
@@ -178,17 +178,10 @@ class RokoSecurityDashboard {
         if (data.fileIntegrity?.coreModified) score -= 20;
         if (data.fileIntegrity?.suspiciousFiles > 0) score -= 10;
 
-        // Deduct points for network security issues
-        if (!data.networkSecurity?.sslValid) score -= 15;
-        if (!data.networkSecurity?.httpsEnforced) score -= 10;
-
         // Deduct points for file security issues
         if (data.fileSecurity?.wpDebugOn) score -= 5;
         if (data.fileSecurity?.editorOn) score -= 5;
         if (!data.fileSecurity?.wpConfigPermission644) score -= 5;
-
-        // Deduct points for user security issues
-        if (data.userSecurity?.adminUsernameRisk) score -= 10;
 
         // Deduct points for vulnerabilities
         if (data.knownVulnerabilities?.length > 0) {
@@ -208,18 +201,12 @@ class RokoSecurityDashboard {
         // Critical file integrity issues
         if (data.fileIntegrity?.coreModified) count++;
 
-        // Critical network security issues
-        if (!data.networkSecurity?.sslValid) count++;
-
         // Critical security key issues
         if (data.securityKeys) {
             Object.values(data.securityKeys).forEach(strength => {
                 if (strength === 'none') count++;
             });
         }
-
-        // Critical user security issues
-        if (data.userSecurity?.adminUsernameRisk) count++;
 
         return count;
     }
@@ -245,8 +232,6 @@ class RokoSecurityDashboard {
             this.render_site_health_card(), // First - shows loading, fast to render
             this.render_security_keys_card(),
             this.render_file_security_card(),
-            this.render_user_security_card(),
-            this.render_network_security_card(),
             this.render_file_integrity_card()
         ];
 
@@ -384,79 +369,6 @@ class RokoSecurityDashboard {
         }).join('');
 
         return this.create_card(cardSummary.title, cardSummary.description, items);
-    }
-
-    /**
-     * Render user security card.
-     */
-    render_user_security_card() {
-        const userSecurity = this.state.data.userSecurity || {};
-
-        const items = [
-            {
-                label: 'Admin username risk',
-                value: userSecurity.adminUsernameRisk,
-                status: userSecurity.adminUsernameRisk ? 'critical' : 'ok'
-            },
-            {
-                label: 'Failed logins (24h)',
-                value: userSecurity.failedLogins24h?.value || 0,
-                status: (userSecurity.failedLogins24h?.value || 0) > 10 ? 'warn' : 'ok'
-            }
-        ];
-
-        const itemsHtml = items.map(item => {
-            const displayValue = typeof item.value === 'boolean'
-                ? this.create_badge(item.value ? 'Risk' : 'Secure', item.value ? 'error' : 'success')
-                : `<span class="roko-text-dark">${item.value}</span>`;
-
-            return `
-                <div class="security-item" data-status="${item.status}">
-                    <div class="roko-d-flex roko-justify-content-between roko-align-items-center">
-                        <span class="security-item-label">${item.label}</span>
-                        ${displayValue}
-                    </div>
-                </div>
-            `;
-        }).join('');
-
-        return this.create_card('User Security', 'User accounts and access control', itemsHtml);
-    }
-
-    /**
-     * Render network security card.
-     */
-    render_network_security_card() {
-        const networkSecurity = this.state.data.networkSecurity || {};
-
-        const checks = [
-            ['HTTPS enforced', networkSecurity.httpsEnforced],
-            ['SSL valid', networkSecurity.sslValid],
-            ['Security headers', (networkSecurity.headersScore || 0) >= 4]
-        ];
-
-        const items = checks.map(([label, isSecure]) => {
-            const status = isSecure ? 'ok' : 'critical';
-            let badge;
-
-            if (label === 'Security headers') {
-                const score = networkSecurity.headersScore || 0;
-                badge = `<span class="roko-badge roko-badge-${score >= 4 ? 'success' : 'error'}">${score}/6</span>`;
-            } else {
-                badge = this.create_badge(isSecure ? 'Secure' : 'Risk', isSecure ? 'success' : 'error');
-            }
-
-            return `
-                <div class="security-item" data-status="${status}">
-                    <div class="roko-d-flex roko-justify-content-between roko-align-items-center">
-                        <span class="security-item-label">${label}</span>
-                        ${badge}
-                    </div>
-                </div>
-            `;
-        }).join('');
-
-        return this.create_card('Network Security', 'HTTPS, SSL and security headers', items);
     }
 
     /**
@@ -667,8 +579,6 @@ class RokoSecurityDashboard {
             this.update_site_health_card_error();
         }
     }
-
-
 
     /**
      * Fetch a single Site Health test.

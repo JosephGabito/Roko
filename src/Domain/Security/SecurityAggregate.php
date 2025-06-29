@@ -6,8 +6,6 @@ namespace JosephG\Roko\Domain\Security;
 use JsonException;
 use JosephG\Roko\Domain\Security\SecurityKeys\Entity\SecurityKeysProviderInterface;
 use JosephG\Roko\Domain\Security\FileSecurity\Entity\FilePermissionInterface;
-use JosephG\Roko\Domain\Security\UserSecurity\Repository\UserSecurityRepositoryInterface;
-use JosephG\Roko\Domain\Security\NetworkSecurity\Repository\NetworkSecurityRepositoryInterface;
 use JosephG\Roko\Domain\Security\FileIntegrity\Repository\FileIntegrityRepositoryInterface;
 use JosephG\Roko\Domain\Security\KnownVulnerabilities\Repository\VulnerabilityRepositoryInterface;
 
@@ -21,8 +19,6 @@ final class SecurityAggregate {
 	public function __construct(
 		private SecurityKeysProviderInterface $securityKeysProvider,
 		private FilePermissionInterface $filePermissionProvider,
-		private UserSecurityRepositoryInterface $userRepo,
-		private NetworkSecurityRepositoryInterface $netRepo,
 		private FileIntegrityRepositoryInterface $integrityRepo,
 		private VulnerabilityRepositoryInterface $vulnRepo,
 	) {}
@@ -34,8 +30,6 @@ final class SecurityAggregate {
 
 		$keys          = $this->securityKeysProvider->snapshot();
 		$fileSecurity  = $this->filePermissionProvider->snapshot();
-		$userProfile   = $this->userRepo->currentProfile();
-		$networkState  = $this->netRepo->currentState();
 		$integrityScan = $this->integrityRepo->latestScan();
 		$vulns         = $this->vulnRepo->latestKnown();
 
@@ -115,15 +109,6 @@ final class SecurityAggregate {
 				'summary'      => $fileSecurity->getSectionSummary(),
 				'fileSecurity' => $fileSecurityArrayDump,
 			),
-			'userSecurity'         => $userProfile ? array(
-				'adminUsernameRisk' => $userProfile->isDefaultAdmin(),
-				'failedLogins24h'   => $userProfile->failedLoginCount,
-			) : array(),
-			'networkSecurity'      => $networkState ? array(
-				'httpsEnforced' => $networkState->httpsEnforced,
-				'sslValid'      => $networkState->sslValid,
-				'headersScore'  => $networkState->securityHeadersCount,
-			) : array(),
 			'fileIntegrity'        => $integrityScan ? array_merge(
 				array(
 					'coreModified'    => ! $integrityScan->coreIntact,

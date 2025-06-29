@@ -30,8 +30,6 @@ class Plugin {
 		$aggregate = new SecurityAggregate(
 			new WpSecurityKeysProvider(),
 			new WpFileSecurityProvider(),
-			new WpUserSecurityRepository(),
-			new WpNetworkSecurityRepository(),
 			new WpFileIntegrityRepository(),
 			new WpVulnerabilityRepository(),
 		);
