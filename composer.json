@@ -29,7 +29,7 @@
     },
     "scripts": {
         "phpcs": "phpcs src/ roko.php",
-        "phpcbf": "phpcbf src/ roko.php || true",
+        "phpcbf": "phpcbf src/ templates/ roko.php || true",
         "syntax-check": [
             "find src/ -name '*.php' -exec php -l {} \\;",
             "php -l roko.php"

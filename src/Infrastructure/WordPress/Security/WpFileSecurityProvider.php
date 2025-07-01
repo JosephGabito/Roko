@@ -183,7 +183,7 @@ final class WpFileSecurityProvider implements FilePermissionInterface {
 	 * @return FilePermission
 	 */
 	public function snapshot(): FilePermission {
-		
+
 		$directoryListing  = new IsDirectoryListingOn( $this->isDirectoryListingOn() );
 		$wpDebug           = new IsWpDebugOn( $this->isWpDebugOn() );
 		$editor            = new IsEditorOn( $this->isEditorOn() );

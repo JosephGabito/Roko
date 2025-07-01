@@ -38,6 +38,7 @@ class RokoSecurityDashboard {
      */
     get_dom_elements() {
         return {
+            siteFoundationReport: document.getElementById('roko-site-foundation-report'),
             pillAll: document.getElementById('roko-pill-all'),
             pillNeed: document.getElementById('roko-pill-need'),
             scoreValue: document.getElementById('roko-score-value'),
@@ -57,11 +58,16 @@ class RokoSecurityDashboard {
 
         try {
             this.state.data = await this.fetch_security_data();
+            this.attach_json_report();
             this.render_dashboard();
         } catch (error) {
             this.show_error();
             console.error('Security dashboard error:', error);
         }
+    }
+
+    attach_json_report() {
+        this.elements.siteFoundationReport.dataset.jsonReport = JSON.stringify(this.state.data);
     }
 
     // ==========================================

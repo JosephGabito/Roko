@@ -1104,3 +1104,174 @@
 .roko-tooltip-parent {
   position: relative;
 }
+
+
+/* Roko Security Report – Typography & Layout
+   -------------------------------------------------------------- */
+.roko-security-report-feedback {
+  /* Base rhythm */
+  --space-xs: 0.25rem;      /*  4 px */
+  --space-sm: 0.5rem;       /*  8 px */
+  --space-md: 1rem;         /* 16 px */
+  --space-lg: 1.5rem;       /* 24 px */
+  --space-xl: 2.5rem;       /* 40 px */
+
+  /* Colours (WCAG-AA on white) */
+  --color-text:      #2D3748;  /* slate-700 */
+  --color-muted:     #4A5568;  /* slate-600 */
+  --color-hr:        #E2E8F0;  /* slate-200 */
+  --color-critical:  #E53E3E;  /* red-600   */
+  --color-moderate:  #DD6B20;  /* orange-500*/
+  --color-easy:      #3182CE;  /* blue-600  */
+  --color-pre-bg:    #374151;  /* slate-800 (★ softer than pure black) */
+
+  color: var(--color-text);
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+/* Headings -----------------------------------------------------*/
+.roko-security-report-feedback h1,
+.roko-security-report-feedback h2,
+.roko-security-report-feedback h3 {
+  margin: 0 0 var(--space-md);
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.roko-security-report-feedback h1 {
+  font-size: 1.75rem;              /* ≈ 28 px */
+}
+
+/* ★ updated: unified <h2> styling + left accent bar */
+.roko-security-report-feedback h2 {
+  font-size: 1.25rem;              /* ≈ 20 px */
+  border-left: 4px solid var(--color-hr);
+  padding-left: var(--space-sm);
+  margin-top: var(--space-xl);
+}
+
+/* ★ updated: severity colours via parent wrappers */
+.roko-ai-report--critical   > h2 { border-color: var(--color-critical); }
+.roko-ai-report--moderate   > h2 { border-color: var(--color-moderate); }
+.roko-ai-report--easy       > h2 { border-color: var(--color-easy); }
+
+/* ★ updated: optional severity “chip” badge */
+.roko-security-report-feedback h2::before {
+  content: attr(data-chip);
+  display: inline-block;
+  margin-right: var(--space-sm);
+  padding: 0 var(--space-xs);
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  vertical-align: top;
+  color: #fff;
+}
+.roko-ai-report--critical   > h2::before { background: var(--color-critical); }
+.roko-ai-report--moderate   > h2::before { background: var(--color-moderate); }
+.roko-ai-report--easy       > h2::before { background: var(--color-easy); }
+
+/* ★ updated: issue “card” separation */
+.roko-security-report-feedback h3 {
+  font-size: 1.125rem;             /* ≈ 18 px */
+  margin-top: var(--space-xl);     /* more breathing room */
+  padding-top: var(--space-sm);
+  border-top: 1px solid var(--color-hr);
+}
+
+/* Text ---------------------------------------------------------*/
+.roko-security-report-feedback p {
+  margin: 0 0 var(--space-md);
+  color: var(--color-text);
+}
+
+.roko-security-report-feedback p.non-tech {
+  margin-top: var(--space-sm);
+  font-style: italic;
+  color: var(--color-muted);
+}
+
+/* Lists --------------------------------------------------------*/
+.roko-security-report-feedback ol,
+.roko-security-report-feedback ul {
+  margin: 0 0 var(--space-md) var(--space-lg);
+  padding-left: var(--space-lg);
+}
+
+.roko-security-report-feedback li { margin-bottom: var(--space-xs); }
+
+/* Inline code & pre -------------------------------------------*/
+.roko-security-report-feedback code {
+  font-family: Consolas, monospace;
+  font-size: 0.9375rem;
+  color: #B04A27;
+  background: #F7FAFC;
+  border: 1px solid #EDF2F7;
+  border-radius: 4px;
+  padding: 0 0.25em;
+}
+
+.roko-security-report-feedback pre {
+  background: var(--color-pre-bg);       /* ★ softer dark */
+  color: #F7FAFC;
+  overflow-x: auto;
+  padding: var(--space-sm);
+  border-radius: 6px;                    /* ★ slightly rounder */
+  margin: var(--space-sm) 0 var(--space-md);
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+/* Call-out help panel (optional) -------------------------------*/
+.roko-callout-help {                 /* ★ new */
+  background: #F7FAFC;
+  border-left: 4px solid var(--color-easy);
+  padding: var(--space-md);
+  margin: var(--space-lg) 0;
+  border-radius: 6px;
+}
+
+/* Sticky CTA button (optional) --------------------------------*/
+.roko-get-all-btn {                  /* ★ new */
+  display: inline-block;
+  margin-top: var(--space-md);
+}
+@media (min-width: 768px) {          /* stick on wider screens */
+  .roko-get-all-btn {
+    position: sticky;
+    bottom: var(--space-lg);
+    float: right;
+  }
+}
+
+/* Horizontal rule ---------------------------------------------*/
+.roko-security-report-feedback hr {
+  border: none;
+  border-top: 1px solid var(--color-hr);
+  margin: var(--space-lg) 0;
+}
+
+/* give the FIRST h3 a break */ .roko-ai-report--critical h3:first-of-type, .roko-ai-report--moderate h3:first-of-type, .roko-ai-report--easy h3:first-of-type { margin-top: var(--space-lg); border-top: none; }
+
+/* FIRST card spacing – avoids border kiss */         /* ★ new */
+.roko-ai-report--critical   h3:first-of-type,
+.roko-ai-report--moderate   h3:first-of-type,
+.roko-ai-report--easy       h3:first-of-type {
+  margin-top: var(--space-lg);
+  border-top: none;
+}
+
+/* Optional numbered headings – enable if you strip manual numbers */  /* ★ opt-in */
+.roko-ai-report--critical,
+.roko-ai-report--moderate,
+.roko-ai-report--easy { counter-reset: issue; }
+
+.roko-ai-report--critical h3::before,
+.roko-ai-report--moderate h3::before,
+.roko-ai-report--easy     h3::before {
+  counter-increment: issue;
+  content: counter(issue) ". ";
+  margin-right: .25rem;
+  font-weight: 600;
+}
