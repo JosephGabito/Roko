@@ -14,6 +14,8 @@ class RokoSecurityDashboard {
      */
     constructor() {
         this.root = document.getElementById('roko-security-dashboard');
+        this.wpInternals = JSON.parse(document.getElementById('roko-admin-instance').dataset.rokoAdmin);
+
         if (!this.root) return;
 
         this.config = {
@@ -229,10 +231,10 @@ class RokoSecurityDashboard {
      */
     render_security_cards() {
         const cards = [
+            this.render_file_security_card(), // File system & protection
+            this.render_file_integrity_card(), // File integrity
+            this.render_security_keys_card(), // Security keys
             this.render_site_health_card(), // First - shows loading, fast to render
-            this.render_security_keys_card(),
-            this.render_file_security_card(),
-            this.render_file_integrity_card()
         ];
 
         // Add vulnerabilities section
@@ -269,12 +271,19 @@ class RokoSecurityDashboard {
             const badge = this.create_badge(item.strength, this.get_badge_type(item.strength));
 
             return `
-                <div class="security-item" data-status="${status}">
+                <div 
+                    x-data="{ open: false }"
+                    x-on:click="open = !open"
+                    class="security-item" data-status="${status}">
                     <div class="roko-d-flex roko-justify-content-between roko-align-items-center">
-                        <span class="security-item-label">${item.key}</span>
+                        <span class="security-item-label">
+                            ${item.key}
+                        </span>
                         ${badge}
                     </div>
-                    <span class="security-item-description roko-text-muted roko-text-small roko-block roko-mt-3">
+                    <span 
+                        x-show="open"
+                        class="security-item-description roko-text-muted roko-text-small roko-block roko-mt-3">
                         ${item.description}
                     </span>
                 </div>
@@ -356,12 +365,22 @@ class RokoSecurityDashboard {
             const badge = this.create_badge(check.isSecure ? 'Secure' : 'Risk', check.isSecure ? 'success' : 'error');
             const description = check.description;
             return `
-                <div class="security-item" data-status="${status}" title="${check.description}">
+                <div 
+                    x-data="{ open: false}"
+                    x-on:click="open = !open"
+                    class="security-item roko-pointer-cursor" 
+                    data-status="${status}" 
+                    title="${check.description}">
+
                     <div class="roko-d-flex roko-justify-content-between roko-align-items-center">
-                        <span class="security-item-label">${check.label}</span>
+                        <span class="security-item-label">
+                            ${check.label}
+                        </span>
                         ${badge}
                     </div>
-                    <div class="security-item-description roko-text-muted roko-text-small roko-block roko-mt-3">
+                    <div 
+                        x-show="open"
+                        class="security-item-description roko-text-muted roko-text-small roko-block roko-mt-3">
                         ${description}
                     </div>
                 </div>
@@ -449,12 +468,19 @@ class RokoSecurityDashboard {
             }
 
             return `
-                <div class="security-item" data-status="${item.status}" title="${item.description}">
+                <div 
+                    x-data="{ open: false }"
+                    x-on:click="open = !open"
+                    class="security-item" 
+                    data-status="${item.status}" 
+                    title="${item.description}">
                     <div class="roko-d-flex roko-justify-content-between roko-align-items-center">
                         <span class="security-item-label">${item.label}</span>
                         ${displayValue}
                     </div>
-                    <div class="security-item-description roko-text-muted roko-text-small roko-block roko-mt-3">
+                    <div 
+                        x-show="open"
+                        class="security-item-description roko-text-muted roko-text-small roko-block roko-mt-3">
                         ${item.description}
                     </div>
                 </div>
@@ -584,7 +610,7 @@ class RokoSecurityDashboard {
      * Fetch a single Site Health test.
      */
     async fetch_single_site_health_test(testName) {
-        const url = `/wp-json/wp-site-health/v1/tests/${testName}`;
+        const url = `${this.wpInternals.restApiUrl}wp-site-health/v1/tests/${testName}`;
 
         const response = await fetch(url, {
             credentials: 'same-origin',
@@ -635,48 +661,8 @@ class RokoSecurityDashboard {
                 description = description.substring(0, 200) + '...';
             }
         }
-
-        // If test passed, show success message
-        if (test.status === 'good') {
-            switch (test.test) {
-                case 'background_updates':
-                    return description || 'WordPress can automatically update itself and plugins securely.';
-                case 'loopback_requests':
-                    return description || 'Your site can communicate with itself properly for scheduled tasks.';
-                case 'https_status':
-                    return description || 'Your site is properly secured with HTTPS encryption.';
-                case 'dotorg_communication':
-                    return description || 'Your site can connect to WordPress.org for updates and security patches.';
-                case 'authorization_header':
-                    return description || 'REST API authentication is working correctly.';
-                default:
-                    return description || 'This health check passed successfully.';
-            }
-        }
-
         // For failures, show WordPress description plus context
         let result = description;
-
-        // Add helpful context about potential differences with the main Site Health page
-        if (test.status === 'critical' || test.status === 'recommended') {
-            switch (test.test) {
-                case 'loopback_requests':
-                    result += ' Note: This API test may be more strict than the main Site Health page. If your site functions normally, this might be a false positive.';
-                    break;
-                case 'authorization_header':
-                    result += ' Note: This mainly affects REST API usage. If you\'re not using API integrations, this warning can often be ignored.';
-                    break;
-                case 'background_updates':
-                    result += ' Fix: Check file permissions on wp-content and ensure WordPress can write files.';
-                    break;
-                case 'https_status':
-                    result += ' Fix: Enable SSL in your hosting control panel.';
-                    break;
-                case 'dotorg_communication':
-                    result += ' Fix: Check if your firewall is blocking connections to WordPress.org.';
-                    break;
-            }
-        }
 
         return result || 'This health check needs attention.';
     }
@@ -715,12 +701,17 @@ class RokoSecurityDashboard {
             const description = this.get_site_health_description(test);
 
             return `
-                <div class="security-item" data-status="${status}">
+                <div 
+                    x-data="{ open: false }"
+                    x-on:click="open = !open"
+                    class="security-item" data-status="${status}">
                     <div class="roko-d-flex roko-justify-content-between roko-align-items-center">
                         <span class="security-item-label">${test.label || this.get_site_health_test_label(test.test)}</span>
                         ${this.create_badge(badgeText, badgeType)}
                     </div>
-                    <div class="security-item-description roko-text-muted roko-text-small roko-block roko-mt-3">
+                    <div 
+                        x-show="open"
+                        class="security-item-description roko-text-muted roko-text-small roko-block roko-mt-3">
                         ${description}
                     </div>
                 </div>

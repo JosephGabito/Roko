@@ -632,6 +632,15 @@
 	background: #fcf0f1;
 }
 
+.roko-pointer-cursor {
+	cursor: pointer;
+}
+
+.roko-icon-click {
+	background-image: url(icons/click.png);
+    background-size: cover;
+}
+
 /* Modern Badge System - WordPress Colors */
 .roko-admin .roko-badge {
 	display: inline-flex;
@@ -648,31 +657,43 @@
 }
 
 .roko-admin .roko-badge-success {
-	background: #d5e8d4;
+	background-color: #d5e8d4;
 	color: #00a32a;
 	border: 1px solid #00a32a;
 }
 
+.roko-admin .roko-badge-transparent {
+	background-color: transparent;
+	color: #996800;
+	border: 1px solid transparent;
+}
+
+.roko-admin .roko-badge-neutral {
+	background-color: #f8e6a0;
+	color: #996800;
+	border: 1px solid #c3c4c7;
+}
+
 .roko-admin .roko-badge-warning {
-	background: #f8e6a0;
+	background-color: #f8e6a0;
 	color: #996800;
 	border: 1px solid #dba617;
 }
 
 .roko-admin .roko-badge-error {
-	background: #f7dede;
+	background-color: #f7dede;
 	color: #d63638;
 	border: 1px solid #d63638;
 }
 
 .roko-admin .roko-badge-info {
-	background: #e1ecf4;
+	background-color: #e1ecf4;
 	color: #2271b1;
 	border: 1px solid #72aee6;
 }
 
 .roko-admin .roko-badge-primary {
-	background: #e1ecf4;
+	background-color: #e1ecf4;
 	color: #2271b1;
 	border: 1px solid #72aee6;
 }
@@ -1078,4 +1099,8 @@
 /* Hidden items styling */
 .roko-hidden-item {
   background-color: #f8f9fa;
+}
+
+.roko-tooltip-parent {
+  position: relative;
 }

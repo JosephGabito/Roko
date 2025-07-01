@@ -23,7 +23,10 @@ class AdminPage {
 		if ( 'dashboard_page_roko-admin' !== $hook ) {
 			return;
 		}
+
 		wp_enqueue_style( 'roko-admin', ROKO_PLUGIN_URL . 'assets/css/miligram.css', array(), '1.0.0' );
+
+		wp_enqueue_script( 'roko-alphine', ROKO_PLUGIN_URL . 'assets/js/lib/alpine.min.js', array(), '3.14.9', true );
 		wp_enqueue_script( 'roko-admin', ROKO_PLUGIN_URL . 'assets/js/admin.js', array( 'jquery' ), '1.0.0', true );
 		wp_enqueue_script( 'roko-security', ROKO_PLUGIN_URL . 'assets/js/security.js', array(), '1.0.0', true );
 
@@ -134,8 +137,11 @@ class AdminPage {
 		$current_tab = roko_get_http_query( 'tab' ) ?? 'overview';
 		$environment = $this->get_environment_type();
 		$metrics     = $this->get_instant_metrics();
+		$wpInternals = array(
+			'restApiUrl' => get_rest_url(),
+		);
 		?>
-		<div class="roko-admin">
+		<div class="roko-admin" id="roko-admin-instance" data-roko-admin="<?php echo esc_attr( wp_json_encode( $wpInternals ) ); ?>">
 			<div class="roko-container">
 				
 				<!-- Confident Header with Instant Value -->
