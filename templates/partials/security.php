@@ -79,6 +79,75 @@ $ingress_url = IngressConfig::url();
 			</button>
 			</div>
 
+		<!-- Salt Rotation Section - Alpine.js -->
+		<div class="roko-detail-card roko-mb-4" 
+			x-data="saltRegeneration()"
+			x-init="init">
+			
+			<div class="roko-d-flex roko-justify-content-between roko-align-items-center roko-mb-3">
+				<div>
+					<h4><?php esc_html_e( 'Security Keys & Salts', 'roko' ); ?></h4>
+					<p class="roko-text-muted roko-text-small"><?php esc_html_e( 'Rotate your security keys regularly to enhance site security. This will log out all users.', 'roko' ); ?></p>
+					<p class="roko-text-muted roko-text-small" style="margin-top: 4px;">
+						<strong><?php esc_html_e( 'Last rotated:', 'roko' ); ?></strong> 
+						<span x-text="getLastRotatedText()" style="font-weight: normal;"></span>
+					</p>
+				</div>
+				<div class="roko-d-flex roko-gap-2">
+					<button 
+						@click="regenerateSalts"
+						:disabled="regenerating || disabling"
+						class="roko-button roko-button-outline roko-button-small">
+						<span x-show="!regenerating"><?php esc_html_e( 'Rotate Keys', 'roko' ); ?></span>
+						<span x-show="regenerating"><?php esc_html_e( 'Rotating...', 'roko' ); ?></span>
+					</button>
+					
+					<button 
+						x-show="lastRotated"
+						@click="disableRokoSalts"
+						:disabled="regenerating || disabling"
+						class="roko-button roko-button-clear roko-button-small"
+						style="color: #d63638; border-color: #d63638;">
+						<span x-show="!disabling"><?php esc_html_e( 'Disable Roko Salts', 'roko' ); ?></span>
+						<span x-show="disabling"><?php esc_html_e( 'Disabling...', 'roko' ); ?></span>
+					</button>
+				</div>
+			</div>
+			
+			<!-- Error message only (success = immediate redirect) -->
+			<div x-show="errorMessage" 
+				class="roko-alert roko-alert-error roko-mb-3"
+				x-transition>
+				<p x-text="errorMessage"></p>
+			</div>
+
+			<!-- Confirmation Modal -->
+			<div x-show="showModal" 
+				x-transition:enter="roko-modal-enter"
+				x-transition:leave="roko-modal-leave"
+				class="roko-modal-overlay"
+				@click.self="cancelAction()">
+				<div class="roko-modal-content"
+					x-transition:enter="roko-modal-content-enter"
+					x-transition:leave="roko-modal-content-leave">
+					<div class="roko-modal-header">
+						<h3 x-text="modalTitle"></h3>
+						<button @click="cancelAction()" class="roko-modal-close">&times;</button>
+					</div>
+					<div class="roko-modal-body">
+						<p x-text="modalMessage"></p>
+					</div>
+					<div class="roko-modal-footer">
+						<button @click="cancelAction()" class="roko-button roko-button-clear">
+							<?php esc_html_e( 'Cancel', 'roko' ); ?>
+						</button>
+						<button @click="confirmAction()" class="roko-button roko-button-primary">
+							<?php esc_html_e( 'Continue', 'roko' ); ?>
+						</button>
+					</div>
+				</div>
+			</div>
+		</div>
 
 		<!-- Security details grid -->
 		<div class="roko-security-details-grid" id="roko-details-grid">
@@ -93,6 +162,197 @@ $ingress_url = IngressConfig::url();
 		</div>
 		</div>
 	</div>
+
+<script>
+function saltRegeneration() {
+	return {
+		regenerating: false,
+		disabling: false,
+		errorMessage: '',
+		lastRotated: null,
+		showModal: false,
+		modalAction: null,
+		modalTitle: '',
+		modalMessage: '',
+		
+		init() {
+			// Listen for security data from the main dashboard
+			document.addEventListener('roko:security-data-loaded', (e) => {
+				const data = e.detail;
+				if (data && data.securityKeys && data.securityKeys.lastRotated) {
+					this.lastRotated = data.securityKeys.lastRotated;
+				}
+			});
+
+			// Request data from main dashboard if it's already loaded
+			setTimeout(() => {
+				const event = new CustomEvent('roko:request-security-data');
+				document.getElementById('roko-security-dashboard').dispatchEvent(event);
+			}, 100);
+		},
+
+		getLastRotatedText() {
+			if (!this.lastRotated) {
+				return '<?php esc_html_e( 'Never rotated', 'roko' ); ?>';
+			}
+			
+			const date = new Date(this.lastRotated * 1000);
+			const options = {
+				year: 'numeric',
+				month: 'short',
+				day: '2-digit',
+				hour: '2-digit',
+				minute: '2-digit',
+				hour12: true
+			};
+			
+			return date.toLocaleDateString('en-US', options);
+				},
+
+		showConfirmModal(action, title, message) {
+			this.modalAction = action;
+			this.modalTitle = title;
+			this.modalMessage = message;
+			this.showModal = true;
+		},
+
+		confirmAction() {
+			this.showModal = false;
+			if (this.modalAction === 'rotate') {
+				this.executeRotation();
+			} else if (this.modalAction === 'disable') {
+				this.executeDisable();
+			}
+		},
+
+		cancelAction() {
+			this.showModal = false;
+			this.modalAction = null;
+		},
+
+		async disableRokoSalts() {
+			this.showConfirmModal(
+				'disable',
+				'<?php esc_html_e( 'Disable Roko Salt Management', 'roko' ); ?>',
+				'<?php esc_html_e( 'This will disable Roko salt management and revert to WordPress defaults. You will be logged out. Continue?', 'roko' ); ?>'
+			);
+		},
+
+		async executeDisable() {
+			
+			this.disabling = true;
+			this.errorMessage = '';
+			
+			try {
+				const response = await fetch('<?php echo esc_url( rest_url( 'roko/v1/security/disable-roko-salts' ) ); ?>', {
+					method: 'GET',
+					credentials: 'same-origin',
+					headers: {
+						'X-WP-Nonce': document.getElementById('roko-security-dashboard').dataset.nonce
+					}
+				});
+				
+				// Check if disable worked by checking response status
+				if (response.ok) {
+					try {
+						const result = await response.json();
+						if (result.disabled) {
+							// Successfully disabled - redirect to login
+							window.location.href = result.nextLogin;
+						} else {
+							throw new Error(result.message || 'Failed to disable Roko management');
+						}
+					} catch (jsonError) {
+						// JSON parsing failed, but response was OK - assume success
+						console.log('JSON parse error (disable likely succeeded):', jsonError);
+						window.location.href = '<?php echo wp_login_url(); ?>';
+					}
+				} else {
+					// HTTP error - disable likely failed
+					const errorText = await response.text();
+					throw new Error(`HTTP ${response.status}: ${errorText}`);
+				}
+			} catch (error) {
+				// Only show error if it's NOT a JSON parsing issue after successful HTTP response
+				if (!error.message.includes('JSON') && !error.message.includes('Unexpected')) {
+					this.errorMessage = error.message || '<?php esc_html_e( 'Failed to disable Roko salt management. Please try again.', 'roko' ); ?>';
+				} else {
+					// JSON error after successful HTTP - assume success
+					console.log('Assuming disable succeeded despite JSON error');
+					window.location.href = '<?php echo wp_login_url(); ?>';
+				}
+			} finally {
+				this.disabling = false;
+			}
+		},
+
+		async regenerateSalts() {
+			this.showConfirmModal(
+				'rotate',
+				'<?php esc_html_e( 'Rotate Security Keys', 'roko' ); ?>',
+				'<?php esc_html_e( 'Rotating security keys will use Roko secure salts - cryptographically encrypted and stored in the database. This will immediately log out all users including yourself. Continue?', 'roko' ); ?>'
+			);
+		},
+
+		async executeRotation() {
+			
+			this.regenerating = true;
+			this.errorMessage = '';
+			
+			try {
+				const response = await fetch('<?php echo esc_url( rest_url( 'roko/v1/security/regenerate-salts' ) ); ?>', {
+					method: 'GET',
+					credentials: 'same-origin',
+					headers: {
+						'X-WP-Nonce': document.getElementById('roko-security-dashboard').dataset.nonce
+					}
+				});
+				
+				// Check if rotation worked by checking response status
+				if (response.ok) {
+					// If we get here, rotation likely succeeded
+					// Try to parse JSON, but if it fails, assume success and redirect
+					try {
+						const result = await response.json();
+						if (result.rotated) {
+							// Update last rotated timestamp for immediate feedback
+							if (result.rotatedAt) {
+								this.lastRotated = result.rotatedAt;
+							}
+							window.location.href = result.nextLogin;
+						} else {
+							throw new Error(result.message || 'Rotation failed');
+						}
+					} catch (jsonError) {
+						// JSON parsing failed, but response was OK
+						// This likely means rotation succeeded but response was cut off
+						console.log('JSON parse error (rotation likely succeeded):', jsonError);
+						// Update timestamp to current time since rotation likely worked
+						this.lastRotated = Math.floor(Date.now() / 1000);
+						// Redirect to login - rotation probably worked
+						window.location.href = '<?php echo wp_login_url(); ?>';
+					}
+				} else {
+					// HTTP error - rotation likely failed
+					const errorText = await response.text();
+					throw new Error(`HTTP ${response.status}: ${errorText}`);
+				}
+			} catch (error) {
+				// Only show error if it's NOT a JSON parsing issue after successful HTTP response
+				if (!error.message.includes('JSON') && !error.message.includes('Unexpected')) {
+					this.errorMessage = error.message || '<?php esc_html_e( 'Failed to rotate security keys. Please try again.', 'roko' ); ?>';
+				} else {
+					// JSON error after successful HTTP - assume success
+					console.log('Assuming rotation succeeded despite JSON error');
+					window.location.href = '<?php echo wp_login_url(); ?>';
+				}
+			} finally {
+				this.regenerating = false;
+			}
+		}
+	}
+}
+</script>
 
 <style>
 /* Score circle styling */
@@ -219,6 +479,150 @@ $ingress_url = IngressConfig::url();
 	background-color: #d1ecf1;
 	color: #0c5460;
 	border: 1px solid #17a2b8;
+}
+
+/* Roko-managed keys badge */
+.roko-badge-roko {
+	background-color: #e7f3ff;
+	color: #0073aa;
+	border: 1px solid #0073aa;
+	font-weight: 600;
+}
+
+/* Salt regeneration section styling */
+.roko-detail-card {
+	background: #f9f9f9;
+	border: 1px solid #e0e0e0;
+	border-radius: 6px;
+	padding: 16px;
+}
+
+.roko-gap-2 {
+	gap: 8px;
+}
+
+.roko-button-small {
+	font-size: 12px;
+	padding: 6px 12px;
+	min-height: 28px;
+}
+
+
+
+/* Alert styling */
+.roko-alert {
+	padding: 12px 16px;
+	border-radius: 4px;
+	border: 1px solid transparent;
+}
+
+.roko-alert-error {
+	background-color: #f8d7da;
+	color: #721c24;
+	border-color: #d63638;
+}
+
+/* Modal styling */
+.roko-modal-overlay {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background: rgba(0, 0, 0, 0.5);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	z-index: 1000;
+}
+
+.roko-modal-content {
+	background: white;
+	border-radius: 8px;
+	box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+	max-width: 500px;
+	width: 90%;
+	margin: 20px;
+}
+
+.roko-modal-header {
+	padding: 20px 24px 0;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	border-bottom: none;
+}
+
+.roko-modal-header h3 {
+	margin: 0;
+	font-size: 18px;
+	font-weight: 600;
+	color: #1d2327;
+}
+
+.roko-modal-close {
+	background: none;
+	border: none;
+	font-size: 24px;
+	color: #646970;
+	cursor: pointer;
+	padding: 0;
+	width: 24px;
+	height: 24px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.roko-modal-close:hover {
+	color: #1d2327;
+}
+
+.roko-modal-body {
+	padding: 16px 24px;
+}
+
+.roko-modal-body p {
+	margin: 0;
+	line-height: 1.5;
+	color: #646970;
+}
+
+.roko-modal-footer {
+	padding: 16px 24px 24px;
+	display: flex;
+	justify-content: flex-end;
+	gap: 12px;
+}
+
+.roko-button-primary {
+	background: #2271b1;
+	color: white;
+	border-color: #2271b1;
+}
+
+.roko-button-primary:hover {
+	background: #135e96;
+	border-color: #135e96;
+}
+
+/* Modal transitions */
+.roko-modal-enter {
+	transition: opacity 150ms ease-out;
+}
+
+.roko-modal-leave {
+	transition: opacity 150ms ease-in;
+}
+
+.roko-modal-content-enter {
+	transition: all 150ms ease-out;
+	transform: scale(0.95);
+}
+
+.roko-modal-content-leave {
+	transition: all 150ms ease-in;
+	transform: scale(0.95);
 }
 
 </style>

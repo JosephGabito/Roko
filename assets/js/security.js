@@ -55,11 +55,13 @@ class RokoSecurityDashboard {
     async init() {
         this.setup_view_toggle();
         this.load_view_preference();
+        this.setup_alpine_integration();
 
         try {
             this.state.data = await this.fetch_security_data();
             this.attach_json_report();
             this.render_dashboard();
+            this.emit_security_data_loaded();
         } catch (error) {
             this.show_error();
             console.error('Security dashboard error:', error);
@@ -68,6 +70,35 @@ class RokoSecurityDashboard {
 
     attach_json_report() {
         this.elements.siteFoundationReport.dataset.jsonReport = JSON.stringify(this.state.data);
+    }
+
+    // ==========================================
+    // ALPINE.JS INTEGRATION
+    // ==========================================
+
+    /**
+     * Setup integration with Alpine.js components.
+     */
+    setup_alpine_integration() {
+        // Make dashboard instance globally available
+        window.rokoSecurityDashboard = this;
+
+        // Listen for Alpine.js requests for security data
+        this.root.addEventListener('roko:request-security-data', () => {
+            if (this.state.data) {
+                this.emit_security_data_loaded();
+            }
+        });
+    }
+
+    /**
+     * Emit security data loaded event for Alpine.js components.
+     */
+    emit_security_data_loaded() {
+        const event = new CustomEvent('roko:security-data-loaded', {
+            detail: this.state.data
+        });
+        document.dispatchEvent(event);
     }
 
     // ==========================================
@@ -237,9 +268,9 @@ class RokoSecurityDashboard {
      */
     render_security_cards() {
         const cards = [
+            this.render_security_keys_card(), // Security keys
             this.render_file_security_card(), // File system & protection
             this.render_file_integrity_card(), // File integrity
-            this.render_security_keys_card(), // Security keys
             this.render_site_health_card(), // First - shows loading, fast to render
         ];
 
@@ -285,7 +316,13 @@ class RokoSecurityDashboard {
                         <span class="security-item-label">
                             ${item.key}
                         </span>
-                        ${badge}
+                        <span class="security-item-source">
+                            <span class="roko-badge ${this.getSourceBadgeClass(item.source)}">
+                                ${item.source}
+                            </span>
+                            ${badge}
+                        </span>
+                       
                     </div>
                     <span 
                         x-show="open"
@@ -852,6 +889,19 @@ class RokoSecurityDashboard {
         if (strength === 'strong') return 'success';
         if (strength === 'weak') return 'warning';
         return 'error';
+    }
+
+    /**
+     * Get badge class for security key source.
+     */
+    getSourceBadgeClass(source) {
+        switch (source) {
+            case 'roko': return 'roko-badge-roko';
+            case 'constant': return 'roko-badge-success';
+            case 'db fallback': return 'roko-badge-warning';
+            case 'filter': return 'roko-badge-info';
+            default: return 'roko-badge-info';
+        }
     }
 
     /**

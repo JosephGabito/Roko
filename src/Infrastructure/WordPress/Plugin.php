@@ -7,6 +7,7 @@ use JosephG\Roko\Infrastructure\WordPress\Admin\AdminPage;
 
 // Security.
 use JosephG\Roko\Infrastructure\WordPress\Security\SecurityJsonService;
+use JosephG\Roko\Infrastructure\WordPress\Security\DynamicSaltLoader;
 use JosephG\Roko\Domain\Security\SecurityAggregate;
 use JosephG\Roko\Infrastructure\WordPress\Security\WpSecurityKeysProvider;
 use JosephG\Roko\Infrastructure\WordPress\Security\WpFileSecurityProvider;
@@ -24,6 +25,9 @@ class Plugin {
 			ROKO_PLUGIN_FILE,
 			array( __CLASS__, 'runMigrations' )
 		);
+
+		// Initialize dynamic salt loading from database
+		DynamicSaltLoader::boot();
 
 		QueryMonitorBridge::init();
 

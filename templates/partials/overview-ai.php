@@ -21,10 +21,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 	<div class="roko-card roko-card-primary roko-overview-card">
 		<div class="roko-card-header roko-d-flex roko-justify-content-between roko-align-items-center">
 			<div class="roko-d-flex roko-align-items-center">
-				<svg class="roko-card-icon roko-mr-2" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--roko-grey)" stroke-width="2">
-					<path d="M9.5 2A2.5 2.5 0 0 0 7 4.5v15A2.5 2.5 0 0 0 9.5 22h5a2.5 2.5 0 0 0 2.5-2.5v-15A2.5 2.5 0 0 0 14.5 2h-5z"/>
-					<path d="M12 6h.01M12 12h.01M12 18h.01"/>
-				</svg>
+				<svg class="roko-mr-1" style="position:relative; top: -2px; color:#01a229;" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 18 18" class="w-4 h-4 shrink-0 text-gray-700 hover:text-gray-800 dark:text-gray-400 hover:dark:text-gray-200"><g fill="currentColor"><path d="M5.658,2.99l-1.263-.421-.421-1.263c-.137-.408-.812-.408-.949,0l-.421,1.263-1.263,.421c-.204,.068-.342,.259-.342,.474s.138,.406,.342,.474l1.263,.421,.421,1.263c.068,.204,.26,.342,.475,.342s.406-.138,.475-.342l.421-1.263,1.263-.421c.204-.068,.342-.259,.342-.474s-.138-.406-.342-.474Z" fill="currentColor" data-stroke="none" stroke="none"></path><polygon points="9.5 2.75 11.412 7.587 16.25 9.5 11.412 11.413 9.5 16.25 7.587 11.413 2.75 9.5 7.587 7.587 9.5 2.75" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></polygon></g></svg>
+
 				<h4 class="roko-card-title">AI Health Check</h4>
 							<button class="roko-info-btn roko-ml-2" title="<?php esc_attr_e( 'How we compute Health Score - Click to learn more', 'roko' ); ?>" data-docs="health-score">ⓘ</button>
 		</div>

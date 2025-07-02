@@ -16,6 +16,7 @@ final class SecurityKeys {
 
 	private $title       = '';
 	private $description = '';
+	private $lastRotated = null;
 
 	public function __construct(
 		SecurityKey $AuthKey,
@@ -47,6 +48,14 @@ final class SecurityKeys {
 			'title'       => $this->title,
 			'description' => $this->description,
 		);
+	}
+
+	public function setLastRotated( $timestamp ) {
+		$this->lastRotated = $timestamp;
+	}
+
+	public function getLastRotated() {
+		return $this->lastRotated;
 	}
 
 	public function toArray(): array {

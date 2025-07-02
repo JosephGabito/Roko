@@ -43,6 +43,7 @@ final class SecurityAggregate {
 						'key'         => $key,
 						'strength'    => $value->strength(),
 						'description' => $value->description(),
+						'source'      => $value->source(),
 					);
 				},
 				$keysArray,
@@ -104,6 +105,7 @@ final class SecurityAggregate {
 			'securityKeys'         => $keys ? array(
 				'summary'      => $keys->getSectionSummary(),
 				'securityKeys' => $securityKeys,
+				'lastRotated'  => $keys->getLastRotated(),
 			) : array(),
 			'fileSecurity'         => array(
 				'summary'      => $fileSecurity->getSectionSummary(),
