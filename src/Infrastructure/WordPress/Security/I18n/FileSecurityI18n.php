@@ -18,17 +18,17 @@ final class FileSecurityI18n {
 
 	public static function stringsCollection(): array {
 		return array(
-			'directoryListing'  => __( 'Visitors can see all your site folders and files—bad actors might find secrets.', 'roko' ),
-			'wpDebug'           => __( 'Your site is showing technical details and errors that could help hackers.', 'roko' ),
-			'editor'            => __( 'Anyone with dashboard access could edit your site code directly.', 'roko' ),
-			'dashboardInstalls' => __( 'Logged-in users can install or update plugins and themes without your permission.', 'roko' ),
-			'phpExecUploads'    => __( 'If someone uploads a PHP file, it may run and harm your site.', 'roko' ),
-			'sensitiveFiles'    => __( 'Important files like wp-config.php or .htaccess are sitting where anyone can access them.', 'roko' ),
-			'xmlrpc'            => __( 'An old API (XML-RPC) is active—hackers use it to guess passwords and overload sites.', 'roko' ),
-			'wpConfigPerm'      => __( 'Your main settings file is not locked down properly; info could leak.', 'roko' ),
-			'htAccessPerm'      => __( 'Your security rules file can be changed by others—protections might be turned off.', 'roko' ),
-			'backupExposed'     => __( 'Backup copies of your site are out in the open for anyone to download.', 'roko' ),
-			'logsExposed'       => __( 'Your site error logs are exposed and could show private details.', 'roko' ),
+			'directoryListing'  => __( "Lets visitors see a list of your site's files. Hiding this keeps your stuff better protected.", 'roko' ),
+			'wpDebug'           => __( "Shows technical messages to help fix issues. Turn it off when not troubleshooting so visitors don't see behind-the-scenes details.", 'roko' ),
+			'editor'            => __( "Allows editing core site files right from your dashboard. It's safer to switch this off unless you're sure you need it.", 'roko' ),
+			'dashboardInstalls' => __( 'Lets anyone with the right access install plugins or themes from the dashboard. Restrict this to prevent surprise changes.', 'roko' ),
+			'backupExposed'     => __( 'Special keys can be used to back up or download your site. Keep these locked down so only you can access them.', 'roko' ),
+			'sensitiveFiles'    => __( "These are files that could give away secrets or setup details. Keeping them private is best for your site's safety.", 'roko' ),
+			'htAccessPerm'      => __( 'This file controls who can do what on your site. Make sure only trusted hands can edit it.', 'roko' ),
+			'logsExposed'       => __( "Log files record what's happening behind the scenes. Keep them hidden so outsiders can't snoop on your site's activity.", 'roko' ),
+			'phpExecUploads'    => __( 'Prevents running scripts in your uploads folder. Blocking this helps stop sneaky hacks through images or docs.', 'roko' ),
+			'wpConfigPerm'      => __( "Your site's core settings file. Keep it tightly locked down so only you or trusted folks can make changes.", 'roko' ),
+			'xmlrpc'            => __( "If you're not sure you need XML-RPC, it's usually best to switch it off and let the REST API handle things.", 'roko' ),
 		);
 	}
 }

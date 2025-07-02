@@ -268,8 +268,8 @@ class RokoSecurityDashboard {
      */
     render_security_cards() {
         const cards = [
-            this.render_security_keys_card(), // Security keys
             this.render_file_security_card(), // File system & protection
+            this.render_security_keys_card(), // Security keys
             this.render_file_integrity_card(), // File integrity
             this.render_site_health_card(), // First - shows loading, fast to render
         ];

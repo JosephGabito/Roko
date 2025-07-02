@@ -87,7 +87,10 @@ $ingress_url = IngressConfig::url();
 			<div class="roko-d-flex roko-justify-content-between roko-align-items-center roko-mb-3">
 				<div>
 					<h4><?php esc_html_e( 'Security Keys & Salts', 'roko' ); ?></h4>
-					<p class="roko-text-muted roko-text-small"><?php esc_html_e( 'Rotate your security keys regularly to enhance site security. This will log out all users.', 'roko' ); ?></p>
+					<p class="roko-text-muted roko-text-small">
+						<?php esc_html_e( 'Give your site a quick security tune-up—refresh these secret codes to lock down your site. (Heads up: everyone will need to log in again.)', 'roko' ); ?>
+						<?php esc_html_e( "They're extra-strong locks inside your website. Changing them now and then keeps hackers out—even if they found an old password.", 'roko' ); ?>
+					</p>
 					<p class="roko-text-muted roko-text-small" style="margin-top: 4px;">
 						<strong><?php esc_html_e( 'Last rotated:', 'roko' ); ?></strong> 
 						<span x-text="getLastRotatedText()" style="font-weight: normal;"></span>
@@ -193,7 +196,7 @@ function saltRegeneration() {
 
 		getLastRotatedText() {
 			if (!this.lastRotated) {
-				return '<?php esc_html_e( 'Never rotated', 'roko' ); ?>';
+				return '<?php echo esc_js( __( 'Never rotated', 'roko' ) ); ?>';
 			}
 			
 			const date = new Date(this.lastRotated * 1000);
@@ -207,7 +210,7 @@ function saltRegeneration() {
 			};
 			
 			return date.toLocaleDateString('en-US', options);
-				},
+		},
 
 		showConfirmModal(action, title, message) {
 			this.modalAction = action;
@@ -233,8 +236,8 @@ function saltRegeneration() {
 		async disableRokoSalts() {
 			this.showConfirmModal(
 				'disable',
-				'<?php esc_html_e( 'Disable Roko Salt Management', 'roko' ); ?>',
-				'<?php esc_html_e( 'This will disable Roko salt management and revert to WordPress defaults. You will be logged out. Continue?', 'roko' ); ?>'
+				'<?php echo esc_js( __( 'Disable Roko Salt Management', 'roko' ) ); ?>',
+				'<?php echo esc_js( __( "Turn off Roko's extra security and go back to WordPress's basic settings? Heads up: You'll need to log in again, and you'll lose Roko's tougher locks on your site.", 'roko' ) ); ?>'
 			);
 		},
 
@@ -275,7 +278,7 @@ function saltRegeneration() {
 			} catch (error) {
 				// Only show error if it's NOT a JSON parsing issue after successful HTTP response
 				if (!error.message.includes('JSON') && !error.message.includes('Unexpected')) {
-					this.errorMessage = error.message || '<?php esc_html_e( 'Failed to disable Roko salt management. Please try again.', 'roko' ); ?>';
+					this.errorMessage = error.message || '<?php echo esc_js( __( 'Failed to disable Roko salt management. Please try again.', 'roko' ) ); ?>';
 				} else {
 					// JSON error after successful HTTP - assume success
 					console.log('Assuming disable succeeded despite JSON error');
@@ -289,8 +292,8 @@ function saltRegeneration() {
 		async regenerateSalts() {
 			this.showConfirmModal(
 				'rotate',
-				'<?php esc_html_e( 'Rotate Security Keys', 'roko' ); ?>',
-				'<?php esc_html_e( 'Rotating security keys will use Roko secure salts - cryptographically encrypted and stored in the database. This will immediately log out all users including yourself. Continue?', 'roko' ); ?>'
+				'<?php echo esc_js( __( 'Ready for a fresh set of security codes?', 'roko' ) ); ?>',
+				'<?php echo esc_js( __( "With one click, Roko locks in brand new secret codes, safely encrypted in your site's vault. Your security gets a big upgrade—and everyone will need to log in again.", 'roko' ) ); ?>'
 			);
 		},
 
@@ -340,7 +343,7 @@ function saltRegeneration() {
 			} catch (error) {
 				// Only show error if it's NOT a JSON parsing issue after successful HTTP response
 				if (!error.message.includes('JSON') && !error.message.includes('Unexpected')) {
-					this.errorMessage = error.message || '<?php esc_html_e( 'Failed to rotate security keys. Please try again.', 'roko' ); ?>';
+					this.errorMessage = error.message || '<?php echo esc_js( __( 'Failed to rotate security keys. Please try again.', 'roko' ) ); ?>';
 				} else {
 					// JSON error after successful HTTP - assume success
 					console.log('Assuming rotation succeeded despite JSON error');
