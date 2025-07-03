@@ -59,16 +59,16 @@ final class IntegrityScan {
 		RecentFileChanges $recentFileChanges,
 		MalwarePatternsFound $malwarePatternsFound
 	) {
-		$this->coreIntact                = $coreIntact;
-		$this->suspiciousCount           = $suspiciousCount;
-		$this->scannedAt                 = $scannedAt;
-		$this->coreChecksumMismatch      = $coreChecksumMismatch;
-		$this->executableInUploadsFound  = $executableInUploadsFound;
-		$this->dotFilesPresent           = $dotFilesPresent;
-		$this->oversizedFilesFound       = $oversizedFilesFound;
-		$this->backupFoldersFound        = $backupFoldersFound;
-		$this->recentFileChanges         = $recentFileChanges;
-		$this->malwarePatternsFound      = $malwarePatternsFound;
+		$this->coreIntact               = $coreIntact;
+		$this->suspiciousCount          = $suspiciousCount;
+		$this->scannedAt                = $scannedAt;
+		$this->coreChecksumMismatch     = $coreChecksumMismatch;
+		$this->executableInUploadsFound = $executableInUploadsFound;
+		$this->dotFilesPresent          = $dotFilesPresent;
+		$this->oversizedFilesFound      = $oversizedFilesFound;
+		$this->backupFoldersFound       = $backupFoldersFound;
+		$this->recentFileChanges        = $recentFileChanges;
+		$this->malwarePatternsFound     = $malwarePatternsFound;
 	}
 
 	public function setSectionSummary( $title, $description ) {

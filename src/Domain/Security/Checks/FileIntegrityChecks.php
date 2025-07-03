@@ -8,7 +8,7 @@ use JosephG\Roko\Domain\Security\Checks\ValueObject\Severity;
 
 /**
  * Domain Service: Transforms IntegrityScan entity into security checks.
- * 
+ *
  * Emits business codes for recommendations - Application layer handles translation.
  */
 final class FileIntegrityChecks {
@@ -22,7 +22,7 @@ final class FileIntegrityChecks {
 
 	/**
 	 * Create FileIntegrityChecks from IntegrityScan domain entity.
-	 * 
+	 *
 	 * @param IntegrityScan $integrityScan Domain entity with file integrity checks.
 	 */
 	public static function fromIntegrityScan( IntegrityScan $integrityScan ) {
@@ -109,7 +109,7 @@ final class FileIntegrityChecks {
 	 * Create executable uploads check from value object.
 	 */
 	private static function createExecutableUploadsCheck( $executableUploads ) {
-		$hasIssues = $executableUploads->hasExecutables();
+		$hasIssues    = $executableUploads->hasExecutables();
 		$businessCode = $hasIssues ? 'executable_uploads_found' : 'executable_uploads_clean';
 		$status       = $hasIssues ? CheckStatus::fail() : CheckStatus::pass();
 		$severity     = $hasIssues ? Severity::high() : Severity::low();
@@ -134,7 +134,7 @@ final class FileIntegrityChecks {
 	 * Create dot files check from value object.
 	 */
 	private static function createDotFilesCheck( $dotFiles ) {
-		$hasIssues = $dotFiles->hasDotFiles();
+		$hasIssues    = $dotFiles->hasDotFiles();
 		$businessCode = $hasIssues ? 'dot_files_found' : 'dot_files_clean';
 		$status       = $hasIssues ? CheckStatus::fail() : CheckStatus::pass();
 		$severity     = $hasIssues ? Severity::medium() : Severity::low();
@@ -159,7 +159,7 @@ final class FileIntegrityChecks {
 	 * Create oversized files check from value object.
 	 */
 	private static function createOversizedFilesCheck( $oversizedFiles ) {
-		$hasIssues = $oversizedFiles->hasOversizedFiles();
+		$hasIssues    = $oversizedFiles->hasOversizedFiles();
 		$businessCode = $hasIssues ? 'oversized_files_found' : 'oversized_files_clean';
 		$status       = $hasIssues ? CheckStatus::fail() : CheckStatus::pass();
 		$severity     = $hasIssues ? Severity::medium() : Severity::low();
@@ -184,7 +184,7 @@ final class FileIntegrityChecks {
 	 * Create backup folders check from value object.
 	 */
 	private static function createBackupFoldersCheck( $backupFolders ) {
-		$hasIssues = $backupFolders->hasBackupFolders();
+		$hasIssues    = $backupFolders->hasBackupFolders();
 		$businessCode = $hasIssues ? 'backup_folders_found' : 'backup_folders_clean';
 		$status       = $hasIssues ? CheckStatus::fail() : CheckStatus::pass();
 		$severity     = $hasIssues ? Severity::medium() : Severity::low();
@@ -209,7 +209,7 @@ final class FileIntegrityChecks {
 	 * Create recent changes check from value object.
 	 */
 	private static function createRecentChangesCheck( $recentChanges ) {
-		$hasIssues = $recentChanges->hasRecentChanges();
+		$hasIssues    = $recentChanges->hasRecentChanges();
 		$businessCode = $hasIssues ? 'recent_changes_detected' : 'recent_changes_clean';
 		$status       = $hasIssues ? CheckStatus::fail() : CheckStatus::pass();
 		$severity     = $hasIssues ? Severity::medium() : Severity::low();
@@ -234,7 +234,7 @@ final class FileIntegrityChecks {
 	 * Create malware patterns check from value object.
 	 */
 	private static function createMalwarePatternsCheck( $malwarePatterns ) {
-		$hasIssues = $malwarePatterns->hasMalwarePatterns();
+		$hasIssues    = $malwarePatterns->hasMalwarePatterns();
 		$businessCode = $hasIssues ? 'malware_patterns_found' : 'malware_patterns_clean';
 		$status       = $hasIssues ? CheckStatus::fail() : CheckStatus::pass();
 		$severity     = $hasIssues ? Severity::high() : Severity::low();
@@ -266,4 +266,4 @@ final class FileIntegrityChecks {
 			$this->checks
 		);
 	}
-} 
+}

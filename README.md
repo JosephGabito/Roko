@@ -251,6 +251,136 @@ class Plugin {
 }
 ```
 
+## 🤖 The Boring Ceremony
+
+Once you have bulletproof patterns, adding new features becomes predictable and "boring" - exactly as it should be. **Creative solutions introduce bugs. Not on this system.** 
+
+### **The Iron Rule: Consistency > Creativity**
+
+Every security feature follows the **exact same ceremony**. No exceptions. No shortcuts. No "clever" workarounds.
+
+```
+❌ "Let me just bypass the repository this one time..."
+❌ "I'll handle this edge case differently..."  
+❌ "This feature is simple, no need for the full pattern..."
+❌ "I know a clever way to do this..."
+
+✅ Repository pattern? ALWAYS.
+✅ Domain service? ALWAYS.
+✅ Translation abstraction? ALWAYS.
+✅ Business codes? ALWAYS.
+```
+
+### **The Ceremony (3 Simple Steps)**
+
+When adding any new security feature, just follow the existing pattern:
+
+#### **1. Domain Layer → Pure Business Logic**
+```php
+// Add your entities, value objects, and domain service
+src/Domain/Security/SshKeys/
+├── Entity/SshKeyCollection.php           # Your business data
+├── ValueObject/SshKey.php               # Immutable values
+└── ../../Checks/SshKeyChecks.php        # Transform into Check objects
+
+class SshKeyChecks {
+    public static function fromSshKeyCollection(SshKeyCollection $collection): self {
+        // Pure business logic - emit business codes, never translate
+        return new Check($id, $label, $status, $severity, $description, $evidence, 'ssh_key_weak', 'roko');
+    }
+}
+```
+
+#### **2. Infrastructure Layer → WordPress Implementation**
+```php
+// Add repository and translation implementation
+src/Infrastructure/WordPress/
+├── Repository/WpSshKeyRepository.php              # Data access
+└── Security/I18n/SshKeyChecksI18n.php            # Business code translations
+
+class SshKeyChecksI18n {
+    public static function recommendation($businessCode) {
+        return ['ssh_key_weak' => __('Fix SSH keys...', 'roko')][$businessCode] ?? '';
+    }
+}
+```
+
+#### **3. Wire Into Existing Pattern**
+```php
+// Just copy what SecurityKeysChecks, FileSecurityChecks, etc. already do:
+
+// Add to SecurityAggregate.php (follow existing pattern):
+$sshKeyChecks = SshKeyChecks::fromSshKeyCollection($this->sshKeyRepository->getCollection());
+$snapshot['sections'][] = ['id' => 'ssh_keys', 'checks' => $sshKeyChecks->toArray()];
+
+// Add to WpSecurityTranslationProvider.php (follow existing pattern):
+public function getSshKeyRecommendation($code) { return SshKeyChecksI18n::recommendation($code); }
+
+// Add to SecurityApplicationService.php (follow existing pattern):
+if ($section['id'] === 'ssh_keys') { /* translate business codes */ }
+```
+
+**That's it.** Presentation layer (REST API) and Application layer (orchestration) already handle everything automatically.
+
+### **Why This Approach Works**
+
+**Bug Prevention**
+- No creative solutions means no unexpected edge cases
+- Consistent patterns are easy to review and test
+- Standardized flow prevents architectural mistakes
+
+**Development Speed**
+- No decision fatigue - follow the pattern, ship the feature
+- Copy-paste architecture enables faster implementation
+- Predictable debugging - issues appear in expected places
+
+**Team Efficiency**
+- Code reviews focus on pattern compliance
+- Onboarding is simple - learn the pattern once, apply everywhere
+- No architectural debates - decisions already made
+
+### **Frontend Automatic Support**
+
+The frontend JavaScript already handles your new feature automatically:
+
+```javascript
+// ✅ Your new SSH key checks appear automatically
+const sshSection = this.get_section('ssh_keys');  // Automatic
+const failedSshChecks = this.get_checks_by_status('fail');  // Automatic
+const sshCard = this.render_section_card('ssh_keys');  // Automatic
+```
+
+### **Zero Creativity Zone**
+
+```php
+// ❌ Creative Developer's Approach
+if ($sshKeysVulnerable) {
+    wp_die('SSH problem!'); // "Quick fix"
+}
+
+// ✅ Your System's Approach  
+class SshKeyChecks {
+    public static function fromSshKeyCollection(SshKeyCollection $collection): self {
+        // Pure business logic
+        // Predictable transformation  
+        // Consistent with all other *Checks classes
+        // Zero surprises
+    }
+}
+```
+
+## 🎯 The Result
+
+After following this ceremony **4 times** (SecurityKeys, FileSecurity, FileIntegrity, Vulnerabilities), you now have:
+
+- **✅ Bulletproof patterns** that prevent bugs
+- **✅ Zero-decision development** - just follow the steps
+- **✅ Self-documenting code** - every feature looks identical
+- **✅ Junior-dev-proof** architecture - impossible to break
+- **✅ Frontend that auto-adapts** to new security features
+
+Consistent patterns produce reliable results.
+
 ## 🔧 What Roko Does
 
 Roko is your WordPress site's diagnostic tool, covering multiple areas:

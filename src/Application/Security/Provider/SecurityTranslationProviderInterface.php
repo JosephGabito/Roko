@@ -31,4 +31,12 @@ interface SecurityTranslationProviderInterface {
 	 * @return string Localized recommendation text.
 	 */
 	public function getFileIntegrityRecommendation( $businessCode );
+
+	/**
+	 * Get vulnerability recommendation for a specific business code.
+	 *
+	 * @param string $businessCode Business code from domain (e.g., 'vulnerabilities_found').
+	 * @return string Localized recommendation text.
+	 */
+	public function getVulnerabilityRecommendation( $businessCode );
 }

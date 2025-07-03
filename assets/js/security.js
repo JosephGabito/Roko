@@ -2,8 +2,9 @@
  * Roko Security Dashboard
  * 
  * Clean, lightweight security dashboard that displays real API data.
+ * Uses new DDD clean architecture schema with sections and Check objects.
  * 
- * @version 2.0.0
+ * @version 3.0.0
  * @author Roko Team
  */
 
@@ -93,12 +94,53 @@ class RokoSecurityDashboard {
 
     /**
      * Emit security data loaded event for Alpine.js components.
+     * Convert new schema back to legacy format for Alpine components.
      */
     emit_security_data_loaded() {
+        // Convert new schema to legacy format for Alpine.js compatibility
+        const legacyData = this.convert_to_legacy_format();
+
         const event = new CustomEvent('roko:security-data-loaded', {
-            detail: this.state.data
+            detail: legacyData
         });
         document.dispatchEvent(event);
+    }
+
+    /**
+     * Convert new DDD schema to legacy format for Alpine.js components.
+     */
+    convert_to_legacy_format() {
+        if (!this.state.data || !this.state.data.sections) {
+            return {};
+        }
+
+        const legacy = {};
+
+        // Find security keys section and convert to legacy format
+        const securityKeysSection = this.get_section('security_keys');
+        if (securityKeysSection) {
+            legacy.securityKeys = {
+                lastRotated: this.get_security_keys_last_rotated()
+            };
+        }
+
+        return legacy;
+    }
+
+    /**
+     * Get security keys last rotated timestamp from Check evidence.
+     */
+    get_security_keys_last_rotated() {
+        const section = this.get_section('security_keys');
+        if (!section || !section.checks) return null;
+
+        // Look for lastRotated in any check's evidence
+        for (const check of section.checks) {
+            if (check.evidence && check.evidence.lastRotated) {
+                return check.evidence.lastRotated;
+            }
+        }
+        return null;
     }
 
     // ==========================================
@@ -119,6 +161,54 @@ class RokoSecurityDashboard {
         }
 
         return await response.json();
+    }
+
+    // ==========================================
+    // SCHEMA HELPERS
+    // ==========================================
+
+    /**
+     * Get a section by ID from the new schema.
+     */
+    get_section(sectionId) {
+        if (!this.state.data || !this.state.data.sections) {
+            return null;
+        }
+        return this.state.data.sections.find(section => section.id === sectionId);
+    }
+
+    /**
+     * Get all checks with a specific status across all sections.
+     */
+    get_checks_by_status(status) {
+        if (!this.state.data || !this.state.data.sections) {
+            return [];
+        }
+
+        const checks = [];
+        for (const section of this.state.data.sections) {
+            if (section.checks) {
+                checks.push(...section.checks.filter(check => check.status === status));
+            }
+        }
+        return checks;
+    }
+
+    /**
+     * Get all checks with a specific severity across all sections.
+     */
+    get_checks_by_severity(severity) {
+        if (!this.state.data || !this.state.data.sections) {
+            return [];
+        }
+
+        const checks = [];
+        for (const section of this.state.data.sections) {
+            if (section.checks) {
+                checks.push(...section.checks.filter(check => check.severity === severity));
+            }
+        }
+        return checks;
     }
 
     // ==========================================
@@ -178,7 +268,7 @@ class RokoSecurityDashboard {
     }
 
     /**
-     * Update the security score display.
+     * Update the security score display using new Check-based scoring.
      */
     update_security_score() {
         const score = this.calculate_security_score();
@@ -199,55 +289,60 @@ class RokoSecurityDashboard {
     }
 
     /**
-     * Calculate security score based on various factors.
+     * Calculate security score based on Check objects and severity.
      */
     calculate_security_score() {
+        if (!this.state.data || !this.state.data.sections) {
+            return 0;
+        }
+
         let score = 100;
-        const data = this.state.data;
+        let totalChecks = 0;
+        let failedChecks = 0;
 
-        // Deduct points for security keys
-        if (data.securityKeys) {
-            Object.values(data.securityKeys).forEach(strength => {
-                if (strength === 'none') score -= 15;
-                else if (strength === 'weak') score -= 10;
-            });
+        // Count all checks and failed checks across all sections
+        for (const section of this.state.data.sections) {
+            if (section.checks) {
+                for (const check of section.checks) {
+                    totalChecks++;
+
+                    if (check.status === 'fail') {
+                        failedChecks++;
+
+                        // Deduct points based on severity
+                        switch (check.severity) {
+                            case 'high':
+                                score -= 20;
+                                break;
+                            case 'medium':
+                                score -= 10;
+                                break;
+                            case 'low':
+                                score -= 5;
+                                break;
+                        }
+                    }
+                }
+            }
         }
 
-        // Deduct points for file integrity issues
-        if (data.fileIntegrity?.coreModified) score -= 20;
-        if (data.fileIntegrity?.suspiciousFiles > 0) score -= 10;
+        // Ensure score doesn't go below 0
+        score = Math.max(0, score);
 
-        // Deduct points for file security issues
-        if (data.fileSecurity?.wpDebugOn) score -= 5;
-        if (data.fileSecurity?.editorOn) score -= 5;
-        if (!data.fileSecurity?.wpConfigPermission644) score -= 5;
-
-        // Deduct points for vulnerabilities
-        if (data.knownVulnerabilities?.length > 0) {
-            score -= data.knownVulnerabilities.length * 5;
+        // If no checks exist, return 0
+        if (totalChecks === 0) {
+            return 0;
         }
 
-        return Math.max(0, Math.min(100, score));
+        return Math.min(100, score);
     }
 
     /**
-     * Count critical security issues.
+     * Count critical security issues using Check objects.
      */
     count_critical_issues() {
-        let count = 0;
-        const data = this.state.data;
-
-        // Critical file integrity issues
-        if (data.fileIntegrity?.coreModified) count++;
-
-        // Critical security key issues
-        if (data.securityKeys) {
-            Object.values(data.securityKeys).forEach(strength => {
-                if (strength === 'none') count++;
-            });
-        }
-
-        return count;
+        const highSeverityFailed = this.get_checks_by_severity('high').filter(check => check.status === 'fail');
+        return highSeverityFailed.length;
     }
 
     /**
@@ -264,273 +359,111 @@ class RokoSecurityDashboard {
     }
 
     /**
-     * Render all security cards.
+     * Render all security cards using new schema.
      */
     render_security_cards() {
         const cards = [
-            this.render_file_security_card(), // File system & protection
-            this.render_security_keys_card(), // Security keys
-            this.render_file_integrity_card(), // File integrity
-            this.render_site_health_card(), // First - shows loading, fast to render
+            this.render_section_card('file_security'),
+            this.render_section_card('security_keys'),
+            this.render_section_card('file_integrity'),
+            this.render_section_card('known_vulnerabilities'),
+            this.render_site_health_card(), // Keep separate as it's fetched async
         ];
 
-        // Add vulnerabilities section
-        const vulnerabilitiesSection = `
-            <div class="roko-vulnerabilities-section roko-mt-5">
-                ${this.render_vulnerabilities_card()}
-            </div>
-        `;
+        this.elements.detailsGrid.innerHTML = cards.filter(card => card).join('');
 
-        this.elements.detailsGrid.innerHTML = cards.join('');
-        this.elements.detailsGrid.insertAdjacentHTML('afterend', vulnerabilitiesSection);
-
-        // Now start the slow WordPress Site Health fetch in the background
-        // This happens after our fast security checks are already displayed
+        // Start the slow WordPress Site Health fetch in the background
         setTimeout(() => {
-            // Update loading message to show we're now fetching WordPress data
             const i18n = this.get_site_health_i18n();
             this.update_site_health_loading_message(i18n.loadingFetching);
             this.fetch_site_health_data();
-        }, 100); // Small delay to ensure our cards are rendered first
+        }, 100);
     }
 
     /**
-     * Render security keys card.
+     * Render a section card using the new schema.
      */
-    render_security_keys_card() {
+    render_section_card(sectionId) {
+        const section = this.get_section(sectionId);
+        if (!section) {
+            return null;
+        }
 
-        const keys = this.state.data.securityKeys.securityKeys || {};
-        const summary = this.state.data.securityKeys.summary || {};
-
-        const items = Object.entries(keys).map(([index, item]) => {
-
-            const status = this.get_key_status(item.strength);
-            const badge = this.create_badge(item.strength, this.get_badge_type(item.strength));
+        const items = section.checks.map(check => {
+            const status = check.status === 'pass' ? 'ok' : (check.severity === 'high' ? 'critical' : 'warn');
+            const badge = this.create_check_badge(check);
 
             return `
                 <div 
                     x-data="{ open: false }"
                     x-on:click="open = !open"
-                    class="security-item" data-status="${status}">
-                    <div class="roko-d-flex roko-justify-content-between roko-align-items-center">
-                        <span class="security-item-label">
-                            ${item.key}
-                        </span>
-                        <span class="security-item-source">
-                            <span class="roko-badge ${this.getSourceBadgeClass(item.source)}">
-                                ${item.source}
-                            </span>
-                            ${badge}
-                        </span>
-                       
-                    </div>
-                    <span 
-                        x-show="open"
-                        class="security-item-description roko-text-muted roko-text-small roko-block roko-mt-3">
-                        ${item.description}
-                    </span>
-                </div>
-            `;
-        }).join('');
-
-        return this.create_card(summary.title, summary.description, items);
-
-    }
-
-    /**
-     * Render file security card.
-     */
-    render_file_security_card() {
-
-        const fileSecurity = this.state.data.fileSecurity.fileSecurity || {};
-        const cardSummary = this.state.data.fileSecurity.summary;
-
-        const checks = [
-            {
-                label: 'Directory listing',
-                isSecure: !fileSecurity.directoryListingIsOn.value,
-                description: fileSecurity.directoryListingIsOn.description
-            },
-            {
-                label: 'WP Debug',
-                isSecure: !fileSecurity.wpDebugOn.value,
-                description: fileSecurity.wpDebugOn.description
-            },
-            {
-                label: 'File editor',
-                isSecure: !fileSecurity.editorOn.value,
-                description: fileSecurity.editorOn.description
-            },
-            {
-                label: 'Dashboard installs',
-                isSecure: !fileSecurity.dashboardInstallsOn.value,
-                description: fileSecurity.dashboardInstallsOn.description
-            },
-            {
-                label: 'Backup files exposed',
-                isSecure: !fileSecurity.anyBackupExposed.value,
-                description: fileSecurity.anyBackupExposed.description
-            },
-            {
-                label: 'Sensitive files present',
-                isSecure: !fileSecurity.doesSensitiveFilesExists.value,
-                description: fileSecurity.doesSensitiveFilesExists.description
-            },
-            {
-                label: 'htaccess permissions',
-                isSecure: fileSecurity.htAccessPermission644.value,
-                description: fileSecurity.htAccessPermission644.description
-            },
-            {
-                label: 'Log files exposed',
-                isSecure: !fileSecurity.logFilesExposed.value,
-                description: fileSecurity.logFilesExposed.description
-            },
-            {
-                label: 'PHP execution in uploads',
-                isSecure: !fileSecurity.phpExecutionInUploadsDirOn.value,
-                description: fileSecurity.phpExecutionInUploadsDirOn.description
-            },
-            {
-                label: 'wp-config permissions',
-                isSecure: fileSecurity.wpConfigPermission644.value,
-                description: fileSecurity.wpConfigPermission644.description
-            },
-            {
-                label: 'XML-RPC',
-                isSecure: !fileSecurity.xmlrpcOn.value,
-                description: fileSecurity.xmlrpcOn.description
-            }
-        ];
-
-        const items = checks.map(check => {
-            const status = check.isSecure ? 'ok' : 'warn';
-            const badge = this.create_badge(check.isSecure ? 'Secure' : 'Risk', check.isSecure ? 'success' : 'error');
-            const description = check.description;
-            return `
-                <div 
-                    x-data="{ open: false}"
-                    x-on:click="open = !open"
                     class="security-item roko-pointer-cursor" 
-                    data-status="${status}" 
-                    title="${check.description}">
-
+                    data-status="${status}">
                     <div class="roko-d-flex roko-justify-content-between roko-align-items-center">
-                        <span class="security-item-label">
-                            ${check.label}
-                        </span>
+                        <span class="security-item-label">${check.label}</span>
                         ${badge}
                     </div>
                     <div 
                         x-show="open"
                         class="security-item-description roko-text-muted roko-text-small roko-block roko-mt-3">
-                        ${description}
+                        <strong>Status:</strong> ${check.description}<br/>
+                        <strong>Recommendation:</strong> ${check.recommendation}
+                        ${this.render_check_evidence(check)}
                     </div>
                 </div>
             `;
         }).join('');
 
-        return this.create_card(cardSummary.title, cardSummary.description, items);
+        return this.create_card(section.title, section.description, items);
     }
 
     /**
-     * Render file integrity card.
+     * Create a badge for a Check object.
      */
-    render_file_integrity_card() {
-        const fileIntegrity = this.state.data.fileIntegrity || {};
+    create_check_badge(check) {
+        if (check.status === 'pass') {
+            return this.create_badge('Secure', 'success');
+        }
 
-        // Handle async core checksum
-        const coreChecksumStatus = fileIntegrity.coreChecksumMismatch?.isAsync
-            ? 'pending'
-            : (fileIntegrity.coreChecksumMismatch?.hasMismatch ? 'critical' : 'ok');
+        // For failed checks, show based on severity
+        switch (check.severity) {
+            case 'high':
+                return this.create_badge('Critical', 'error');
+            case 'medium':
+                return this.create_badge('Warning', 'warning');
+            case 'low':
+                return this.create_badge('Advisory', 'info');
+            default:
+                return this.create_badge('Issue', 'warning');
+        }
+    }
 
-        const items = [
-            {
-                label: 'Core checksum',
-                value: fileIntegrity.coreChecksumMismatch?.isAsync ? 'Checking...' :
-                    fileIntegrity.coreChecksumMismatch?.hasMismatch ? 'Modified' : 'Intact',
-                status: coreChecksumStatus,
-                description: fileIntegrity.coreChecksumMismatch?.description || ''
-            },
-            {
-                label: 'Executable in uploads',
-                value: fileIntegrity.executableInUploads?.count || 0,
-                status: fileIntegrity.executableInUploads?.hasIssue ? 'critical' : 'ok',
-                description: fileIntegrity.executableInUploads?.description || ''
-            },
-            {
-                label: 'Dot files present',
-                value: fileIntegrity.dotFilesPresent?.count || 0,
-                status: fileIntegrity.dotFilesPresent?.hasIssue ? 'warn' : 'ok',
-                description: fileIntegrity.dotFilesPresent?.description || ''
-            },
-            {
-                label: 'Oversized files',
-                value: fileIntegrity.oversizedFilesFound?.count || 0,
-                status: fileIntegrity.oversizedFilesFound?.hasIssue ? 'warn' : 'ok',
-                description: fileIntegrity.oversizedFilesFound?.description || ''
-            },
-            {
-                label: 'Backup folders',
-                value: fileIntegrity.backupFoldersFound?.count || 0,
-                status: fileIntegrity.backupFoldersFound?.hasIssue ? 'warn' : 'ok',
-                description: fileIntegrity.backupFoldersFound?.description || ''
-            },
-            {
-                label: 'Recent changes',
-                value: fileIntegrity.recentFileChanges?.count || 0,
-                status: fileIntegrity.recentFileChanges?.hasIssue ? 'warn' : 'ok',
-                description: fileIntegrity.recentFileChanges?.description || ''
-            },
-            {
-                label: 'Malware patterns',
-                value: fileIntegrity.malwarePatternsFound?.count || 0,
-                status: fileIntegrity.malwarePatternsFound?.hasIssue ? 'critical' : 'ok',
-                description: fileIntegrity.malwarePatternsFound?.description || ''
+    /**
+     * Render evidence from a Check object if available.
+     */
+    render_check_evidence(check) {
+        if (!check.evidence || Object.keys(check.evidence).length === 0) {
+            return '';
+        }
+
+        let evidenceHtml = '<br/><strong>Details:</strong><br/>';
+
+        // Handle common evidence patterns
+        for (const [key, value] of Object.entries(check.evidence)) {
+            if (key === 'count' && typeof value === 'number') {
+                evidenceHtml += `• Found: ${value} items<br/>`;
+            } else if (key === 'files' && Array.isArray(value) && value.length > 0) {
+                evidenceHtml += `• Files: ${value.slice(0, 3).join(', ')}${value.length > 3 ? '...' : ''}<br/>`;
+            } else if (key === 'strength' || key === 'source') {
+                evidenceHtml += `• ${key.charAt(0).toUpperCase() + key.slice(1)}: ${value}<br/>`;
+            } else if (typeof value === 'boolean') {
+                evidenceHtml += `• ${key}: ${value ? 'Yes' : 'No'}<br/>`;
+            } else if (typeof value === 'string' && value.length < 100) {
+                evidenceHtml += `• ${key}: ${value}<br/>`;
             }
-        ];
+        }
 
-        const itemsHtml = items.map(item => {
-            let displayValue;
-            let badge;
-
-            if (item.status === 'pending') {
-                badge = this.create_badge('Checking...', 'info');
-                displayValue = badge;
-            } else if (typeof item.value === 'number') {
-                if (item.value === 0) {
-                    badge = this.create_badge('Clean', 'success');
-                } else {
-                    badge = this.create_badge(`${item.value} found`, item.status === 'critical' ? 'error' : 'warning');
-                }
-                displayValue = badge;
-            } else {
-                badge = this.create_badge(item.value, item.status === 'critical' ? 'error' :
-                    item.status === 'warn' ? 'warning' : 'success');
-                displayValue = badge;
-            }
-
-            return `
-                <div 
-                    x-data="{ open: false }"
-                    x-on:click="open = !open"
-                    class="security-item" 
-                    data-status="${item.status}" 
-                    title="${item.description}">
-                    <div class="roko-d-flex roko-justify-content-between roko-align-items-center">
-                        <span class="security-item-label">${item.label}</span>
-                        ${displayValue}
-                    </div>
-                    <div 
-                        x-show="open"
-                        class="security-item-description roko-text-muted roko-text-small roko-block roko-mt-3">
-                        ${item.description}
-                    </div>
-                </div>
-            `;
-        }).join('');
-
-        return this.create_card('File Integrity', 'Comprehensive file system security checks', itemsHtml);
+        return evidenceHtml;
     }
 
     /**
@@ -809,46 +742,6 @@ class RokoSecurityDashboard {
         });
     }
 
-    /**
-     * Render vulnerabilities card.
-     */
-    render_vulnerabilities_card() {
-        const vulnerabilities = this.state.data.knownVulnerabilities || [];
-
-        if (vulnerabilities.length === 0) {
-            const content = '<p class="roko-text-muted">No known vulnerabilities detected 🎉</p>';
-            return this.create_card('Known Vulnerabilities', 'Security vulnerabilities in plugins and themes', content);
-        }
-
-        // If vulnerabilities exist, create a simple table
-        const tableRows = vulnerabilities.map(vuln => `
-            <tr>
-                <td><strong>${vuln.plugin || vuln.theme || 'Unknown'}</strong></td>
-                <td>${vuln.installedVersion || 'Unknown'}</td>
-                <td>${vuln.patchedVersion || 'Unknown'}</td>
-                <td><span class="roko-badge roko-badge-${this.get_severity_class(vuln.severity)}">${vuln.severity || 'Unknown'}</span></td>
-            </tr>
-        `).join('');
-
-        const tableContent = `
-            <table class="roko-table">
-                <thead>
-                    <tr>
-                        <th>Plugin / Theme</th>
-                        <th>Installed</th>
-                        <th>Patched</th>
-                        <th>Severity</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${tableRows}
-                </tbody>
-            </table>
-        `;
-
-        return this.create_card('Known Vulnerabilities', 'Security vulnerabilities in plugins and themes', tableContent);
-    }
-
     // ==========================================
     // UTILITY METHODS
     // ==========================================
@@ -871,49 +764,6 @@ class RokoSecurityDashboard {
      */
     create_badge(text, type) {
         return `<span class="roko-badge roko-badge-${type}">${text}</span>`;
-    }
-
-    /**
-     * Get security key status.
-     */
-    get_key_status(strength) {
-        if (strength === 'strong') return 'ok';
-        if (strength === 'weak') return 'warn';
-        return 'critical';
-    }
-
-    /**
-     * Get badge type for security key.
-     */
-    get_badge_type(strength) {
-        if (strength === 'strong') return 'success';
-        if (strength === 'weak') return 'warning';
-        return 'error';
-    }
-
-    /**
-     * Get badge class for security key source.
-     */
-    getSourceBadgeClass(source) {
-        switch (source) {
-            case 'roko': return 'roko-badge-roko';
-            case 'constant': return 'roko-badge-success';
-            case 'db fallback': return 'roko-badge-warning';
-            case 'filter': return 'roko-badge-info';
-            default: return 'roko-badge-info';
-        }
-    }
-
-    /**
-     * Get severity CSS class.
-     */
-    get_severity_class(severity) {
-        const severityLower = (severity || 'low').toLowerCase();
-        return {
-            'high': 'high',
-            'medium': 'medium',
-            'low': 'low'
-        }[severityLower] || 'low';
     }
 
     /**

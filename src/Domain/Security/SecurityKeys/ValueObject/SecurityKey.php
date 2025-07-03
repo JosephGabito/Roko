@@ -1,6 +1,4 @@
 <?php
-declare(strict_types=1);
-
 namespace JosephG\Roko\Domain\Security\SecurityKeys\ValueObject;
 
 /**

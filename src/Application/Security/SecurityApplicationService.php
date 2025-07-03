@@ -30,13 +30,13 @@ final class SecurityApplicationService {
 
 	/**
 	 * Get security snapshot with proper translations.
-	 * 
+	 *
 	 * Domain emits business codes - Application translates them to human text.
 	 */
 	public function getSecuritySnapshot() {
 		// Get pure domain snapshot with business codes
 		$domainSnapshot = $this->securityAggregate->snapshot();
-		
+
 		// Application layer responsibility: translate business codes to human text
 		return $this->translateBusinessCodes( $domainSnapshot );
 	}
@@ -50,38 +50,44 @@ final class SecurityApplicationService {
 
 	/**
 	 * Translate business codes emitted by Domain into human-readable text.
-	 * 
+	 *
 	 * This keeps i18n concerns in Application layer, not Domain.
 	 */
 	private function translateBusinessCodes( array $domainSnapshot ) {
 		// Get all translations from infrastructure
 		$securityKeyTranslations = $this->translationProvider->getAllSecurityKeyRecommendations();
-		
+
 		// Transform each section
 		foreach ( $domainSnapshot['sections'] as &$section ) {
 			if ( $section['id'] === 'security_keys' ) {
 				foreach ( $section['checks'] as &$check ) {
 					// Domain emitted business code - Application translates it
-					$businessCode = $check['recommendation'];
-					$check['recommendation'] = isset( $securityKeyTranslations[ $businessCode ] ) 
-						? $securityKeyTranslations[ $businessCode ] 
+					$businessCode            = $check['recommendation'];
+					$check['recommendation'] = isset( $securityKeyTranslations[ $businessCode ] )
+						? $securityKeyTranslations[ $businessCode ]
 						: 'Review configuration and strengthen security.';
 				}
 			} elseif ( $section['id'] === 'file_security' ) {
 				foreach ( $section['checks'] as &$check ) {
 					// Domain emitted business code - Application translates it
-					$businessCode = $check['recommendation'];
+					$businessCode            = $check['recommendation'];
 					$check['recommendation'] = $this->translationProvider->getFileSecurityRecommendation( $businessCode );
 				}
 			} elseif ( $section['id'] === 'file_integrity' ) {
 				foreach ( $section['checks'] as &$check ) {
 					// Domain emitted business code - Application translates it
-					$businessCode = $check['recommendation'];
+					$businessCode            = $check['recommendation'];
 					$check['recommendation'] = $this->translationProvider->getFileIntegrityRecommendation( $businessCode );
+				}
+			} elseif ( $section['id'] === 'known_vulnerabilities' ) {
+				foreach ( $section['checks'] as &$check ) {
+					// Domain emitted business code - Application translates it
+					$businessCode            = $check['recommendation'];
+					$check['recommendation'] = $this->translationProvider->getVulnerabilityRecommendation( $businessCode );
 				}
 			}
 		}
-		
+
 		return $domainSnapshot;
 	}
 }

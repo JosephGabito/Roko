@@ -11,6 +11,7 @@ use JosephG\Roko\Domain\Security\KnownVulnerabilities\Repository\VulnerabilityRe
 use JosephG\Roko\Domain\Security\Checks\SecurityKeysChecks;
 use JosephG\Roko\Domain\Security\Checks\FileSecurityChecks;
 use JosephG\Roko\Domain\Security\Checks\FileIntegrityChecks;
+use JosephG\Roko\Domain\Security\Checks\VulnerabilityChecks;
 
 /**
  * Aggregate Root: combines all security sub-domain snapshots.
@@ -45,7 +46,7 @@ final class SecurityAggregate {
 
 	/**
 	 * Returns a plain PHP array describing the current security posture.
-	 * 
+	 *
 	 * Domain emits business codes - Application layer handles translation.
 	 */
 	public function snapshot() {
@@ -56,9 +57,10 @@ final class SecurityAggregate {
 		$vulns         = $this->vulnRepo->latestKnown();
 
 		// Domain logic - emits business codes, not translated text
-		$securityKeysChecks   = SecurityKeysChecks::fromSecurityKeys( $keys );
-		$fileSecurityChecks   = FileSecurityChecks::fromFilePermission( $fileSecurity );
-		$fileIntegrityChecks  = FileIntegrityChecks::fromIntegrityScan( $integrityScan );
+		$securityKeysChecks  = SecurityKeysChecks::fromSecurityKeys( $keys );
+		$fileSecurityChecks  = FileSecurityChecks::fromFilePermission( $fileSecurity );
+		$fileIntegrityChecks = FileIntegrityChecks::fromIntegrityScan( $integrityScan );
+		$vulnerabilityChecks = VulnerabilityChecks::fromVulnerabilityCollection( $vulns );
 
 		return array(
 			'meta'     => array(
@@ -88,7 +90,7 @@ final class SecurityAggregate {
 					'id'          => 'known_vulnerabilities',
 					'title'       => 'Known Vulnerabilities',
 					'description' => $vulns->getSectionSummary()['description'],
-					'checks'      => array(), // TODO: Create VulnerabilityChecks sub-aggregate
+					'checks'      => $vulnerabilityChecks->toArray(),
 				),
 			),
 		);

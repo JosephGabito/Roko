@@ -5,6 +5,7 @@ use JosephG\Roko\Application\Security\Provider\SecurityTranslationProviderInterf
 use JosephG\Roko\Infrastructure\WordPress\Security\I18n\SecurityKeysChecksI18n;
 use JosephG\Roko\Infrastructure\WordPress\Security\I18n\FileSecurityChecksI18n;
 use JosephG\Roko\Infrastructure\WordPress\Security\I18n\FileIntegrityChecksI18n;
+use JosephG\Roko\Infrastructure\WordPress\Security\I18n\VulnerabilityChecksI18n;
 
 /**
  * WordPress implementation of SecurityTranslationProvider.
@@ -52,5 +53,15 @@ final class WpSecurityTranslationProvider implements SecurityTranslationProvider
 	 */
 	public function getFileIntegrityRecommendation( $businessCode ) {
 		return FileIntegrityChecksI18n::recommendation( $businessCode );
+	}
+
+	/**
+	 * Get vulnerability recommendation for a specific business code.
+	 *
+	 * @param string $businessCode Business code from domain (e.g., 'vulnerabilities_found').
+	 * @return string Localized recommendation text.
+	 */
+	public function getVulnerabilityRecommendation( $businessCode ) {
+		return VulnerabilityChecksI18n::recommendation( $businessCode );
 	}
 }

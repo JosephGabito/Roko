@@ -9,7 +9,7 @@ use JosephG\Roko\Domain\Ingress\IngressConfig;
 // Dev.
 $ingress_url = IngressConfig::url();
 ?>
-<!-- templates/partials/security.php -->
+<!-- templates/partials/security.php - Updated for DDD Clean Architecture Schema v3.0 -->
 	<div class="roko-card" id="roko-security-dashboard"
 		data-endpoint="<?php echo esc_url( rest_url( 'roko/v1/security' ) ); ?>"
 		data-nonce="<?php echo wp_create_nonce( 'wp_rest' ); ?>">
@@ -24,29 +24,39 @@ $ingress_url = IngressConfig::url();
 
 		<!-- View mode toggle -->
 		<div class="roko-view-toggle" role="group" aria-label="<?php esc_attr_e( 'View mode', 'roko' ); ?>">
-			<button id="roko-pill-all" class="roko-button roko-button-outline active" aria-pressed="true"><?php esc_html_e( 'Show all checks', 'roko' ); ?></button>
-			<button id="roko-pill-need" class="roko-button roko-button-clear" aria-pressed="false"><?php esc_html_e( 'Show required actions', 'roko' ); ?></button>
+			<button id="roko-pill-all" class="roko-button roko-button-outline active" aria-pressed="true">
+				<?php esc_html_e( 'Show all checks', 'roko' ); ?>
+			</button>
+			<button id="roko-pill-need" class="roko-button roko-button-clear" aria-pressed="false">
+				<?php esc_html_e( 'Show required actions', 'roko' ); ?>
+			</button>
 		</div>
 		</div>
 
 		<div class="roko-card-body">
-		<!-- Score display -->
+		<!-- Security Score Display -->
 		<div class="roko-security-score roko-d-flex roko-align-items-center roko-mb-4">
 			<div class="score-circle roko-mr-4" id="roko-score-ring">
 				<span class="score-value" id="roko-score-value">…</span>
 				<span class="score-label">/100</span>
 			</div>
 			<div class="score-details roko-ml-4">
-				<span class="roko-boost-score" id="roko-score-status"><?php esc_html_e( 'Loading…', 'roko' ); ?></span> <br/>
-				<span class="roko-text-muted"><span id="roko-critical-count">0</span> <?php esc_html_e( 'critical issues found', 'roko' ); ?></span>
+				<span class="roko-boost-score" id="roko-score-status">
+					<?php esc_html_e( 'Loading security data…', 'roko' ); ?>
+				</span> <br/>
+				<span class="roko-text-muted">
+					<span id="roko-critical-count">0</span> 
+					<?php esc_html_e( 'high-severity issues found', 'roko' ); ?>
+				</span>
 			</div>
 		</div>
 
+		<!-- AI Recommendations Section -->
 		<div
 			class="roko-mb-4"
 			x-data="{ data: null, loading: false }"
 			id="roko-site-foundation-report"
-			data-json-report='{"foo":"bar"}'
+			data-json-report='{"loading": true}'
 			>
 			<div x-html="data || ''"></div>
 			<button
@@ -66,27 +76,29 @@ $ingress_url = IngressConfig::url();
 						console.log(payload.data);
 						data = payload.data
 					})
-					.catch(err => console.error(err))
+					.catch(err => console.error('AI recommendations error:', err))
 					.finally(() => { loading = false })
 				"
 				class="roko-button active roko-button-outline"
 			>
 				<span x-show="!loading">
 					<svg style="position:relative; top: 3px; color:#01a229;" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 18 18" class="w-4 h-4 shrink-0 text-gray-700 hover:text-gray-800 dark:text-gray-400 hover:dark:text-gray-200"><g fill="currentColor"><path d="M5.658,2.99l-1.263-.421-.421-1.263c-.137-.408-.812-.408-.949,0l-.421,1.263-1.263,.421c-.204,.068-.342,.259-.342,.474s.138,.406,.342,.474l1.263,.421,.421,1.263c.068,.204,.26,.342,.475,.342s.406-.138,.475-.342l.421-1.263,1.263-.421c.204-.068,.342-.259,.342-.474s-.138-.406-.342-.474Z" fill="currentColor" data-stroke="none" stroke="none"></path><polygon points="9.5 2.75 11.412 7.587 16.25 9.5 11.412 11.413 9.5 16.25 7.587 11.413 2.75 9.5 7.587 7.587 9.5 2.75" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"></polygon></g></svg>
-					Get AI Recommendations
+					<?php esc_html_e( 'Get AI Recommendations', 'roko' ); ?>
 				</span>
-				<span x-show="loading">Loading…</span>
+				<span x-show="loading"><?php esc_html_e( 'Loading…', 'roko' ); ?></span>
 			</button>
 			</div>
 
-		<!-- Salt Rotation Section - Alpine.js -->
+		<!-- Security Keys Management Section -->
 		<div class="roko-detail-card roko-mb-4" 
 			x-data="saltRegeneration()"
-			x-init="init">
+			x-init="init"
+			role="region"
+			aria-labelledby="security-keys-title">
 			
 			<div class="roko-d-flex roko-justify-content-between roko-align-items-center roko-mb-3">
 				<div>
-					<h4><?php esc_html_e( 'Security Keys & Salts', 'roko' ); ?></h4>
+					<h4 id="security-keys-title"><?php esc_html_e( 'Security Keys & Salts Management', 'roko' ); ?></h4>
 					<p class="roko-text-muted roko-text-small">
 						<?php esc_html_e( 'Give your site a quick security tune-up—refresh these secret codes to lock down your site. (Heads up: everyone will need to log in again.)', 'roko' ); ?>
 						<?php esc_html_e( "They're extra-strong locks inside your website. Changing them now and then keeps hackers out—even if they found an old password.", 'roko' ); ?>
@@ -100,7 +112,8 @@ $ingress_url = IngressConfig::url();
 					<button 
 						@click="regenerateSalts"
 						:disabled="regenerating || disabling"
-						class="roko-button roko-button-outline roko-button-small">
+						class="roko-button roko-button-outline roko-button-small"
+						:aria-label="regenerating ? '<?php esc_attr_e( 'Rotating security keys...', 'roko' ); ?>' : '<?php esc_attr_e( 'Rotate security keys', 'roko' ); ?>'">
 						<span x-show="!regenerating"><?php esc_html_e( 'Rotate Keys', 'roko' ); ?></span>
 						<span x-show="regenerating"><?php esc_html_e( 'Rotating...', 'roko' ); ?></span>
 					</button>
@@ -110,17 +123,19 @@ $ingress_url = IngressConfig::url();
 						@click="disableRokoSalts"
 						:disabled="regenerating || disabling"
 						class="roko-button roko-button-clear roko-button-small"
-						style="color: #d63638; border-color: #d63638;">
+						style="color: #d63638; border-color: #d63638;"
+						:aria-label="disabling ? '<?php esc_attr_e( 'Disabling Roko salt management...', 'roko' ); ?>' : '<?php esc_attr_e( 'Disable Roko salt management', 'roko' ); ?>'">
 						<span x-show="!disabling"><?php esc_html_e( 'Disable Roko Salts', 'roko' ); ?></span>
 						<span x-show="disabling"><?php esc_html_e( 'Disabling...', 'roko' ); ?></span>
 					</button>
 				</div>
 			</div>
 			
-			<!-- Error message only (success = immediate redirect) -->
+			<!-- Error/Success Messages -->
 			<div x-show="errorMessage" 
 				class="roko-alert roko-alert-error roko-mb-3"
-				x-transition>
+				x-transition
+				role="alert">
 				<p x-text="errorMessage"></p>
 			</div>
 
@@ -129,13 +144,16 @@ $ingress_url = IngressConfig::url();
 				x-transition:enter="roko-modal-enter"
 				x-transition:leave="roko-modal-leave"
 				class="roko-modal-overlay"
-				@click.self="cancelAction()">
+				@click.self="cancelAction()"
+				role="dialog"
+				aria-modal="true"
+				:aria-labelledby="modalTitle">
 				<div class="roko-modal-content"
 					x-transition:enter="roko-modal-content-enter"
 					x-transition:leave="roko-modal-content-leave">
 					<div class="roko-modal-header">
-						<h3 x-text="modalTitle"></h3>
-						<button @click="cancelAction()" class="roko-modal-close">&times;</button>
+						<h3 x-text="modalTitle" id="modal-title"></h3>
+						<button @click="cancelAction()" class="roko-modal-close" aria-label="<?php esc_attr_e( 'Close dialog', 'roko' ); ?>">&times;</button>
 					</div>
 					<div class="roko-modal-body">
 						<p x-text="modalMessage"></p>
@@ -152,21 +170,34 @@ $ingress_url = IngressConfig::url();
 			</div>
 		</div>
 
-		<!-- Security details grid -->
-		<div class="roko-security-details-grid" id="roko-details-grid">
-			<!-- Cards will be inserted here -->
+		<!-- Security Details Grid - Populated by JavaScript using new DDD schema -->
+		<div class="roko-security-details-grid" id="roko-details-grid" role="region" aria-label="<?php esc_attr_e( 'Security check details', 'roko' ); ?>">
+			<!-- Security check cards will be dynamically inserted here by security.js -->
+			<div class="roko-loading-placeholder roko-text-center roko-py-4">
+				<p class="roko-text-muted"><?php esc_html_e( 'Loading security checks...', 'roko' ); ?></p>
+			</div>
 		</div>
 
-		<!-- Action buttons -->
-		<div class="roko-security-actions roko-mt-5 roko-d-flex">
-			<button class="roko-button roko-button-outline roko-mr-3"><?php esc_html_e( 'Safe-update plugins', 'roko' ); ?></button>
-			<button class="roko-button roko-button-outline roko-mr-3"><?php esc_html_e( 'Auto-fix issues', 'roko' ); ?></button>
-			<button class="roko-button roko-button-outline"><?php esc_html_e( 'Generate report', 'roko' ); ?></button>
+		<!-- Action Buttons -->
+		<div class="roko-security-actions roko-mt-5 roko-d-flex" role="group" aria-label="<?php esc_attr_e( 'Security actions', 'roko' ); ?>">
+			<button class="roko-button roko-button-outline roko-mr-3" disabled title="<?php esc_attr_e( 'Feature coming soon', 'roko' ); ?>">
+				<?php esc_html_e( 'Safe-update plugins', 'roko' ); ?>
+			</button>
+			<button class="roko-button roko-button-outline roko-mr-3" disabled title="<?php esc_attr_e( 'Feature coming soon', 'roko' ); ?>">
+				<?php esc_html_e( 'Auto-fix issues', 'roko' ); ?>
+			</button>
+			<button class="roko-button roko-button-outline" disabled title="<?php esc_attr_e( 'Feature coming soon', 'roko' ); ?>">
+				<?php esc_html_e( 'Generate report', 'roko' ); ?>
+			</button>
 		</div>
 		</div>
 	</div>
 
 <script>
+/**
+ * Alpine.js component for security keys management.
+ * Compatible with new DDD clean architecture schema.
+ */
 function saltRegeneration() {
 	return {
 		regenerating: false,
@@ -190,13 +221,16 @@ function saltRegeneration() {
 			// Request data from main dashboard if it's already loaded
 			setTimeout(() => {
 				const event = new CustomEvent('roko:request-security-data');
-				document.getElementById('roko-security-dashboard').dispatchEvent(event);
+				const dashboard = document.getElementById('roko-security-dashboard');
+				if (dashboard) {
+					dashboard.dispatchEvent(event);
+				}
 			}, 100);
 		},
 
 		getLastRotatedText() {
 			if (!this.lastRotated) {
-				return '<?php echo esc_js( __( 'Never rotated', 'roko' ) ); ?>';
+				return '<?php echo esc_js( __( 'Never rotated with Roko', 'roko' ) ); ?>';
 			}
 			
 			const date = new Date(this.lastRotated * 1000);
@@ -242,7 +276,6 @@ function saltRegeneration() {
 		},
 
 		async executeDisable() {
-			
 			this.disabling = true;
 			this.errorMessage = '';
 			
@@ -255,32 +288,26 @@ function saltRegeneration() {
 					}
 				});
 				
-				// Check if disable worked by checking response status
 				if (response.ok) {
 					try {
 						const result = await response.json();
 						if (result.disabled) {
-							// Successfully disabled - redirect to login
 							window.location.href = result.nextLogin;
 						} else {
-							throw new Error(result.message || 'Failed to disable Roko management');
+							throw new Error(result.message || '<?php echo esc_js( __( 'Failed to disable Roko management', 'roko' ) ); ?>');
 						}
 					} catch (jsonError) {
-						// JSON parsing failed, but response was OK - assume success
 						console.log('JSON parse error (disable likely succeeded):', jsonError);
 						window.location.href = '<?php echo wp_login_url(); ?>';
 					}
 				} else {
-					// HTTP error - disable likely failed
 					const errorText = await response.text();
-					throw new Error(`HTTP ${response.status}: ${errorText}`);
+					throw new Error(`<?php echo esc_js( __( 'HTTP Error', 'roko' ) ); ?> ${response.status}: ${errorText}`);
 				}
 			} catch (error) {
-				// Only show error if it's NOT a JSON parsing issue after successful HTTP response
 				if (!error.message.includes('JSON') && !error.message.includes('Unexpected')) {
 					this.errorMessage = error.message || '<?php echo esc_js( __( 'Failed to disable Roko salt management. Please try again.', 'roko' ) ); ?>';
 				} else {
-					// JSON error after successful HTTP - assume success
 					console.log('Assuming disable succeeded despite JSON error');
 					window.location.href = '<?php echo wp_login_url(); ?>';
 				}
@@ -298,7 +325,6 @@ function saltRegeneration() {
 		},
 
 		async executeRotation() {
-			
 			this.regenerating = true;
 			this.errorMessage = '';
 			
@@ -311,41 +337,30 @@ function saltRegeneration() {
 					}
 				});
 				
-				// Check if rotation worked by checking response status
 				if (response.ok) {
-					// If we get here, rotation likely succeeded
-					// Try to parse JSON, but if it fails, assume success and redirect
 					try {
 						const result = await response.json();
 						if (result.rotated) {
-							// Update last rotated timestamp for immediate feedback
 							if (result.rotatedAt) {
 								this.lastRotated = result.rotatedAt;
 							}
 							window.location.href = result.nextLogin;
 						} else {
-							throw new Error(result.message || 'Rotation failed');
+							throw new Error(result.message || '<?php echo esc_js( __( 'Rotation failed', 'roko' ) ); ?>');
 						}
 					} catch (jsonError) {
-						// JSON parsing failed, but response was OK
-						// This likely means rotation succeeded but response was cut off
 						console.log('JSON parse error (rotation likely succeeded):', jsonError);
-						// Update timestamp to current time since rotation likely worked
 						this.lastRotated = Math.floor(Date.now() / 1000);
-						// Redirect to login - rotation probably worked
 						window.location.href = '<?php echo wp_login_url(); ?>';
 					}
 				} else {
-					// HTTP error - rotation likely failed
 					const errorText = await response.text();
-					throw new Error(`HTTP ${response.status}: ${errorText}`);
+					throw new Error(`<?php echo esc_js( __( 'HTTP Error', 'roko' ) ); ?> ${response.status}: ${errorText}`);
 				}
 			} catch (error) {
-				// Only show error if it's NOT a JSON parsing issue after successful HTTP response
 				if (!error.message.includes('JSON') && !error.message.includes('Unexpected')) {
 					this.errorMessage = error.message || '<?php echo esc_js( __( 'Failed to rotate security keys. Please try again.', 'roko' ) ); ?>';
 				} else {
-					// JSON error after successful HTTP - assume success
 					console.log('Assuming rotation succeeded despite JSON error');
 					window.location.href = '<?php echo wp_login_url(); ?>';
 				}
@@ -510,8 +525,6 @@ function saltRegeneration() {
 	min-height: 28px;
 }
 
-
-
 /* Alert styling */
 .roko-alert {
 	padding: 12px 16px;
@@ -627,5 +640,4 @@ function saltRegeneration() {
 	transition: all 150ms ease-in;
 	transform: scale(0.95);
 }
-
 </style>

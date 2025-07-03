@@ -36,11 +36,11 @@ final class SecurityKeysChecks {
 				continue; // Skip unknown keys
 			}
 
-			$keyId          = $keyMappings[ $displayName ];
-			$strength       = $securityKey->strength();
-			$source         = $securityKey->source();
+			$keyId              = $keyMappings[ $displayName ];
+			$strength           = $securityKey->strength();
+			$source             = $securityKey->source();
 			$recommendationCode = $strength . '_' . $source; // Business code, not translated text
-			
+
 			$checks[] = new Check(
 				$keyId,
 				$displayName,

@@ -8,7 +8,7 @@ use JosephG\Roko\Domain\Security\Checks\ValueObject\Severity;
 
 /**
  * Domain Service: Transforms FilePermission entity into security checks.
- * 
+ *
  * Emits business codes for recommendations - Application layer handles translation.
  */
 final class FileSecurityChecks {
@@ -22,7 +22,7 @@ final class FileSecurityChecks {
 
 	/**
 	 * Create FileSecurityChecks from FilePermission domain entity.
-	 * 
+	 *
 	 * @param FilePermission $filePermission Domain entity with file security checks.
 	 */
 	public static function fromFilePermission( FilePermission $filePermission ) {
@@ -34,17 +34,17 @@ final class FileSecurityChecks {
 				continue; // Skip unknown checks
 			}
 
-			$mapping = $checkMappings[ $propertyName ];
+			$mapping      = $checkMappings[ $propertyName ];
 			$isVulnerable = $valueObject->value(); // Most checks: true = vulnerable
-			
+
 			// Some checks are inverted (false = vulnerable)
 			if ( in_array( $propertyName, array( 'wpConfigPermission644', 'htAccessPermission644' ) ) ) {
 				$isVulnerable = ! $isVulnerable;
 			}
 
-			$status = self::mapVulnerabilityToStatus( $isVulnerable );
+			$status       = self::mapVulnerabilityToStatus( $isVulnerable );
 			$businessCode = $isVulnerable ? $mapping['id'] . '_vulnerable' : $mapping['id'] . '_secure';
-			
+
 			$checks[] = new Check(
 				$mapping['id'],
 				$mapping['label'],
@@ -65,17 +65,50 @@ final class FileSecurityChecks {
 	 */
 	private static function getFileSecurityMappings() {
 		return array(
-			'directoryListingIsOn'       => array( 'id' => 'directory_listing', 'label' => 'Directory Listing' ),
-			'wpDebugOn'                  => array( 'id' => 'wp_debug', 'label' => 'Debug Mode' ),
-			'editorOn'                   => array( 'id' => 'file_editor', 'label' => 'File Editor' ),
-			'dashboardInstallsOn'        => array( 'id' => 'dashboard_installs', 'label' => 'Dashboard Installs' ),
-			'phpExecutionInUploadsDirOn' => array( 'id' => 'php_exec_uploads', 'label' => 'PHP Execution in Uploads' ),
-			'doesSensitiveFilesExists'   => array( 'id' => 'sensitive_files', 'label' => 'Sensitive Files Exposed' ),
-			'xmlrpcOn'                   => array( 'id' => 'xmlrpc', 'label' => 'XML-RPC' ),
-			'wpConfigPermission644'      => array( 'id' => 'wp_config_perms', 'label' => 'wp-config.php Permissions' ),
-			'htAccessPermission644'      => array( 'id' => 'htaccess_perms', 'label' => '.htaccess Permissions' ),
-			'anyBackupExposed'           => array( 'id' => 'backup_files', 'label' => 'Backup Files Exposed' ),
-			'logFilesExposed'            => array( 'id' => 'log_files', 'label' => 'Log Files Exposed' ),
+			'directoryListingIsOn'       => array(
+				'id'    => 'directory_listing',
+				'label' => 'Directory Listing',
+			),
+			'wpDebugOn'                  => array(
+				'id'    => 'wp_debug',
+				'label' => 'Debug Mode',
+			),
+			'editorOn'                   => array(
+				'id'    => 'file_editor',
+				'label' => 'File Editor',
+			),
+			'dashboardInstallsOn'        => array(
+				'id'    => 'dashboard_installs',
+				'label' => 'Dashboard Installs',
+			),
+			'phpExecutionInUploadsDirOn' => array(
+				'id'    => 'php_exec_uploads',
+				'label' => 'PHP Execution in Uploads',
+			),
+			'doesSensitiveFilesExists'   => array(
+				'id'    => 'sensitive_files',
+				'label' => 'Sensitive Files Exposed',
+			),
+			'xmlrpcOn'                   => array(
+				'id'    => 'xmlrpc',
+				'label' => 'XML-RPC',
+			),
+			'wpConfigPermission644'      => array(
+				'id'    => 'wp_config_perms',
+				'label' => 'wp-config.php Permissions',
+			),
+			'htAccessPermission644'      => array(
+				'id'    => 'htaccess_perms',
+				'label' => '.htaccess Permissions',
+			),
+			'anyBackupExposed'           => array(
+				'id'    => 'backup_files',
+				'label' => 'Backup Files Exposed',
+			),
+			'logFilesExposed'            => array(
+				'id'    => 'log_files',
+				'label' => 'Log Files Exposed',
+			),
 		);
 	}
 
@@ -100,7 +133,7 @@ final class FileSecurityChecks {
 			return Severity::high();
 		}
 
-		// Medium-risk vulnerabilities  
+		// Medium-risk vulnerabilities
 		$mediumRisk = array( 'directory_listing', 'file_editor', 'backup_files', 'log_files' );
 		if ( in_array( $checkId, $mediumRisk ) ) {
 			return Severity::medium();
@@ -129,7 +162,7 @@ final class FileSecurityChecks {
 		if ( in_array( $propertyName, array( 'wpConfigPermission644', 'htAccessPermission644' ) ) ) {
 			return ! $value;
 		}
-		
+
 		// Most other checks: true = vulnerable
 		return $value;
 	}
@@ -145,4 +178,4 @@ final class FileSecurityChecks {
 			$this->checks
 		);
 	}
-} 
+}
