@@ -911,7 +911,7 @@
 }
 
 .roko-admin .roko-badge-loading .roko-badge-text {
-	opacity: 0;
+	visibility: hidden;
 }
 
 .roko-admin .roko-badge-loading::before {
