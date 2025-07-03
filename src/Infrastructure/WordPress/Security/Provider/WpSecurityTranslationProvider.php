@@ -3,6 +3,7 @@ namespace JosephG\Roko\Infrastructure\WordPress\Security\Provider;
 
 use JosephG\Roko\Application\Security\Provider\SecurityTranslationProviderInterface;
 use JosephG\Roko\Infrastructure\WordPress\Security\I18n\SecurityKeysChecksI18n;
+use JosephG\Roko\Infrastructure\WordPress\Security\I18n\FileSecurityChecksI18n;
 
 /**
  * WordPress implementation of SecurityTranslationProvider.
@@ -30,5 +31,15 @@ final class WpSecurityTranslationProvider implements SecurityTranslationProvider
 		}
 
 		return $recommendations;
+	}
+
+	/**
+	 * Get file security recommendation for a specific business code.
+	 *
+	 * @param string $businessCode Business code from domain (e.g., 'directory_listing_vulnerable').
+	 * @return string Localized recommendation text.
+	 */
+	public function getFileSecurityRecommendation( $businessCode ) {
+		return FileSecurityChecksI18n::recommendation( $businessCode );
 	}
 }

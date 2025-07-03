@@ -9,6 +9,7 @@ use JosephG\Roko\Domain\Security\FileSecurity\Entity\FilePermissionInterface;
 use JosephG\Roko\Domain\Security\FileIntegrity\Repository\FileIntegrityRepositoryInterface;
 use JosephG\Roko\Domain\Security\KnownVulnerabilities\Repository\VulnerabilityRepositoryInterface;
 use JosephG\Roko\Domain\Security\Checks\SecurityKeysChecks;
+use JosephG\Roko\Domain\Security\Checks\FileSecurityChecks;
 
 /**
  * Aggregate Root: combines all security sub-domain snapshots.
@@ -55,6 +56,7 @@ final class SecurityAggregate {
 
 		// Domain logic - emits business codes, not translated text
 		$securityKeysChecks = SecurityKeysChecks::fromSecurityKeys( $keys );
+		$fileSecurityChecks = FileSecurityChecks::fromFilePermission( $fileSecurity );
 
 		return array(
 			'meta'     => array(
@@ -72,7 +74,7 @@ final class SecurityAggregate {
 					'id'          => 'file_security',
 					'title'       => 'File Security',
 					'description' => $fileSecurity->getSectionSummary()['description'],
-					'checks'      => array(), // TODO: Create FileSecurityChecks sub-aggregate
+					'checks'      => $fileSecurityChecks->toArray(),
 				),
 				array(
 					'id'          => 'file_integrity',

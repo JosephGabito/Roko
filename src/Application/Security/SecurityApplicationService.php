@@ -55,17 +55,23 @@ final class SecurityApplicationService {
 	 */
 	private function translateBusinessCodes( array $domainSnapshot ) {
 		// Get all translations from infrastructure
-		$translations = $this->translationProvider->getAllSecurityKeyRecommendations();
+		$securityKeyTranslations = $this->translationProvider->getAllSecurityKeyRecommendations();
 		
-		// Transform security keys section
+		// Transform each section
 		foreach ( $domainSnapshot['sections'] as &$section ) {
 			if ( $section['id'] === 'security_keys' ) {
 				foreach ( $section['checks'] as &$check ) {
 					// Domain emitted business code - Application translates it
 					$businessCode = $check['recommendation'];
-					$check['recommendation'] = isset( $translations[ $businessCode ] ) 
-						? $translations[ $businessCode ] 
+					$check['recommendation'] = isset( $securityKeyTranslations[ $businessCode ] ) 
+						? $securityKeyTranslations[ $businessCode ] 
 						: 'Review configuration and strengthen security.';
+				}
+			} elseif ( $section['id'] === 'file_security' ) {
+				foreach ( $section['checks'] as &$check ) {
+					// Domain emitted business code - Application translates it
+					$businessCode = $check['recommendation'];
+					$check['recommendation'] = $this->translationProvider->getFileSecurityRecommendation( $businessCode );
 				}
 			}
 		}
