@@ -76,7 +76,7 @@ final class WpFileIntegrityRepository implements FileIntegrityRepositoryInterfac
 		$malwarePatterns = new MalwarePatternsFound( array() ); // Clean for demo
 		$malwarePatterns->setDescription( 'These code snippets are classic malware fingerprints.' );
 
-		return new IntegrityScan(
+		$scan = new IntegrityScan(
 			coreIntact: true, // Legacy field - will be replaced by detailed checks
 			suspiciousCount: 3, // Count from detailed findings
 			scannedAt: new \DateTimeImmutable(),
@@ -88,5 +88,12 @@ final class WpFileIntegrityRepository implements FileIntegrityRepositoryInterfac
 			recentFileChanges: $recentFileChanges,
 			malwarePatternsFound: $malwarePatterns,
 		);
+
+		$scan->setSectionSummary(
+			__( 'File Integrity', 'roko' ),
+			__( 'We scan your WordPress core files, uploads directory, and system files for unauthorized changes, malware patterns, and suspicious activity that could indicate compromise.', 'roko' )
+		);
+
+		return $scan;
 	}
 }

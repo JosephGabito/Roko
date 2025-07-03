@@ -4,8 +4,8 @@
  * Security JSON Service
  *
  * Registers a REST endpoint (`/wp-json/roko/v1/security`) that returns the
- * domain aggregate snapshot in JSON. Serves as the thin adapter layer between
- * WordPress and your application (the SecurityAggregate).
+ * security snapshot in JSON. Serves as the thin adapter layer between
+ * WordPress and the Application layer.
  */
 
 namespace JosephG\Roko\Infrastructure\WordPress\Security;
@@ -13,14 +13,15 @@ namespace JosephG\Roko\Infrastructure\WordPress\Security;
 use WP_REST_Request;
 use WP_REST_Server;
 use JosephG\Roko\Infrastructure\WordPress\Security\SaltVault;
-use JosephG\Roko\Domain\Security\SecurityAggregate;
+use JosephG\Roko\Application\Security\SecurityApplicationService;
 
 final class SecurityJsonService {
 
-	private SecurityAggregate $aggregate;
+	/** @var SecurityApplicationService */
+	private $securityApplicationService;
 
-	public function __construct( SecurityAggregate $aggregate ) {
-		$this->aggregate = $aggregate;
+	public function __construct( SecurityApplicationService $securityApplicationService ) {
+		$this->securityApplicationService = $securityApplicationService;
 		add_action( 'rest_api_init', array( $this, 'register_routes' ) );
 	}
 
@@ -63,7 +64,7 @@ final class SecurityJsonService {
 	 * Only site admins get the raw security JSON.
 	 * You can swap to a custom capability if needed.
 	 */
-	public function permissions_check(): bool {
+	public function permissions_check() {
 		return current_user_can( 'manage_options' );
 	}
 
@@ -166,9 +167,9 @@ final class SecurityJsonService {
 	/**
 	 * Returns the security snapshot.
 	 */
-	public function handle_request( WP_REST_Request $request ): \WP_REST_Response|\WP_Error {
+	public function handle_request( WP_REST_Request $request ) {
 		try {
-			return rest_ensure_response( $this->aggregate->snapshot() );
+			return rest_ensure_response( $this->securityApplicationService->getSecuritySnapshot() );
 		} catch ( \Throwable $e ) {
 			// Enhanced error logging
 			error_log( 'Roko Security Error: ' . $e->getMessage() );

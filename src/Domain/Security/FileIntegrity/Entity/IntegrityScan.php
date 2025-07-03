@@ -14,6 +14,9 @@ use JosephG\Roko\Domain\Security\FileIntegrity\ValueObject\MalwarePatternsFound;
  */
 final class IntegrityScan {
 
+	private $title       = '';
+	private $description = '';
+
 	public function __construct(
 		public bool $coreIntact,
 		public int $suspiciousCount,
@@ -26,6 +29,18 @@ final class IntegrityScan {
 		public RecentFileChanges $recentFileChanges,
 		public MalwarePatternsFound $malwarePatternsFound,
 	) {}
+
+	public function setSectionSummary( string $title, string $description ) {
+		$this->title       = $title;
+		$this->description = $description;
+	}
+
+	public function getSectionSummary(): array {
+		return array(
+			'title'       => $this->title,
+			'description' => $this->description,
+		);
+	}
 
 	/**
 	 * Get comprehensive file integrity data as array.

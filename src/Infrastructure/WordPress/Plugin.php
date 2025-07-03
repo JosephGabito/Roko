@@ -31,14 +31,25 @@ class Plugin {
 
 		QueryMonitorBridge::init();
 
-		$aggregate = new SecurityAggregate(
+		// Domain layer - pure business logic
+		$securityAggregate = new SecurityAggregate(
 			new WpSecurityKeysProvider(),
 			new WpFileSecurityProvider(),
 			new WpFileIntegrityRepository(),
-			new WpVulnerabilityRepository(),
+			new WpVulnerabilityRepository()
 		);
 
-		new SecurityJsonService( $aggregate );
+		// Infrastructure providers
+		$translationProvider = new \JosephG\Roko\Infrastructure\WordPress\Security\Provider\WpSecurityTranslationProvider();
+
+		// Application layer - orchestrates domain + infrastructure
+		$securityApplicationService = new \JosephG\Roko\Application\Security\SecurityApplicationService(
+			$securityAggregate,
+			$translationProvider
+		);
+
+		// Presentation layer - REST API endpoints
+		new SecurityJsonService( $securityApplicationService );
 
 		// Also run on every init to catch upgrades without reactivating
 		add_action( 'init', array( __CLASS__, 'runMigrations' ) );

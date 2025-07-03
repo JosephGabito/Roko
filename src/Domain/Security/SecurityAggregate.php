@@ -8,6 +8,7 @@ use JosephG\Roko\Domain\Security\SecurityKeys\Entity\SecurityKeysProviderInterfa
 use JosephG\Roko\Domain\Security\FileSecurity\Entity\FilePermissionInterface;
 use JosephG\Roko\Domain\Security\FileIntegrity\Repository\FileIntegrityRepositoryInterface;
 use JosephG\Roko\Domain\Security\KnownVulnerabilities\Repository\VulnerabilityRepositoryInterface;
+use JosephG\Roko\Domain\Security\Checks\SecurityKeysChecks;
 
 /**
  * Aggregate Root: combines all security sub-domain snapshots.
@@ -16,118 +17,74 @@ use JosephG\Roko\Domain\Security\KnownVulnerabilities\Repository\VulnerabilityRe
  */
 final class SecurityAggregate {
 
+	/** @var SecurityKeysProviderInterface */
+	private $securityKeysProvider;
+
+	/** @var FilePermissionInterface */
+	private $filePermissionProvider;
+
+	/** @var FileIntegrityRepositoryInterface */
+	private $integrityRepo;
+
+	/** @var VulnerabilityRepositoryInterface */
+	private $vulnRepo;
+
 	public function __construct(
-		private SecurityKeysProviderInterface $securityKeysProvider,
-		private FilePermissionInterface $filePermissionProvider,
-		private FileIntegrityRepositoryInterface $integrityRepo,
-		private VulnerabilityRepositoryInterface $vulnRepo,
-	) {}
+		SecurityKeysProviderInterface $securityKeysProvider,
+		FilePermissionInterface $filePermissionProvider,
+		FileIntegrityRepositoryInterface $integrityRepo,
+		VulnerabilityRepositoryInterface $vulnRepo
+	) {
+		$this->securityKeysProvider   = $securityKeysProvider;
+		$this->filePermissionProvider = $filePermissionProvider;
+		$this->integrityRepo          = $integrityRepo;
+		$this->vulnRepo               = $vulnRepo;
+	}
 
 	/**
 	 * Returns a plain PHP array describing the current security posture.
 	 */
-	public function snapshot(): array {
+	public function snapshot() {
 
 		$keys          = $this->securityKeysProvider->snapshot();
 		$fileSecurity  = $this->filePermissionProvider->snapshot();
 		$integrityScan = $this->integrityRepo->latestScan();
 		$vulns         = $this->vulnRepo->latestKnown();
 
-		$securityKeys = array();
-		$keysArray    = $keys->toArray();
-
-		if ( is_array( $keysArray ) && ! empty( $keysArray ) ) {
-			$securityKeys = array_map(
-				function ( $value, $key ) {
-					return array(
-						'key'         => $key,
-						'strength'    => $value->strength(),
-						'description' => $value->description(),
-						'source'      => $value->source(),
-					);
-				},
-				$keysArray,
-				array_keys( $keysArray )
-			);
-		}
-
-		$fileSecurityArray = $fileSecurity->toArray();
-
-		$fileSecurityArrayDump = array(
-			'directoryListingIsOn'       => array(
-				'description' => $fileSecurityArray['directoryListingIsOn']->description(),
-				'value'       => $fileSecurityArray['directoryListingIsOn']->value(),
-			),
-			'wpDebugOn'                  => array(
-				'description' => $fileSecurityArray['wpDebugOn']->description(),
-				'value'       => $fileSecurityArray['wpDebugOn']->value(),
-			),
-			'editorOn'                   => array(
-				'description' => $fileSecurityArray['editorOn']->description(),
-				'value'       => $fileSecurityArray['editorOn']->value(),
-			),
-			'dashboardInstallsOn'        => array(
-				'description' => $fileSecurityArray['dashboardInstallsOn']->description(),
-				'value'       => $fileSecurityArray['dashboardInstallsOn']->value(),
-			),
-			'phpExecutionInUploadsDirOn' => array(
-				'description' => $fileSecurityArray['phpExecutionInUploadsDirOn']->description(),
-				'value'       => $fileSecurityArray['phpExecutionInUploadsDirOn']->value(),
-			),
-			'doesSensitiveFilesExists'   => array(
-				'description' => $fileSecurityArray['doesSensitiveFilesExists']->description(),
-				'value'       => $fileSecurityArray['doesSensitiveFilesExists']->value(),
-			),
-			'xmlrpcOn'                   => array(
-				'description' => $fileSecurityArray['xmlrpcOn']->description(),
-				'value'       => $fileSecurityArray['xmlrpcOn']->value(),
-			),
-			'wpConfigPermission644'      => array(
-				'description' => $fileSecurityArray['wpConfigPermission644']->description(),
-				'value'       => $fileSecurityArray['wpConfigPermission644']->value(),
-			),
-			'htAccessPermission644'      => array(
-				'description' => $fileSecurityArray['htAccessPermission644']->description(),
-				'value'       => $fileSecurityArray['htAccessPermission644']->value(),
-			),
-			'anyBackupExposed'           => array(
-				'description' => $fileSecurityArray['anyBackupExposed']->description(),
-				'value'       => $fileSecurityArray['anyBackupExposed']->value(),
-			),
-			'logFilesExposed'            => array(
-				'description' => $fileSecurityArray['logFilesExposed']->description(),
-				'value'       => $fileSecurityArray['logFilesExposed']->value(),
-			),
-		);
+		// Transform domain objects to checks using sub-aggregates
+		$securityKeysChecks = SecurityKeysChecks::fromSecurityKeys( $keys );
 
 		return array(
-			'timestamp'            => ( new \DateTimeImmutable() )->format( \DateTimeInterface::ATOM ),
-			'securityKeys'         => $keys ? array(
-				'summary'      => $keys->getSectionSummary(),
-				'securityKeys' => $securityKeys,
-				'lastRotated'  => $keys->getLastRotated(),
-			) : array(),
-			'fileSecurity'         => array(
-				'summary'      => $fileSecurity->getSectionSummary(),
-				'fileSecurity' => $fileSecurityArrayDump,
+			'meta'     => array(
+				'generatedAt' => ( new \DateTimeImmutable() )->format( \DateTimeInterface::ATOM ),
+				'rokoVersion' => ROKO_PLUGIN_VERSION,
 			),
-			'fileIntegrity'        => $integrityScan ? array_merge(
+			'sections' => array(
 				array(
-					'coreModified'    => ! $integrityScan->coreIntact,
-					'suspiciousFiles' => $integrityScan->suspiciousCount,
-					'scannedAt'       => $integrityScan->scannedAt->format( \DateTimeInterface::ATOM ),
+					'id'          => 'security_keys',
+					'title'       => 'Security Keys & Salts',
+					'description' => $keys->getSectionSummary()['description'],
+					'checks'      => $securityKeysChecks->toArray(),
 				),
-				$integrityScan->toArray()
-			) : array(),
-			'knownVulnerabilities' => $vulns ? array_map(
-				static fn ( $v ) => array(
-					'plugin'    => $v->pluginSlug,
-					'cve'       => $v->cve,
-					'severity'  => $v->severity,
-					'published' => $v->publishedAt->format( \DateTimeInterface::ATOM ),
+				array(
+					'id'          => 'file_security',
+					'title'       => 'File Security',
+					'description' => $fileSecurity->getSectionSummary()['description'],
+					'checks'      => array(), // TODO: Create FileSecurityChecks sub-aggregate
 				),
-				$vulns
-			) : array(),
+				array(
+					'id'          => 'file_integrity',
+					'title'       => 'File Integrity',
+					'description' => $integrityScan->getSectionSummary()['description'],
+					'checks'      => array(), // TODO: Create FileIntegrityChecks sub-aggregate
+				),
+				array(
+					'id'          => 'known_vulnerabilities',
+					'title'       => 'Known Vulnerabilities',
+					'description' => $vulns->getSectionSummary()['description'],
+					'checks'      => array(), // TODO: Create VulnerabilityChecks sub-aggregate
+				),
+			),
 		);
 	}
 
@@ -136,7 +93,7 @@ final class SecurityAggregate {
 	 *
 	 * @throws JsonException
 	 */
-	public function toJson( int $options = 0 ): string {
+	public function toJson( $options = 0 ) {
 		return json_encode( $this->snapshot(), JSON_THROW_ON_ERROR | $options );
 	}
 }
