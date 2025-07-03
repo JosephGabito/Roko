@@ -60,12 +60,12 @@ graph TD
 
 ### **Layer Responsibilities**
 
-| Layer | Purpose | Example Classes | Key Principles |
-|-------|---------|-----------------|----------------|
-| **🌐 Presentation** | HTTP handling, request/response | `SecurityJsonService` | Framework-specific adapters |
-| **🎯 Application** | Use case orchestration | `SecurityApplicationService` | Coordinates domain + infrastructure |
-| **🏛️ Domain** | Pure business logic | `SecurityAggregate`, `SecurityKeysChecks` | Framework-agnostic, self-contained |
-| **🔌 Infrastructure** | External concerns | `WpSecurityTranslationProvider` | WordPress-specific implementations |
+| Layer | May Import/Depend On | Never Imports | Example Classes |
+|-------|---------------------|---------------|-----------------|
+| **🌐 Presentation** | Application DTOs/Commands | Domain or Infrastructure directly | `SecurityJsonService` |
+| **🎯 Application** | Domain abstractions, owns interfaces | Infrastructure concretes | `SecurityApplicationService` |
+| **🏛️ Domain** | **Nothing** (pure) | Infrastructure, frameworks, UI | `SecurityAggregate`, `SecurityKeysChecks` |
+| **🔌 Infrastructure** | Domain types, Application interfaces | **Nothing above it** | `WpSecurityTranslationProvider` |
 
 ### **Dependency Flow (Clean Architecture)**
 
@@ -73,9 +73,11 @@ graph TD
 graph LR
     PRES[🌐 Presentation] --> APP[🎯 Application]
     APP --> DOM[🏛️ Domain]
-    APP --> INFRA[🔌 Infrastructure]
+    INFRA[🔌 Infrastructure] --> APP
+    INFRA --> DOM
     
     DOM -.->|"❌ Never depends on"| INFRA
+    APP -.->|"❌ Never imports"| INFRA
     
     classDef presentation fill:#e1f5fe
     classDef application fill:#f3e5f5
@@ -181,7 +183,35 @@ class WpSecurityTranslationProvider implements SecurityTranslationProviderInterf
 }
 ```
 
-### **4. Dependency Injection at the Root**
+### **4. Dependency Inversion Principle**
+
+Infrastructure implements interfaces defined by Application layer:
+
+```php
+// ✅ Application defines the contract
+interface SecurityTranslationProviderInterface {
+    public function getAllSecurityKeyRecommendations();
+}
+
+// ✅ Infrastructure implements the contract
+class WpSecurityTranslationProvider implements SecurityTranslationProviderInterface {
+    public function getAllSecurityKeyRecommendations() {
+        // WordPress-specific implementation
+    }
+}
+
+// ✅ Application depends on abstraction, not concrete
+class SecurityApplicationService {
+    public function __construct(
+        SecurityAggregate $securityAggregate,
+        SecurityTranslationProviderInterface $provider  // ← Interface, not concrete
+    ) {
+        // Infrastructure implementation injected at runtime
+    }
+}
+```
+
+### **5. Dependency Injection at the Root**
 
 All dependencies wired at the application entry point:
 
@@ -192,13 +222,13 @@ class Plugin {
         // Domain layer - pure business logic
         $securityAggregate = new SecurityAggregate(/*...*/);
         
-        // Infrastructure providers
+        // Infrastructure providers (implement Application interfaces)
         $translationProvider = new WpSecurityTranslationProvider();
         
-        // Application layer - orchestrates domain + infrastructure
+        // Application layer - receives Infrastructure via interfaces
         $securityApplicationService = new SecurityApplicationService(
             $securityAggregate,
-            $translationProvider
+            $translationProvider  // ← Concrete injected, but Application sees interface
         );
         
         // Presentation layer - REST API endpoints
@@ -265,6 +295,20 @@ composer php74-compat
 - **Type Safety**: Strict typing where PHP version allows
 
 ## 🚀 Why This Architecture?
+
+### **The Dependency Inversion Magic**
+
+```
+Presentation  →  Application  →  Domain
+                  ↑              ↑
+Infrastructure  ──┘──────────────┘
+```
+
+**Key insight**: Infrastructure **serves** higher layers by implementing their contracts:
+- **Application defines interfaces** → Infrastructure implements them
+- **Domain stays pure** → Never depends on external concerns  
+- **Testability** → Easy to mock Infrastructure implementations
+- **Flexibility** → Swap WordPress for Laravel/Symfony without changing Domain
 
 ### **Benefits**
 
