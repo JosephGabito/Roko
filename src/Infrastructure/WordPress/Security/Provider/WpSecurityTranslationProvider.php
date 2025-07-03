@@ -12,13 +12,23 @@ use JosephG\Roko\Infrastructure\WordPress\Security\I18n\SecurityKeysChecksI18n;
 final class WpSecurityTranslationProvider implements SecurityTranslationProviderInterface {
 
 	/**
-	 * Get recommendation text for security key based on strength and source.
+	 * Get all security key recommendations keyed by strength_source pattern.
 	 *
-	 * @param string $strength Key strength (none, weak, strong).
-	 * @param string $source   Key source (constant, db, roko, filter).
-	 * @return string Localized recommendation text.
+	 * @return array Array of recommendations keyed by 'strength_source' (e.g., 'none_constant', 'strong_roko').
 	 */
-	public function getSecurityKeyRecommendation( $strength, $source ) {
-		return SecurityKeysChecksI18n::recommendation( $strength, $source );
+	public function getAllSecurityKeyRecommendations() {
+		$recommendations = array();
+		$strengths       = array( 'none', 'weak', 'strong' );
+		$sources         = array( 'constant', 'db', 'roko', 'filter' );
+
+		// Generate all possible combinations
+		foreach ( $strengths as $strength ) {
+			foreach ( $sources as $source ) {
+				$key                     = $strength . '_' . $source;
+				$recommendations[ $key ] = SecurityKeysChecksI18n::recommendation( $strength, $source );
+			}
+		}
+
+		return $recommendations;
 	}
 }

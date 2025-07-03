@@ -12,11 +12,9 @@ namespace JosephG\Roko\Application\Security\Provider;
 interface SecurityTranslationProviderInterface {
 
 	/**
-	 * Get recommendation text for security key based on strength and source.
+	 * Get all security key recommendations keyed by strength_source pattern.
 	 *
-	 * @param string $strength Key strength (none, weak, strong).
-	 * @param string $source   Key source (constant, db, roko, filter).
-	 * @return string Localized recommendation text.
+	 * @return array Array of recommendations keyed by 'strength_source' (e.g., 'none_constant', 'strong_roko').
 	 */
-	public function getSecurityKeyRecommendation( $strength, $source );
+	public function getAllSecurityKeyRecommendations();
 }

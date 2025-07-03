@@ -7,10 +7,10 @@ use JosephG\Roko\Domain\Security\SecurityAggregate;
 use JosephG\Roko\Application\Security\Provider\SecurityTranslationProviderInterface;
 
 /**
- * Application Service for Security operations.
+ * Application Service for getting security snapshots.
  *
  * Orchestrates domain operations and coordinates with infrastructure providers.
- * This is where cross-cutting concerns like translations are handled.
+ * Follows single-responsibility principle - focused on one use case.
  */
 final class SecurityApplicationService {
 
@@ -30,13 +30,15 @@ final class SecurityApplicationService {
 
 	/**
 	 * Get security snapshot with proper translations.
+	 *
+	 * Single-purpose use case following DDD patterns.
 	 */
 	public function getSecuritySnapshot() {
-		// Get pure domain data
-		$domainSnapshot = $this->securityAggregate->snapshot();
+		// Get recommendations from infrastructure
+		$recommendations = $this->translationProvider->getAllSecurityKeyRecommendations();
 
-		// Enhance with translations from infrastructure
-		return $this->enhanceWithTranslations( $domainSnapshot );
+		// Let domain handle its own serialization with translations
+		return $this->securityAggregate->snapshot( $recommendations );
 	}
 
 	/**
@@ -44,48 +46,5 @@ final class SecurityApplicationService {
 	 */
 	public function getSecuritySnapshotJson( $options = 0 ) {
 		return json_encode( $this->getSecuritySnapshot(), JSON_THROW_ON_ERROR | $options );
-	}
-
-	/**
-	 * Enhance domain snapshot with translation-specific data.
-	 */
-	private function enhanceWithTranslations( array $domainSnapshot ) {
-		// Transform SecurityKeys section with proper recommendations
-		foreach ( $domainSnapshot['sections'] as &$section ) {
-			if ( $section['id'] === 'security_keys' ) {
-				$section['checks'] = $this->enhanceSecurityKeysChecks( $section['checks'] );
-			}
-		}
-
-		return $domainSnapshot;
-	}
-
-	/**
-	 * Enhance security keys checks with contextual recommendations.
-	 */
-	private function enhanceSecurityKeysChecks( array $checks ) {
-		foreach ( $checks as &$check ) {
-			// Extract strength and source from check data to get proper recommendation
-			$strength = $this->extractStrengthFromCheck( $check );
-			$source   = $this->extractSourceFromCheck( $check );
-
-			$check['recommendation'] = $this->translationProvider->getSecurityKeyRecommendation( $strength, $source );
-		}
-
-		return $checks;
-	}
-
-	/**
-	 * Extract strength from check evidence.
-	 */
-	private function extractStrengthFromCheck( array $check ) {
-		return isset( $check['evidence']['strength'] ) ? $check['evidence']['strength'] : 'unknown';
-	}
-
-	/**
-	 * Extract source from check evidence.
-	 */
-	private function extractSourceFromCheck( array $check ) {
-		return isset( $check['evidence']['source'] ) ? $check['evidence']['source'] : 'unknown';
 	}
 }

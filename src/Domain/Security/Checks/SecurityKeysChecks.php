@@ -26,8 +26,9 @@ final class SecurityKeysChecks {
 	 * Create SecurityKeysChecks from SecurityKeys domain entity.
 	 *
 	 * @param SecurityKeys $securityKeys Domain entity with security keys.
+	 * @param array $recommendations Array of recommendations keyed by strength_source pattern.
 	 */
-	public static function fromSecurityKeys( SecurityKeys $securityKeys ): self {
+	public static function fromSecurityKeys( SecurityKeys $securityKeys, array $recommendations = array() ): self {
 		$keyMappings = self::getKeyMappings();
 		$checks      = array();
 
@@ -36,15 +37,20 @@ final class SecurityKeysChecks {
 				continue; // Skip unknown keys
 			}
 
-			$keyId    = $keyMappings[ $displayName ];
+			$keyId          = $keyMappings[ $displayName ];
+			$strength       = $securityKey->strength();
+			$source         = $securityKey->source();
+			$lookupKey      = $strength . '_' . $source;
+			$recommendation = isset( $recommendations[ $lookupKey ] ) ? $recommendations[ $lookupKey ] : '';
+
 			$checks[] = new Check(
 				$keyId,
 				$displayName,
-				self::mapStrengthToStatus( $securityKey->strength() ),
-				self::calculateSeverity( $securityKey->strength(), $keyId ),
+				self::mapStrengthToStatus( $strength ),
+				self::calculateSeverity( $strength, $keyId ),
 				$securityKey->description(),
 				self::buildEvidence( $securityKey, $securityKeys->getLastRotated() ),
-				'', // Empty recommendation - Application layer will populate this
+				$recommendation,
 				'roko'
 			);
 		}

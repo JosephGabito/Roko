@@ -43,8 +43,10 @@ final class SecurityAggregate {
 
 	/**
 	 * Returns a plain PHP array describing the current security posture.
+	 *
+	 * @param array $securityKeyRecommendations Optional recommendations for security keys.
 	 */
-	public function snapshot() {
+	public function snapshot( array $securityKeyRecommendations = array() ) {
 
 		$keys          = $this->securityKeysProvider->snapshot();
 		$fileSecurity  = $this->filePermissionProvider->snapshot();
@@ -52,7 +54,7 @@ final class SecurityAggregate {
 		$vulns         = $this->vulnRepo->latestKnown();
 
 		// Transform domain objects to checks using sub-aggregates
-		$securityKeysChecks = SecurityKeysChecks::fromSecurityKeys( $keys );
+		$securityKeysChecks = SecurityKeysChecks::fromSecurityKeys( $keys, $securityKeyRecommendations );
 
 		return array(
 			'meta'     => array(
