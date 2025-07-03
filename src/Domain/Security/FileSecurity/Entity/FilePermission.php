@@ -6,10 +6,8 @@ use JosephG\Roko\Domain\Security\FileSecurity\ValueObject\IsWpDebugOn;
 use JosephG\Roko\Domain\Security\FileSecurity\ValueObject\IsEditorOn;
 use JosephG\Roko\Domain\Security\FileSecurity\ValueObject\IsDashboardInstallsOn;
 use JosephG\Roko\Domain\Security\FileSecurity\ValueObject\IsPHPExecutionInUploadsDirOn;
-use JosephG\Roko\Domain\Security\FileSecurity\ValueObject\DoesSensitiveFilesExists;
 use JosephG\Roko\Domain\Security\FileSecurity\ValueObject\IsXMLRPCOn;
 use JosephG\Roko\Domain\Security\FileSecurity\ValueObject\IsWpConfigPermission644;
-use JosephG\Roko\Domain\Security\FileSecurity\ValueObject\IsHtAccessPermission644;
 use JosephG\Roko\Domain\Security\FileSecurity\ValueObject\AnyBackupExposed;
 use JosephG\Roko\Domain\Security\FileSecurity\ValueObject\LogFilesExposed;
 
@@ -20,10 +18,8 @@ final class FilePermission {
 	private IsEditorOn $editorOn;
 	private IsDashboardInstallsOn $dashboardInstallsOn;
 	private IsPHPExecutionInUploadsDirOn $phpExecutionInUploadsDirOn;
-	private DoesSensitiveFilesExists $doesSensitiveFilesExists;
 	private IsXMLRPCOn $xmlrpcOn;
 	private IsWpConfigPermission644 $wpConfigPermission644;
-	private IsHtAccessPermission644 $htAccessPermission644;
 	private AnyBackupExposed $anyBackupExposed;
 	private LogFilesExposed $logFilesExposed;
 
@@ -36,10 +32,8 @@ final class FilePermission {
 		IsEditorOn $editorOn,
 		IsDashboardInstallsOn $dashboardInstallsOn,
 		IsPHPExecutionInUploadsDirOn $phpExecutionInUploadsDirOn,
-		DoesSensitiveFilesExists $doesSensitiveFilesExists,
 		IsXMLRPCOn $xmlrpcOn,
 		IsWpConfigPermission644 $wpConfigPermission644,
-		IsHtAccessPermission644 $htAccessPermission644,
 		AnyBackupExposed $anyBackupExposed,
 		LogFilesExposed $logFilesExposed
 	) {
@@ -48,10 +42,8 @@ final class FilePermission {
 		$this->editorOn                   = $editorOn;
 		$this->dashboardInstallsOn        = $dashboardInstallsOn;
 		$this->phpExecutionInUploadsDirOn = $phpExecutionInUploadsDirOn;
-		$this->doesSensitiveFilesExists   = $doesSensitiveFilesExists;
 		$this->xmlrpcOn                   = $xmlrpcOn;
 		$this->wpConfigPermission644      = $wpConfigPermission644;
-		$this->htAccessPermission644      = $htAccessPermission644;
 		$this->anyBackupExposed           = $anyBackupExposed;
 		$this->logFilesExposed            = $logFilesExposed;
 	}
@@ -77,10 +69,8 @@ final class FilePermission {
 	 *  editorOn: IsEditorOn,
 	 *  dashboardInstallsOn: IsDashboardInstallsOn,
 	 *  phpExecutionInUploadsDirOn: IsPHPExecutionInUploadsDirOn,
-	 *  doesSensitiveFilesExists: DoesSensitiveFilesExists,
 	 *  xmlrpcOn: IsXMLRPCOn,
 	 *  wpConfigPermission644: IsWpConfigPermission644,
-	 *  htAccessPermission644: IsHtAccessPermission644,
 	 *  anyBackupExposed: AnyBackupExposed,
 	 *  logFilesExposed: LogFilesExposed,
 	 * }
@@ -92,10 +82,8 @@ final class FilePermission {
 			'editorOn'                   => $this->editorOn,
 			'dashboardInstallsOn'        => $this->dashboardInstallsOn,
 			'phpExecutionInUploadsDirOn' => $this->phpExecutionInUploadsDirOn,
-			'doesSensitiveFilesExists'   => $this->doesSensitiveFilesExists,
 			'xmlrpcOn'                   => $this->xmlrpcOn,
 			'wpConfigPermission644'      => $this->wpConfigPermission644,
-			'htAccessPermission644'      => $this->htAccessPermission644,
 			'anyBackupExposed'           => $this->anyBackupExposed,
 			'logFilesExposed'            => $this->logFilesExposed,
 		);

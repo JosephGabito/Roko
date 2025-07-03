@@ -13,27 +13,27 @@ final class SecurityFixMapper {
 	 */
 	const FIX_MAPPINGS = array(
 		// File Security fixes
-		'debug_on'                => array(
+		'debug_on'                 => array(
 			'route'             => '/wp-json/roko/v1/fix/disable-wp-debug',
 			'needsConfirmation' => false,
 		),
-		'editor_on'               => array(
+		'editor_on'                => array(
 			'route'             => '/wp-json/roko/v1/fix/disable-file-editor',
 			'needsConfirmation' => false,
 		),
-		'listing_on'              => array(
+		'listing_on'               => array(
 			'route'             => '/wp-json/roko/v1/fix/disable-directory-listing',
 			'needsConfirmation' => false,
 		),
-		'xmlrpc_on'               => array(
+		'xmlrpc_on'                => array(
 			'route'             => '/wp-json/roko/v1/fix/disable-xmlrpc',
 			'needsConfirmation' => false,
 		),
-		'dashboard_installs_on'   => array(
+		'dashboard_installs_on'    => array(
 			'route'             => '/wp-json/roko/v1/fix/disable-dashboard-installs',
 			'needsConfirmation' => false,
 		),
-		'php_exec_uploads_on'     => array(
+		'php_exec_uploads_on'      => array(
 			'route'             => '/wp-json/roko/v1/fix/disable-php-execution-uploads',
 			'needsConfirmation' => true,
 		),
@@ -41,16 +41,6 @@ final class SecurityFixMapper {
 		// File permission fixes (potentially disruptive)
 		'wp_config_perms_insecure' => array(
 			'route'             => '/wp-json/roko/v1/fix/secure-wp-config-permissions',
-			'needsConfirmation' => true,
-		),
-		'htaccess_perms_insecure'  => array(
-			'route'             => '/wp-json/roko/v1/fix/secure-htaccess-permissions',
-			'needsConfirmation' => true,
-		),
-
-		// File cleanup (potentially destructive)
-		'sensitive_files_exposed'  => array(
-			'route'             => '/wp-json/roko/v1/fix/remove-sensitive-files',
 			'needsConfirmation' => true,
 		),
 		'backup_files_exposed'     => array(
@@ -101,4 +91,4 @@ final class SecurityFixMapper {
 	public static function getAllFixRoutes() {
 		return array_column( self::FIX_MAPPINGS, 'route' );
 	}
-} 
+}

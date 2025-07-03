@@ -56,10 +56,6 @@ final class FileSecurityChecksI18n {
 			'php_exec_uploads_vulnerable'   => __( 'Block PHP execution in uploads directory by adding .htaccess rules or server configuration.', 'roko' ),
 			'php_exec_uploads_secure'       => __( 'PHP execution is blocked in uploads directory. Great security practice!', 'roko' ),
 
-			// Sensitive Files
-			'sensitive_files_vulnerable'    => __( 'Move wp-config.php outside web root or add .htaccess protection for sensitive files.', 'roko' ),
-			'sensitive_files_secure'        => __( 'Sensitive files are properly protected from web access.', 'roko' ),
-
 			// XML-RPC
 			'xmlrpc_vulnerable'             => __( 'Consider disabling XML-RPC if not needed, or use a security plugin to limit access.', 'roko' ),
 			'xmlrpc_secure'                 => __( 'XML-RPC is disabled, reducing potential attack vectors.', 'roko' ),
@@ -67,10 +63,6 @@ final class FileSecurityChecksI18n {
 			// wp-config.php Permissions
 			'wp_config_perms_vulnerable'    => __( 'Set wp-config.php permissions to 644 or 600 for better security.', 'roko' ),
 			'wp_config_perms_secure'        => __( 'wp-config.php has secure file permissions.', 'roko' ),
-
-			// .htaccess Permissions
-			'htaccess_perms_vulnerable'     => __( 'Set .htaccess permissions to 644 to prevent unauthorized modifications.', 'roko' ),
-			'htaccess_perms_secure'         => __( '.htaccess has appropriate file permissions.', 'roko' ),
 
 			// Backup Files
 			'backup_files_vulnerable'       => __( 'Remove exposed backup files (.zip, .sql, .bak) from web root immediately.', 'roko' ),

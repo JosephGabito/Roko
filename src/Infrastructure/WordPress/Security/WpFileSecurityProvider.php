@@ -145,15 +145,6 @@ final class WpFileSecurityProvider implements FilePermissionInterface {
 	}
 
 	/**
-	 * Verify .htaccess file permissions are 0644.
-	 *
-	 * @return bool True if permissions are exactly 0644.
-	 */
-	private function isHtAccessPermission644(): bool {
-		return $this->hasFilePermission( ABSPATH . '.htaccess', 0644 );
-	}
-
-	/**
 	 * Scan for exposed backup files (zip, tar.gz, sql, bak, old).
 	 *
 	 * @return bool True if any backups found.
@@ -189,10 +180,8 @@ final class WpFileSecurityProvider implements FilePermissionInterface {
 		$editor            = new IsEditorOn( $this->isEditorOn() );
 		$dashboardInstalls = new IsDashboardInstallsOn( $this->isDashboardInstallsOn() );
 		$phpExecUploads    = new IsPHPExecutionInUploadsDirOn( $this->isPHPExecutionInUploadsDirOn() );
-		$sensitiveFiles    = new DoesSensitiveFilesExists( $this->doesSensitiveFilesExists() );
 		$xmlrpc            = new IsXMLRPCOn( $this->isXMLRPCOn() );
 		$wpConfigPerm      = new IsWpConfigPermission644( $this->isWpConfigPermission644() );
-		$htAccessPerm      = new IsHtAccessPermission644( $this->isHtAccessPermission644() );
 		$backupExposed     = new AnyBackupExposed( $this->anyBackupExposed() );
 		$logsExposed       = new LogFilesExposed( $this->logFilesExposed() );
 
@@ -201,10 +190,8 @@ final class WpFileSecurityProvider implements FilePermissionInterface {
 		$wpDebug->setDescription( FileSecurityI18n::description( 'wpDebug' ) );
 		$editor->setDescription( FileSecurityI18n::description( 'editor' ) );
 		$dashboardInstalls->setDescription( FileSecurityI18n::description( 'dashboardInstalls' ) );
-		$sensitiveFiles->setDescription( FileSecurityI18n::description( 'sensitiveFiles' ) );
 		$xmlrpc->setDescription( FileSecurityI18n::description( 'xmlrpc' ) );
 		$wpConfigPerm->setDescription( FileSecurityI18n::description( 'wpConfigPerm' ) );
-		$htAccessPerm->setDescription( FileSecurityI18n::description( 'htAccessPerm' ) );
 		$backupExposed->setDescription( FileSecurityI18n::description( 'backupExposed' ) );
 		$logsExposed->setDescription( FileSecurityI18n::description( 'logsExposed' ) );
 
@@ -214,10 +201,8 @@ final class WpFileSecurityProvider implements FilePermissionInterface {
 			$editor,
 			$dashboardInstalls,
 			$phpExecUploads,
-			$sensitiveFiles,
 			$xmlrpc,
 			$wpConfigPerm,
-			$htAccessPerm,
 			$backupExposed,
 			$logsExposed
 		);

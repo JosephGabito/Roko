@@ -151,6 +151,7 @@ final class FileSecurityChecks {
 	 * @return string Business code for the recommendation
 	 */
 	private static function mapToBusinessCode( $propertyName, $isVulnerable ) {
+
 		// Map of property names to business codes
 		$businessCodeMap = array(
 			'directoryListingIsOn'       => 'listing_on',
@@ -158,10 +159,8 @@ final class FileSecurityChecks {
 			'editorOn'                   => 'editor_on',
 			'dashboardInstallsOn'        => 'dashboard_installs_on',
 			'phpExecutionInUploadsDirOn' => 'php_exec_uploads_on',
-			'doesSensitiveFilesExists'   => 'sensitive_files_exposed',
 			'xmlrpcOn'                   => 'xmlrpc_on',
 			'wpConfigPermission644'      => 'wp_config_perms_insecure',
-			'htAccessPermission644'      => 'htaccess_perms_insecure',
 			'anyBackupExposed'           => 'backup_files_exposed',
 			'logFilesExposed'            => 'log_files_exposed',
 		);
