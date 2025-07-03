@@ -26,9 +26,8 @@ final class SecurityKeysChecks {
 	 * Create SecurityKeysChecks from SecurityKeys domain entity.
 	 *
 	 * @param SecurityKeys $securityKeys Domain entity with security keys.
-	 * @param array $recommendations Array of recommendations keyed by strength_source pattern.
 	 */
-	public static function fromSecurityKeys( SecurityKeys $securityKeys, array $recommendations = array() ): self {
+	public static function fromSecurityKeys( SecurityKeys $securityKeys ): self {
 		$keyMappings = self::getKeyMappings();
 		$checks      = array();
 
@@ -40,9 +39,8 @@ final class SecurityKeysChecks {
 			$keyId          = $keyMappings[ $displayName ];
 			$strength       = $securityKey->strength();
 			$source         = $securityKey->source();
-			$lookupKey      = $strength . '_' . $source;
-			$recommendation = isset( $recommendations[ $lookupKey ] ) ? $recommendations[ $lookupKey ] : '';
-
+			$recommendationCode = $strength . '_' . $source; // Business code, not translated text
+			
 			$checks[] = new Check(
 				$keyId,
 				$displayName,
@@ -50,7 +48,7 @@ final class SecurityKeysChecks {
 				self::calculateSeverity( $strength, $keyId ),
 				$securityKey->description(),
 				self::buildEvidence( $securityKey, $securityKeys->getLastRotated() ),
-				$recommendation,
+				$recommendationCode, // Domain emits business codes
 				'roko'
 			);
 		}

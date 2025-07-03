@@ -43,18 +43,18 @@ final class SecurityAggregate {
 
 	/**
 	 * Returns a plain PHP array describing the current security posture.
-	 *
-	 * @param array $securityKeyRecommendations Optional recommendations for security keys.
+	 * 
+	 * Domain emits business codes - Application layer handles translation.
 	 */
-	public function snapshot( array $securityKeyRecommendations = array() ) {
+	public function snapshot() {
 
 		$keys          = $this->securityKeysProvider->snapshot();
 		$fileSecurity  = $this->filePermissionProvider->snapshot();
 		$integrityScan = $this->integrityRepo->latestScan();
 		$vulns         = $this->vulnRepo->latestKnown();
 
-		// Transform domain objects to checks using sub-aggregates
-		$securityKeysChecks = SecurityKeysChecks::fromSecurityKeys( $keys, $securityKeyRecommendations );
+		// Domain logic - emits business codes, not translated text
+		$securityKeysChecks = SecurityKeysChecks::fromSecurityKeys( $keys );
 
 		return array(
 			'meta'     => array(

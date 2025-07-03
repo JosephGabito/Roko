@@ -1,4 +1,4 @@
-# Roko - WordPress Security Plugin
+# Roko - WordPress Health & Performance Plugin
 
 <!-- BADGES-START -->
 [![Linting](https://github.com/JosephGabito/roko/actions/workflows/code-quality.yml/badge.svg?branch=main&v=3)](https://github.com/JosephGabito/roko/actions/workflows/code-quality.yml)
@@ -7,11 +7,13 @@
 [![License](https://img.shields.io/badge/license-GPL--2.0--or--later-blue)](LICENSE)
 <!-- BADGES-END -->
 
-**Enterprise-grade WordPress security plugin built with Domain-Driven Design (DDD) architecture.**
+**The loud-mouthed mechanic your WordPress site desperately needs.**
+
+Roko is a comprehensive WordPress optimization and health monitoring plugin that diagnoses performance bottlenecks, security vulnerabilities, plugin conflicts, and maintenance issues. Built with Domain-Driven Design (DDD) architectural patterns to demonstrate clean code practices in WordPress development.
 
 ## 🏗️ Architecture Overview
 
-Roko follows **clean architecture principles** with strict separation of concerns across four distinct layers:
+Roko demonstrates **clean architecture principles** with strict separation of concerns across four distinct layers. This example shows the Security domain - similar patterns are applied across Performance, Monitoring, and other domains:
 
 ```mermaid
 graph TD
@@ -20,13 +22,13 @@ graph TD
     end
     
     subgraph "🎯 Application Layer"
-        APP["SecurityApplicationService<br/>Use Case Orchestration"]
+        APP["SecurityApplicationService<br/>Translates Business Codes"]
         INTRF["SecurityTranslationProviderInterface<br/>Infrastructure Contracts"]
     end
     
     subgraph "🏛️ Domain Layer"
-        AGG["SecurityAggregate<br/>Domain Root"]
-        CHECKS["SecurityKeysChecks<br/>Business Logic"]
+        AGG["SecurityAggregate<br/>Emits Business Codes"]
+        CHECKS["SecurityKeysChecks<br/>Pure Business Logic"]
         ENTITIES["Domain Entities<br/>SecurityKeys, Check, etc."]
     end
     
@@ -38,7 +40,6 @@ graph TD
     
     REST --> APP
     APP --> AGG
-    APP --> INTRF
     AGG --> CHECKS
     CHECKS --> ENTITIES
     WP_TRANS -.->|implements| INTRF
@@ -92,58 +93,70 @@ graph LR
 
 ## 📁 Project Structure
 
+This shows the Security domain as an example - similar patterns are used for Performance, Monitoring, and other domains:
+
 ```
 src/
 ├── 🏛️ Domain/
-│   └── Security/
-│       ├── SecurityAggregate.php          # Aggregate Root
-│       ├── Checks/
-│       │   ├── SecurityKeysChecks.php     # Domain Service
-│       │   └── ValueObject/
-│       │       ├── Check.php              # Value Object
-│       │       ├── CheckStatus.php        # Enum-like Value Object
-│       │       └── Severity.php           # Enum-like Value Object
-│       └── SecurityKeys/
-│           ├── Entity/
-│           │   └── SecurityKeys.php       # Domain Entity
-│           └── ValueObject/
-│               └── SecurityKey.php        # Value Object
+│   ├── Security/                          # Security Domain (shown as example)
+│   │   ├── SecurityAggregate.php          # Aggregate Root
+│   │   ├── Checks/
+│   │   │   ├── SecurityKeysChecks.php     # Domain Service
+│   │   │   └── ValueObject/
+│   │   │       ├── Check.php              # Value Object
+│   │   │       ├── CheckStatus.php        # Enum-like Value Object
+│   │   │       └── Severity.php           # Enum-like Value Object
+│   │   └── SecurityKeys/
+│   │       ├── Entity/
+│   │       │   └── SecurityKeys.php       # Domain Entity
+│   │       └── ValueObject/
+│   │           └── SecurityKey.php        # Value Object
+│   ├── Performance/                       # Performance Domain (similar structure)
+│   ├── Monitoring/                        # Monitoring Domain (similar structure)
+│   └── ...                                # Other domains follow same patterns
 ├── 🎯 Application/
-│   └── Security/
+│   └── Security/                          # Application layer for Security domain
 │       ├── SecurityApplicationService.php # Use Case Orchestrator
 │       └── Provider/
 │           └── SecurityTranslationProviderInterface.php # Contract
 └── 🔌 Infrastructure/
-    └── WordPress/
-        ├── Plugin.php                     # DI Container
-        └── Security/
+    └── WordPress/                         # WordPress details, hooks, $wpdb, get_post, i18, etc
+        ├── Plugin.php                     # DI Container & Bootstrap
+        └── Security/                      # Infrastructure for Security domain
             ├── SecurityJsonService.php    # REST Controller
             ├── WpSecurityKeysProvider.php # Data Access
             ├── Provider/
-            │   └── WpSecurityTranslationProvider.php # Translation Implementation
+            │   └── WpSecurityTranslationProvider.php
             └── I18n/
-                └── SecurityKeysChecksI18n.php # WordPress Translations
+                └── SecurityKeysChecksI18n.php
 ```
 
 ## 🔍 Architecture Patterns
 
-### **1. Domain Self-Serialization**
+### **1. Domain Emits Business Codes**
 
-Domain entities handle their own serialization, accepting dependencies at creation time:
+Domain entities emit business codes - Application layer handles translation:
 
 ```php
-// ✅ Domain handles its own data transformation
+// ✅ Domain emits business codes, never handles i18n
 class SecurityKeysChecks {
-    public static function fromSecurityKeys(
-        SecurityKeys $securityKeys, 
-        array $recommendations = array()
-    ): self {
-        // Business logic + self-serialization
-        return new self($checks);
+    public static function fromSecurityKeys(SecurityKeys $securityKeys): self {
+        // Pure business logic
+        $recommendationCode = $strength . '_' . $source; // Business code: "weak_constant"
+        
+        return new Check(
+            $id, $label, $status, $severity, $description, $evidence,
+            $recommendationCode, // Domain emits codes like "SEC_KEY_WEAK"
+            'roko'
+        );
     }
-    
-    public function toArray(): array {
-        // Domain controls its own output format
+}
+
+// ✅ Application translates business codes to human text
+class SecurityApplicationService {
+    public function getSecuritySnapshot() {
+        $domainSnapshot = $this->securityAggregate->snapshot(); // Gets business codes
+        return $this->translateBusinessCodes($domainSnapshot);  // Converts to human text
     }
 }
 ```
@@ -196,7 +209,8 @@ interface SecurityTranslationProviderInterface {
 // ✅ Infrastructure implements the contract
 class WpSecurityTranslationProvider implements SecurityTranslationProviderInterface {
     public function getAllSecurityKeyRecommendations() {
-        // WordPress-specific implementation
+        // WordPress-specific implementation.
+        // Hooks lives here as well.
     }
 }
 
@@ -237,12 +251,33 @@ class Plugin {
 }
 ```
 
-## 🛡️ Security Features
+## 🔧 What Roko Does
 
+Roko is your WordPress site's diagnostic tool, covering multiple areas:
+
+### **🚀 Performance Optimization**
+- **Plugin Performance Heatmap**: Identifies slow plugins dragging down load times
+- **Database Optimization**: Cleans up bloated tables and unused data
+- **Core Web Vitals Tracking**: Monitors TTFB, LCP, CLS metrics
+- **Query Analysis**: Spots inefficient database queries
+
+### **🛡️ Security Health**
 - **Security Keys Analysis**: Evaluates WordPress security keys and salts
 - **File Integrity Monitoring**: Detects unauthorized file modifications
 - **Vulnerability Scanning**: Checks for known security issues
 - **File Permission Auditing**: Validates proper file and directory permissions
+
+### **🔍 Diagnostics & Monitoring**
+- **Plugin Conflict Detection**: Isolates problematic plugin combinations
+- **Multi-site Dashboard**: Manages multiple WordPress installations
+- **Health Check Scoring**: Provides overall site health ratings
+- **Smart Action Recommendations**: Suggests specific fixes for issues
+
+### **⚡ Quick Fixes**
+- **One-Click Optimizations**: Database cleanup, cache purging, plugin updates
+- **Auto-fix Security Issues**: Resolves common security misconfigurations  
+- **Performance Tuning**: Applies proven optimization techniques
+- **Accessibility Improvements**: Suggests alt-text and other accessibility fixes
 
 ## Development Setup
 
@@ -296,7 +331,7 @@ composer php74-compat
 
 ## 🚀 Why This Architecture?
 
-### **The Dependency Inversion Magic**
+### **Understanding Dependency Direction**
 
 ```
 Presentation  →  Application  →  Domain
@@ -307,8 +342,11 @@ Infrastructure  ──┘──────────────┘
 **Key insight**: Infrastructure **serves** higher layers by implementing their contracts:
 - **Application defines interfaces** → Infrastructure implements them
 - **Domain stays pure** → Never depends on external concerns  
+- **Domain emits business codes** → Application translates to human text
 - **Testability** → Easy to mock Infrastructure implementations
 - **Flexibility** → Swap WordPress for Laravel/Symfony without changing Domain
+
+**Architecture principle**: The Domain layer avoids outward dependencies by emitting business codes like `weak_constant`, `strong_roko` rather than translated text. This separation allows the Application layer to handle translation concerns independently from business logic.
 
 ### **Benefits**
 
@@ -334,5 +372,3 @@ Infrastructure  ──┘──────────────┘
 ```
 
 ---
-
-**Architecture Grade: A+** - This plugin demonstrates enterprise-grade software architecture patterns typically found in large-scale applications, applied thoughtfully to WordPress plugin development. 

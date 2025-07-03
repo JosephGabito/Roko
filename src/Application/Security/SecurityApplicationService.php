@@ -30,15 +30,15 @@ final class SecurityApplicationService {
 
 	/**
 	 * Get security snapshot with proper translations.
-	 *
-	 * Single-purpose use case following DDD patterns.
+	 * 
+	 * Domain emits business codes - Application translates them to human text.
 	 */
 	public function getSecuritySnapshot() {
-		// Get recommendations from infrastructure
-		$recommendations = $this->translationProvider->getAllSecurityKeyRecommendations();
-
-		// Let domain handle its own serialization with translations
-		return $this->securityAggregate->snapshot( $recommendations );
+		// Get pure domain snapshot with business codes
+		$domainSnapshot = $this->securityAggregate->snapshot();
+		
+		// Application layer responsibility: translate business codes to human text
+		return $this->translateBusinessCodes( $domainSnapshot );
 	}
 
 	/**
@@ -46,5 +46,30 @@ final class SecurityApplicationService {
 	 */
 	public function getSecuritySnapshotJson( $options = 0 ) {
 		return json_encode( $this->getSecuritySnapshot(), JSON_THROW_ON_ERROR | $options );
+	}
+
+	/**
+	 * Translate business codes emitted by Domain into human-readable text.
+	 * 
+	 * This keeps i18n concerns in Application layer, not Domain.
+	 */
+	private function translateBusinessCodes( array $domainSnapshot ) {
+		// Get all translations from infrastructure
+		$translations = $this->translationProvider->getAllSecurityKeyRecommendations();
+		
+		// Transform security keys section
+		foreach ( $domainSnapshot['sections'] as &$section ) {
+			if ( $section['id'] === 'security_keys' ) {
+				foreach ( $section['checks'] as &$check ) {
+					// Domain emitted business code - Application translates it
+					$businessCode = $check['recommendation'];
+					$check['recommendation'] = isset( $translations[ $businessCode ] ) 
+						? $translations[ $businessCode ] 
+						: 'Review configuration and strengthen security.';
+				}
+			}
+		}
+		
+		return $domainSnapshot;
 	}
 }
