@@ -1,3 +1,213 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://rokosaurus.com/schema/roko-site-foundation-report.json",
+    "title": "Roko Site Foundation Report",
+    "type": "object",
+    "required": [
+        "meta",
+        "sections"
+    ],
+    "properties": {
+        "meta": {
+            "type": "object",
+            "required": [
+                "generatedAt",
+                "rokoVersion"
+            ],
+            "properties": {
+                "generatedAt": {
+                    "type": "string",
+                    "format": "date-time"
+                },
+                "rokoVersion": {
+                    "type": "string",
+                    "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+(?:-.+)?$"
+                },
+                "score": {
+                    "type": "object",
+                    "required": [
+                        "value",
+                        "grade",
+                        "max",
+                        "algorithmVersion"
+                    ],
+                    "properties": {
+                        "value": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 100
+                        },
+                        "grade": {
+                            "type": "string",
+                            "enum": [
+                                "A",
+                                "B",
+                                "C",
+                                "D",
+                                "F"
+                            ]
+                        },
+                        "max": {
+                            "type": "integer",
+                            "const": 100
+                        },
+                        "algorithmVersion": {
+                            "type": "string"
+                        }
+                    },
+                    "additionalProperties": false
+                }
+            },
+            "additionalProperties": false
+        },
+        "sections": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+                "$ref": "#/$defs/section"
+            }
+        }
+    },
+    "$defs": {
+        "section": {
+            "type": "object",
+            "required": [
+                "id",
+                "title",
+                "description",
+                "checks"
+            ],
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "pattern": "^[a-z0-9_]+$"
+                },
+                "title": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "description": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "score": {
+                    "type": "object",
+                    "required": [
+                        "value",
+                        "max"
+                    ],
+                    "properties": {
+                        "value": {
+                            "type": "integer",
+                            "minimum": 0
+                        },
+                        "max": {
+                            "type": "integer",
+                            "minimum": 1
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                "checks": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/check"
+                    }
+                }
+            },
+            "additionalProperties": false
+        },
+        "check": {
+            "type": "object",
+            "required": [
+                "id",
+                "label",
+                "status",
+                "severity",
+                "description",
+                "evidence",
+                "recommendation",
+                "source"
+            ],
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "pattern": "^[a-z0-9_]+$"
+                },
+                "label": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "status": {
+                    "type": "string",
+                    "enum": [
+                        "pass",
+                        "fail",
+                        "notice",
+                        "pending"
+                    ]
+                },
+                "severity": {
+                    "type": "string",
+                    "enum": [
+                        "low",
+                        "medium",
+                        "high",
+                        "critical"
+                    ]
+                },
+                "weight": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "description": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "evidence": {
+                    "type": [
+                        "object",
+                        "null"
+                    ]
+                },
+                "recommendation": {
+                    "type": "string"
+                },
+                "source": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "scanTimeMs": {
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "async": {
+                    "type": "object",
+                    "required": [
+                        "isAsync",
+                        "endpoint"
+                    ],
+                    "properties": {
+                        "isAsync": {
+                            "type": "boolean",
+                            "default": false
+                        },
+                        "endpoint": {
+                            "type": "string",
+                            "minLength": 1
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                "fix": {
+                    "type": "object",
+                    "required": [
+                        "route",
+                        "needsConfirmation"
+                    ],
+                    "properties": {
+                        "route": {
+                            "type": "string",
                             "minLength": 1
                         },
                         "needsConfirmation": {
