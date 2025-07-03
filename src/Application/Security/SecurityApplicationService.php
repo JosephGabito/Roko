@@ -5,6 +5,7 @@ namespace JosephG\Roko\Application\Security;
 
 use JosephG\Roko\Domain\Security\SecurityAggregate;
 use JosephG\Roko\Application\Security\Provider\SecurityTranslationProviderInterface;
+use JosephG\Roko\Application\Security\Fix\SecurityFixMapper;
 
 /**
  * Application Service for getting security snapshots.
@@ -50,6 +51,7 @@ final class SecurityApplicationService {
 
 	/**
 	 * Translate business codes emitted by Domain into human-readable text.
+	 * Also populate fix data for failed checks.
 	 *
 	 * This keeps i18n concerns in Application layer, not Domain.
 	 */
@@ -66,28 +68,59 @@ final class SecurityApplicationService {
 					$check['recommendation'] = isset( $securityKeyTranslations[ $businessCode ] )
 						? $securityKeyTranslations[ $businessCode ]
 						: 'Review configuration and strengthen security.';
+
+					// Add fix data for failed checks
+					$this->addFixDataIfAvailable( $check, $businessCode );
 				}
 			} elseif ( $section['id'] === 'file_security' ) {
 				foreach ( $section['checks'] as &$check ) {
 					// Domain emitted business code - Application translates it
 					$businessCode            = $check['recommendation'];
 					$check['recommendation'] = $this->translationProvider->getFileSecurityRecommendation( $businessCode );
+
+					// Add fix data for failed checks
+					$this->addFixDataIfAvailable( $check, $businessCode );
 				}
 			} elseif ( $section['id'] === 'file_integrity' ) {
 				foreach ( $section['checks'] as &$check ) {
 					// Domain emitted business code - Application translates it
 					$businessCode            = $check['recommendation'];
 					$check['recommendation'] = $this->translationProvider->getFileIntegrityRecommendation( $businessCode );
+
+					// Add fix data for failed checks
+					$this->addFixDataIfAvailable( $check, $businessCode );
 				}
 			} elseif ( $section['id'] === 'known_vulnerabilities' ) {
 				foreach ( $section['checks'] as &$check ) {
 					// Domain emitted business code - Application translates it
 					$businessCode            = $check['recommendation'];
 					$check['recommendation'] = $this->translationProvider->getVulnerabilityRecommendation( $businessCode );
+
+					// Add fix data for failed checks
+					$this->addFixDataIfAvailable( $check, $businessCode );
 				}
 			}
 		}
 
 		return $domainSnapshot;
+	}
+
+	/**
+	 * Add fix data to a check if it's failed and fixable.
+	 *
+	 * @param array &$check The check array to modify
+	 * @param string $businessCode The business code emitted by domain
+	 */
+	private function addFixDataIfAvailable( array &$check, $businessCode ) {
+		// Only add fix data for failed checks
+		if ( $check['status'] !== 'fail' ) {
+			return;
+		}
+
+		// Check if this business code has an available fix
+		$fixData = SecurityFixMapper::getFixForBusinessCode( $businessCode );
+		if ( $fixData ) {
+			$check['fix'] = $fixData;
+		}
 	}
 }

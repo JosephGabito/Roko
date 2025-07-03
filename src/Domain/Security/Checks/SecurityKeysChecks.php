@@ -1,6 +1,4 @@
 <?php
-declare(strict_types=1);
-
 namespace JosephG\Roko\Domain\Security\Checks;
 
 use JosephG\Roko\Domain\Security\SecurityKeys\Entity\SecurityKeys;
@@ -16,7 +14,7 @@ use JosephG\Roko\Domain\Security\Checks\ValueObject\Severity;
 final class SecurityKeysChecks {
 
 	/** @var Check[] */
-	private array $checks;
+	private $checks;
 
 	private function __construct( array $checks ) {
 		$this->checks = $checks;
@@ -27,7 +25,7 @@ final class SecurityKeysChecks {
 	 *
 	 * @param SecurityKeys $securityKeys Domain entity with security keys.
 	 */
-	public static function fromSecurityKeys( SecurityKeys $securityKeys ): self {
+	public static function fromSecurityKeys( SecurityKeys $securityKeys ) {
 		$keyMappings = self::getKeyMappings();
 		$checks      = array();
 
@@ -61,7 +59,7 @@ final class SecurityKeysChecks {
 	 *
 	 * @return array
 	 */
-	public function toArray(): array {
+	public function toArray() {
 		return array_map(
 			function ( Check $check ) {
 				return $check->toArray();
@@ -85,7 +83,7 @@ final class SecurityKeysChecks {
 	/**
 	 * Count total checks.
 	 */
-	public function count(): int {
+	public function count() {
 		return count( $this->checks );
 	}
 
@@ -94,14 +92,14 @@ final class SecurityKeysChecks {
 	 *
 	 * @return Check[]
 	 */
-	public function getChecks(): array {
+	public function getChecks() {
 		return $this->checks;
 	}
 
 	/**
 	 * Map display names to snake_case IDs.
 	 */
-	private static function getKeyMappings(): array {
+	private static function getKeyMappings() {
 		return array(
 			'Login Security'                => 'auth_key',
 			'HTTPS Login Security'          => 'secure_auth_key',
@@ -117,7 +115,7 @@ final class SecurityKeysChecks {
 	/**
 	 * Map SecurityKey strength to CheckStatus.
 	 */
-	private static function mapStrengthToStatus( string $strength ): CheckStatus {
+	private static function mapStrengthToStatus( string $strength ) {
 		switch ( $strength ) {
 			case 'strong':
 				return CheckStatus::pass();
@@ -132,7 +130,7 @@ final class SecurityKeysChecks {
 	/**
 	 * Calculate severity based on strength and key importance.
 	 */
-	private static function calculateSeverity( string $strength, string $keyId ): Severity {
+	private static function calculateSeverity( string $strength, string $keyId ) {
 		if ( $strength === 'strong' ) {
 			return Severity::low(); // Good but mention rotation
 		}
@@ -149,7 +147,7 @@ final class SecurityKeysChecks {
 	/**
 	 * Build evidence object with key details.
 	 */
-	private static function buildEvidence( $securityKey, $lastRotated ): array {
+	private static function buildEvidence( $securityKey, $lastRotated ) {
 		return array(
 			'strength'      => $securityKey->strength(),
 			'source'        => $securityKey->source(),

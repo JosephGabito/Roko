@@ -186,8 +186,9 @@ $ingress_url = IngressConfig::url();
 			<button class="roko-button roko-button-outline roko-mr-3" disabled title="<?php esc_attr_e( 'Feature coming soon', 'roko' ); ?>">
 				<?php esc_html_e( 'Safe-update plugins', 'roko' ); ?>
 			</button>
-			<button class="roko-button roko-button-outline roko-mr-3" disabled title="<?php esc_attr_e( 'Feature coming soon', 'roko' ); ?>">
-				<?php esc_html_e( 'Auto-fix issues', 'roko' ); ?>
+			<button id="roko-autofix-all" class="roko-button roko-button-outline roko-mr-3" disabled>
+				<span id="roko-autofix-text"><?php esc_html_e( 'Auto-fix issues', 'roko' ); ?></span>
+				<span id="roko-autofix-count" class="roko-badge" style="display: none; margin-left: 6px; background: #00a32a; color: white; font-size: 10px; padding: 2px 6px; border-radius: 10px;">0</span>
 			</button>
 			<button class="roko-button roko-button-outline" disabled title="<?php esc_attr_e( 'Feature coming soon', 'roko' ); ?>">
 				<?php esc_html_e( 'Generate report', 'roko' ); ?>

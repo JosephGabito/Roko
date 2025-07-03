@@ -43,7 +43,7 @@ final class FileSecurityChecks {
 			}
 
 			$status       = self::mapVulnerabilityToStatus( $isVulnerable );
-			$businessCode = $isVulnerable ? $mapping['id'] . '_vulnerable' : $mapping['id'] . '_secure';
+			$businessCode = self::mapToBusinessCode( $propertyName, $isVulnerable );
 
 			$checks[] = new Check(
 				$mapping['id'],
@@ -141,6 +141,38 @@ final class FileSecurityChecks {
 
 		// Low-risk (informational)
 		return Severity::low();
+	}
+
+	/**
+	 * Map property names to business codes expected by fix system.
+	 *
+	 * @param string $propertyName The FilePermission property name
+	 * @param bool $isVulnerable Whether the check represents a vulnerability
+	 * @return string Business code for the recommendation
+	 */
+	private static function mapToBusinessCode( $propertyName, $isVulnerable ) {
+		// Map of property names to business codes
+		$businessCodeMap = array(
+			'directoryListingIsOn'       => 'listing_on',
+			'wpDebugOn'                  => 'debug_on',
+			'editorOn'                   => 'editor_on',
+			'dashboardInstallsOn'        => 'dashboard_installs_on',
+			'phpExecutionInUploadsDirOn' => 'php_exec_uploads_on',
+			'doesSensitiveFilesExists'   => 'sensitive_files_exposed',
+			'xmlrpcOn'                   => 'xmlrpc_on',
+			'wpConfigPermission644'      => 'wp_config_perms_insecure',
+			'htAccessPermission644'      => 'htaccess_perms_insecure',
+			'anyBackupExposed'           => 'backup_files_exposed',
+			'logFilesExposed'            => 'log_files_exposed',
+		);
+
+		if ( isset( $businessCodeMap[ $propertyName ] ) && $isVulnerable ) {
+			return $businessCodeMap[ $propertyName ];
+		}
+
+		// Default business codes for secure states
+		$mapping = self::getFileSecurityMappings()[ $propertyName ];
+		return $mapping['id'] . '_secure';
 	}
 
 	/**

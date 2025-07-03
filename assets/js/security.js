@@ -57,6 +57,7 @@ class RokoSecurityDashboard {
         this.setup_view_toggle();
         this.load_view_preference();
         this.setup_alpine_integration();
+        this.setup_autofix_all_button();
 
         try {
             this.state.data = await this.fetch_security_data();
@@ -265,6 +266,7 @@ class RokoSecurityDashboard {
     render_dashboard() {
         this.update_security_score();
         this.render_security_cards();
+        this.update_autofix_button();
     }
 
     /**
@@ -379,6 +381,7 @@ class RokoSecurityDashboard {
             const status = check.status === 'pass' ? 'ok' :
                 (check.severity === 'critical' || check.severity === 'high' ? 'critical' : 'warn');
             const badge = this.create_check_badge(check);
+            const autofixButton = this.render_autofix_button(check);
 
             return `
                 <div 
@@ -388,7 +391,10 @@ class RokoSecurityDashboard {
                     data-status="${status}">
                     <div class="roko-d-flex roko-justify-content-between roko-align-items-center">
                         <span class="security-item-label">${check.label}</span>
-                        ${badge}
+                        <div class="roko-d-flex roko-align-items-center roko-gap-2">
+                            ${autofixButton}
+                            ${badge}
+                        </div>
                     </div>
                     <div 
                         x-show="open"
@@ -396,6 +402,7 @@ class RokoSecurityDashboard {
                         <strong>Status:</strong> ${check.description}<br/>
                         <strong>Recommendation:</strong> ${check.recommendation}
                         ${this.render_check_evidence(check)}
+                        ${this.render_autofix_info(check)}
                     </div>
                 </div>
             `;
@@ -453,6 +460,289 @@ class RokoSecurityDashboard {
         }
 
         return evidenceHtml;
+    }
+
+    /**
+     * Render autofix button for a Check object if fix is available.
+     */
+    render_autofix_button(check) {
+        if (!check.fix || check.status === 'pass') {
+            return '';
+        }
+
+        const buttonId = `fix-${check.id}`;
+        const confirmClass = check.fix.needsConfirmation ? 'needs-confirmation' : '';
+        const buttonText = check.fix.needsConfirmation ? 'Fix (Confirm)' : 'Quick Fix';
+        const buttonStyle = check.fix.needsConfirmation ?
+            'background: #d63638; color: white; border: 1px solid #d63638;' :
+            'background: #00a32a; color: white; border: 1px solid #00a32a;';
+
+        return `
+            <button 
+                id="${buttonId}"
+                class="roko-autofix-btn ${confirmClass}"
+                style="font-size: 11px; padding: 2px 8px; border-radius: 3px; cursor: pointer; ${buttonStyle}"
+                onclick="event.stopPropagation(); window.rokoSecurityDashboard.handle_autofix('${check.id}', '${check.fix.route}', ${check.fix.needsConfirmation})"
+                title="Fix this issue automatically">
+                ${buttonText}
+            </button>
+        `;
+    }
+
+    /**
+     * Render autofix information in the expanded check details.
+     */
+    render_autofix_info(check) {
+        if (!check.fix || check.status === 'pass') {
+            return '';
+        }
+
+        const confirmInfo = check.fix.needsConfirmation ?
+            '<br/><em>⚠️ This fix requires confirmation as it may affect site functionality.</em>' :
+            '<br/><em>✅ This fix can be applied safely without confirmation.</em>';
+
+        return `
+            <br/><strong>Autofix Available:</strong> 
+            This issue can be fixed automatically using the button above.${confirmInfo}
+        `;
+    }
+
+    /**
+     * Handle autofix execution.
+     */
+    async handle_autofix(checkId, route, needsConfirmation) {
+        if (needsConfirmation) {
+            const confirmed = confirm(
+                'This fix may affect your site functionality. Are you sure you want to proceed?\n\n' +
+                'We recommend creating a backup before applying potentially disruptive fixes.'
+            );
+            if (!confirmed) {
+                return;
+            }
+        }
+
+        const button = document.querySelector(`#fix-${checkId}`);
+        const originalText = button ? button.textContent : '';
+
+        try {
+            if (button) {
+                button.textContent = 'Fixing...';
+                button.disabled = true;
+            }
+
+            const response = await fetch(route, {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: {
+                    'X-WP-Nonce': this.config.nonce,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error(`Fix failed: HTTP ${response.status}`);
+            }
+
+            const result = await response.json();
+
+            if (result.success) {
+                // Show success and refresh data
+                if (button) {
+                    button.textContent = '✓ Fixed';
+                    button.style.background = '#00a32a';
+                    button.style.borderColor = '#00a32a';
+                }
+
+                // Refresh security data after a short delay
+                setTimeout(async () => {
+                    try {
+                        this.state.data = await this.fetch_security_data();
+                        this.render_dashboard();
+                        this.emit_security_data_loaded();
+                    } catch (error) {
+                        console.error('Failed to refresh after fix:', error);
+                    }
+                }, 1500);
+            } else {
+                throw new Error(result.message || 'Fix failed');
+            }
+        } catch (error) {
+            console.error('Autofix error:', error);
+            if (button) {
+                button.textContent = '✗ Failed';
+                button.style.background = '#d63638';
+                button.style.borderColor = '#d63638';
+                button.title = error.message;
+            }
+            alert('Fix failed: ' + error.message);
+        }
+    }
+
+    /**
+     * Setup the auto-fix all button functionality.
+     */
+    setup_autofix_all_button() {
+        const autofixAllBtn = document.getElementById('roko-autofix-all');
+        if (!autofixAllBtn) return;
+
+        autofixAllBtn.addEventListener('click', () => {
+            this.handle_autofix_all();
+        });
+    }
+
+    /**
+     * Update the auto-fix all button with count of fixable issues.
+     */
+    update_autofix_button() {
+        const autofixAllBtn = document.getElementById('roko-autofix-all');
+        const autofixCount = document.getElementById('roko-autofix-count');
+
+        if (!autofixAllBtn || !autofixCount) return;
+
+        const fixableChecks = this.get_fixable_checks();
+        const count = fixableChecks.length;
+
+        if (count > 0) {
+            autofixAllBtn.disabled = false;
+            autofixAllBtn.title = `Fix ${count} issue${count > 1 ? 's' : ''} automatically`;
+            autofixCount.textContent = count;
+            autofixCount.style.display = 'inline';
+        } else {
+            autofixAllBtn.disabled = true;
+            autofixAllBtn.title = 'No fixable issues found';
+            autofixCount.style.display = 'none';
+        }
+    }
+
+    /**
+     * Get all checks that have fix data and have failed.
+     */
+    get_fixable_checks() {
+        if (!this.state.data || !this.state.data.sections) {
+            return [];
+        }
+
+        const fixableChecks = [];
+        for (const section of this.state.data.sections) {
+            if (section.checks) {
+                for (const check of section.checks) {
+                    if (check.status === 'fail' && check.fix) {
+                        fixableChecks.push(check);
+                    }
+                }
+            }
+        }
+        return fixableChecks;
+    }
+
+    /**
+     * Handle fixing all available issues.
+     */
+    async handle_autofix_all() {
+        const fixableChecks = this.get_fixable_checks();
+
+        if (fixableChecks.length === 0) {
+            alert('No fixable issues found.');
+            return;
+        }
+
+        // Group by confirmation requirement
+        const requireConfirmation = fixableChecks.filter(check => check.fix.needsConfirmation);
+        const noConfirmation = fixableChecks.filter(check => !check.fix.needsConfirmation);
+
+        let message = `Fix ${fixableChecks.length} issue${fixableChecks.length > 1 ? 's' : ''}?\n\n`;
+
+        if (noConfirmation.length > 0) {
+            message += `• ${noConfirmation.length} safe fix${noConfirmation.length > 1 ? 'es' : ''} (no confirmation needed)\n`;
+        }
+
+        if (requireConfirmation.length > 0) {
+            message += `• ${requireConfirmation.length} fix${requireConfirmation.length > 1 ? 'es' : ''} requiring confirmation (may affect functionality)\n`;
+        }
+
+        message += '\nWe recommend creating a backup before proceeding.';
+
+        if (!confirm(message)) {
+            return;
+        }
+
+        // Process safe fixes first, then confirmation required
+        const allFixes = [...noConfirmation, ...requireConfirmation];
+        let successCount = 0;
+        let failCount = 0;
+
+        const autofixAllBtn = document.getElementById('roko-autofix-all');
+        const autofixText = document.getElementById('roko-autofix-text');
+        const autofixCount = document.getElementById('roko-autofix-count');
+
+        if (autofixAllBtn) {
+            autofixAllBtn.disabled = true;
+            autofixText.textContent = 'Fixing...';
+        }
+
+        for (let i = 0; i < allFixes.length; i++) {
+            const check = allFixes[i];
+
+            if (autofixText) {
+                autofixText.textContent = `Fixing ${i + 1}/${allFixes.length}...`;
+            }
+
+            try {
+                const response = await fetch(check.fix.route, {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: {
+                        'X-WP-Nonce': this.config.nonce,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.success) {
+                        successCount++;
+                    } else {
+                        failCount++;
+                        console.error(`Fix failed for ${check.id}:`, result.message);
+                    }
+                } else {
+                    failCount++;
+                    console.error(`HTTP error for ${check.id}:`, response.status);
+                }
+            } catch (error) {
+                failCount++;
+                console.error(`Exception fixing ${check.id}:`, error);
+            }
+
+            // Small delay between fixes
+            await new Promise(resolve => setTimeout(resolve, 500));
+        }
+
+        // Show results
+        let resultMessage = `Auto-fix complete!\n\n`;
+        resultMessage += `✓ ${successCount} issue${successCount !== 1 ? 's' : ''} fixed successfully\n`;
+        if (failCount > 0) {
+            resultMessage += `✗ ${failCount} issue${failCount !== 1 ? 's' : ''} failed to fix\n`;
+        }
+        resultMessage += '\nRefreshing security data...';
+
+        alert(resultMessage);
+
+        // Reset button and refresh data
+        if (autofixText) {
+            autofixText.textContent = 'Auto-fix issues';
+        }
+
+        try {
+            this.state.data = await this.fetch_security_data();
+            this.render_dashboard();
+            this.emit_security_data_loaded();
+        } catch (error) {
+            console.error('Failed to refresh after auto-fix:', error);
+            if (autofixAllBtn) {
+                autofixAllBtn.disabled = false;
+            }
+        }
     }
 
     /**
