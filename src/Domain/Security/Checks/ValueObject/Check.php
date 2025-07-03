@@ -19,7 +19,8 @@ final class Check {
 		private ?array $evidence,
 		private string $recommendation,
 		private string $source,
-		private ?int $scanTimeMs = null
+		private ?int $scanTimeMs = null,
+		private ?int $weight = null
 	) {}
 
 	public function getId(): string {
@@ -58,6 +59,10 @@ final class Check {
 		return $this->scanTimeMs;
 	}
 
+	public function getWeight(): ?int {
+		return $this->weight;
+	}
+
 	/**
 	 * Convert to array format matching JSON schema.
 	 */
@@ -75,6 +80,10 @@ final class Check {
 
 		if ( $this->scanTimeMs !== null ) {
 			$result['scanTimeMs'] = $this->scanTimeMs;
+		}
+
+		if ( $this->weight !== null ) {
+			$result['weight'] = $this->weight;
 		}
 
 		return $result;

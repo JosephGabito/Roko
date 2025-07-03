@@ -90,6 +90,15 @@ final class SecurityKeysChecks {
 	}
 
 	/**
+	 * Get all Check objects.
+	 *
+	 * @return Check[]
+	 */
+	public function getChecks(): array {
+		return $this->checks;
+	}
+
+	/**
 	 * Map display names to snake_case IDs.
 	 */
 	private static function getKeyMappings(): array {

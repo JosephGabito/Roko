@@ -12,6 +12,7 @@ use JosephG\Roko\Domain\Security\Checks\SecurityKeysChecks;
 use JosephG\Roko\Domain\Security\Checks\FileSecurityChecks;
 use JosephG\Roko\Domain\Security\Checks\FileIntegrityChecks;
 use JosephG\Roko\Domain\Security\Checks\VulnerabilityChecks;
+use JosephG\Roko\Domain\Security\Scoring\SecurityScoring;
 
 /**
  * Aggregate Root: combines all security sub-domain snapshots.
@@ -62,34 +63,61 @@ final class SecurityAggregate {
 		$fileIntegrityChecks = FileIntegrityChecks::fromIntegrityScan( $integrityScan );
 		$vulnerabilityChecks = VulnerabilityChecks::fromVulnerabilityCollection( $vulns );
 
+		// Calculate scores for each section
+		$securityKeysScore  = SecurityScoring::calculateSectionScore( $securityKeysChecks->getChecks() );
+		$fileSecurityScore  = SecurityScoring::calculateSectionScore( $fileSecurityChecks->getChecks() );
+		$fileIntegrityScore = SecurityScoring::calculateSectionScore( $fileIntegrityChecks->getChecks() );
+		$vulnerabilityScore = SecurityScoring::calculateSectionScore( $vulnerabilityChecks->getChecks() );
+
+		// Calculate overall site score
+		$sectionScores = array( $securityKeysScore, $fileSecurityScore, $fileIntegrityScore, $vulnerabilityScore );
+		$siteScore     = SecurityScoring::calculateSiteScore( $sectionScores );
+
 		return array(
 			'meta'     => array(
 				'generatedAt' => ( new \DateTimeImmutable() )->format( \DateTimeInterface::ATOM ),
 				'rokoVersion' => ROKO_PLUGIN_VERSION,
+				'score'       => $siteScore,
 			),
 			'sections' => array(
 				array(
 					'id'          => 'security_keys',
 					'title'       => 'Security Keys & Salts',
 					'description' => $keys->getSectionSummary()['description'],
+					'score'       => array(
+						'value' => $securityKeysScore['value'],
+						'max'   => $securityKeysScore['max'],
+					),
 					'checks'      => $securityKeysChecks->toArray(),
 				),
 				array(
 					'id'          => 'file_security',
 					'title'       => 'File Security',
 					'description' => $fileSecurity->getSectionSummary()['description'],
+					'score'       => array(
+						'value' => $fileSecurityScore['value'],
+						'max'   => $fileSecurityScore['max'],
+					),
 					'checks'      => $fileSecurityChecks->toArray(),
 				),
 				array(
 					'id'          => 'file_integrity',
 					'title'       => 'File Integrity',
 					'description' => $integrityScan->getSectionSummary()['description'],
+					'score'       => array(
+						'value' => $fileIntegrityScore['value'],
+						'max'   => $fileIntegrityScore['max'],
+					),
 					'checks'      => $fileIntegrityChecks->toArray(),
 				),
 				array(
 					'id'          => 'known_vulnerabilities',
 					'title'       => 'Known Vulnerabilities',
 					'description' => $vulns->getSectionSummary()['description'],
+					'score'       => array(
+						'value' => $vulnerabilityScore['value'],
+						'max'   => $vulnerabilityScore['max'],
+					),
 					'checks'      => $vulnerabilityChecks->toArray(),
 				),
 			),

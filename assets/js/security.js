@@ -268,94 +268,72 @@ class RokoSecurityDashboard {
     }
 
     /**
-     * Update the security score display using new Check-based scoring.
+     * Update the security score display using new scoring system.
      */
     update_security_score() {
-        const score = this.calculate_security_score();
+        // Get score data from API (new scoring system)
+        const scoreData = this.state.data?.meta?.score;
+
+        if (!scoreData) {
+            // No score data available - show loading state
+            this.elements.scoreValue.textContent = '...';
+            this.elements.scoreStatus.textContent = 'Loading...';
+            this.elements.criticalCount.textContent = '0';
+            return;
+        }
+
+        const score = scoreData.value;
+        const grade = scoreData.grade;
         const criticalCount = this.count_critical_issues();
-        const { text, className } = this.get_score_status(score);
 
         // Update score ring
         this.elements.scoreValue.textContent = score;
         this.elements.scoreRing.style.background =
             `conic-gradient(#00a32a ${score}%, #e9ecef ${score}% 100%)`;
 
-        // Update status
-        this.elements.scoreStatus.textContent = text;
-        this.elements.scoreStatus.className = `roko-boost-score ${className}`;
+        // Update status using letter grade
+        const gradeText = this.get_grade_description(grade);
+        this.elements.scoreStatus.textContent = gradeText.text;
+        this.elements.scoreStatus.className = `roko-boost-score ${gradeText.className}`;
 
         // Update critical count
         this.elements.criticalCount.textContent = criticalCount;
+
+        // Update algorithm version if available
+        this.update_algorithm_info(scoreData);
     }
 
     /**
-     * Calculate security score based on Check objects and severity.
+     * Update algorithm information display.
      */
-    calculate_security_score() {
-        if (!this.state.data || !this.state.data.sections) {
-            return 0;
+    update_algorithm_info(scoreData) {
+        const algorithmInfo = document.querySelector('.algorithm-info');
+        if (algorithmInfo && scoreData && scoreData.algorithmVersion) {
+            algorithmInfo.textContent = `Weighted scoring algorithm v${scoreData.algorithmVersion}`;
         }
+    }
 
-        let score = 100;
-        let totalChecks = 0;
-        let failedChecks = 0;
-
-        // Count all checks and failed checks across all sections
-        for (const section of this.state.data.sections) {
-            if (section.checks) {
-                for (const check of section.checks) {
-                    totalChecks++;
-
-                    if (check.status === 'fail') {
-                        failedChecks++;
-
-                        // Deduct points based on severity
-                        switch (check.severity) {
-                            case 'high':
-                                score -= 20;
-                                break;
-                            case 'medium':
-                                score -= 10;
-                                break;
-                            case 'low':
-                                score -= 5;
-                                break;
-                        }
-                    }
-                }
-            }
-        }
-
-        // Ensure score doesn't go below 0
-        score = Math.max(0, score);
-
-        // If no checks exist, return 0
-        if (totalChecks === 0) {
-            return 0;
-        }
-
-        return Math.min(100, score);
+    /**
+     * Map letter grades to display text and CSS classes.
+     */
+    get_grade_description(grade) {
+        const gradeMap = {
+            'A': { text: 'Excellent Security', className: 'good' },
+            'B': { text: 'Good Security', className: 'good' },
+            'C': { text: 'Needs Attention', className: 'fair' },
+            'D': { text: 'Poor Security', className: 'poor' },
+            'F': { text: 'Critical Issues', className: 'poor' }
+        };
+        return gradeMap[grade] || { text: 'Unknown', className: 'poor' };
     }
 
     /**
      * Count critical security issues using Check objects.
      */
     count_critical_issues() {
+        const criticalFailed = this.get_checks_by_severity('critical').filter(check => check.status === 'fail');
         const highSeverityFailed = this.get_checks_by_severity('high').filter(check => check.status === 'fail');
-        return highSeverityFailed.length;
-    }
-
-    /**
-     * Get score status text and CSS class.
-     */
-    get_score_status(score) {
-        if (score >= 80) {
-            return { text: 'Secure', className: 'good' };
-        } else if (score >= 60) {
-            return { text: 'Needs attention', className: 'fair' };
-        } else {
-            return { text: 'Critical', className: 'poor' };
-        }
+        return criticalFailed.length + highSeverityFailed.length;
     }
 
     /**
@@ -389,8 +367,17 @@ class RokoSecurityDashboard {
             return null;
         }
 
+        // Add section score display if available
+        let scoreDisplay = '';
+        if (section.score && section.score.max > 0) {
+            const percentage = Math.round((section.score.value / section.score.max) * 100);
+            const scoreClass = percentage >= 80 ? 'good' : (percentage >= 60 ? 'fair' : 'poor');
+            scoreDisplay = `<span class="section-score score-${scoreClass}">${percentage}%</span>`;
+        }
+
         const items = section.checks.map(check => {
-            const status = check.status === 'pass' ? 'ok' : (check.severity === 'high' ? 'critical' : 'warn');
+            const status = check.status === 'pass' ? 'ok' :
+                (check.severity === 'critical' || check.severity === 'high' ? 'critical' : 'warn');
             const badge = this.create_check_badge(check);
 
             return `
@@ -414,7 +401,7 @@ class RokoSecurityDashboard {
             `;
         }).join('');
 
-        return this.create_card(section.title, section.description, items);
+        return this.create_card_with_score(section.title, section.description, items, scoreDisplay);
     }
 
     /**
@@ -427,8 +414,10 @@ class RokoSecurityDashboard {
 
         // For failed checks, show based on severity
         switch (check.severity) {
-            case 'high':
+            case 'critical':
                 return this.create_badge('Critical', 'error');
+            case 'high':
+                return this.create_badge('High Risk', 'error');
             case 'medium':
                 return this.create_badge('Warning', 'warning');
             case 'low':
@@ -747,16 +736,37 @@ class RokoSecurityDashboard {
     // ==========================================
 
     /**
-     * Create a security card.
+     * Create a card with title, description, and content.
      */
     create_card(title, description, content) {
+        return this.create_card_with_score(title, description, content, '');
+    }
+
+    /**
+     * Create a card with optional score display.
+     */
+    create_card_with_score(title, description, content, scoreDisplay) {
         return `
-            <div class="roko-detail-card">
-                <h4>${title}</h4>
-                <p class="roko-text-muted roko-text-small">${description}</p>
-                ${content}
+            <div class="roko-detail-card" role="region" aria-labelledby="${this.slugify(title)}-title">
+                <div class="roko-d-flex roko-justify-content-between roko-align-items-center roko-mb-3">
+                    <div>
+                        <h4 id="${this.slugify(title)}-title">${title}</h4>
+                        <p class="roko-text-muted roko-text-small">${description}</p>
+                    </div>
+                    ${scoreDisplay ? `<div class="section-score-container">${scoreDisplay}</div>` : ''}
+                </div>
+                <div class="security-items">
+                    ${content}
+                </div>
             </div>
         `;
+    }
+
+    /**
+     * Convert text to slug for IDs.
+     */
+    slugify(text) {
+        return text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
     }
 
     /**

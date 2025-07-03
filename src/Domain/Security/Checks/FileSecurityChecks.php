@@ -178,4 +178,13 @@ final class FileSecurityChecks {
 			$this->checks
 		);
 	}
+
+	/**
+	 * Get all Check objects.
+	 *
+	 * @return Check[]
+	 */
+	public function getChecks(): array {
+		return $this->checks;
+	}
 }

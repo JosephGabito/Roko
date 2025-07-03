@@ -46,8 +46,11 @@ $ingress_url = IngressConfig::url();
 				</span> <br/>
 				<span class="roko-text-muted">
 					<span id="roko-critical-count">0</span> 
-					<?php esc_html_e( 'high-severity issues found', 'roko' ); ?>
+					<?php esc_html_e( 'critical/high-severity issues found', 'roko' ); ?>
 				</span>
+				<div class="algorithm-info roko-text-muted roko-text-small" style="margin-top: 8px;">
+					<?php esc_html_e( 'Weighted scoring algorithm v1.0.0', 'roko' ); ?>
+				</div>
 			</div>
 		</div>
 
@@ -639,5 +642,48 @@ function saltRegeneration() {
 .roko-modal-content-leave {
 	transition: all 150ms ease-in;
 	transform: scale(0.95);
+}
+
+/* Section score styling */
+.section-score-container {
+	display: flex;
+	align-items: center;
+}
+
+.section-score {
+	padding: 4px 12px;
+	border-radius: 4px;
+	font-size: 12px;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+}
+
+.section-score.score-good {
+	background-color: #d1e7dd;
+	color: #0f5132;
+	border: 1px solid #badbcc;
+}
+
+.section-score.score-fair {
+	background-color: #fff3cd;
+	color: #664d03;
+	border: 1px solid #ffecb5;
+}
+
+.section-score.score-poor {
+	background-color: #f8d7da;
+	color: #721c24;
+	border: 1px solid #f5c2c7;
+}
+
+/* Enhanced card layout */
+.roko-detail-card h4 {
+	margin-bottom: 4px;
+}
+
+.security-items {
+	border-top: 1px solid #e0e0e0;
+	padding-top: 16px;
 }
 </style>
