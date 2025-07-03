@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace JosephG\Roko\Domain\Security\Checks\ValueObject;
 
+use JosephG\Roko\Domain\Security\Checks\ValueObject\Async;
+
 /**
  * Value object representing a single security check.
  *
@@ -19,9 +21,10 @@ final class Check {
 		private ?array $evidence,
 		private string $recommendation,
 		private string $source,
+		private Async $async,
 		private ?int $scanTimeMs = null,
 		private ?int $weight = null,
-		private ?array $fix = null
+		private ?array $fix = null,
 	) {}
 
 	public function getId(): string {
@@ -68,6 +71,10 @@ final class Check {
 		return $this->fix;
 	}
 
+	public function getAsync(): Async {
+		return $this->async;
+	}
+
 	/**
 	 * Convert to array format matching JSON schema.
 	 */
@@ -81,6 +88,7 @@ final class Check {
 			'evidence'       => $this->evidence,
 			'recommendation' => $this->recommendation,
 			'source'         => $this->source,
+			'async'          => $this->async->toArray(),
 		);
 
 		if ( $this->scanTimeMs !== null ) {

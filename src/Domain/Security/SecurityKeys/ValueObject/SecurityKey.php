@@ -26,7 +26,7 @@ final class SecurityKey {
 	public function __construct(
 		string $key,
 		string $description,
-		string $source = 'constant'
+		string $source = 'constant',
 	) {
 		$this->key         = $key;
 		$this->description = $description;

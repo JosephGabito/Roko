@@ -5,6 +5,7 @@ use JosephG\Roko\Domain\Security\FileSecurity\Entity\FilePermission;
 use JosephG\Roko\Domain\Security\Checks\ValueObject\Check;
 use JosephG\Roko\Domain\Security\Checks\ValueObject\CheckStatus;
 use JosephG\Roko\Domain\Security\Checks\ValueObject\Severity;
+use JosephG\Roko\Domain\Security\Checks\ValueObject\Async;
 
 /**
  * Domain Service: Transforms FilePermission entity into security checks.
@@ -53,7 +54,8 @@ final class FileSecurityChecks {
 				$valueObject->description(),
 				self::buildEvidence( $valueObject, $propertyName ),
 				$businessCode, // Domain emits business codes
-				'roko'
+				'roko',
+				Async::nope()
 			);
 		}
 

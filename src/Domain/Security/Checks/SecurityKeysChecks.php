@@ -5,6 +5,7 @@ use JosephG\Roko\Domain\Security\SecurityKeys\Entity\SecurityKeys;
 use JosephG\Roko\Domain\Security\Checks\ValueObject\Check;
 use JosephG\Roko\Domain\Security\Checks\ValueObject\CheckStatus;
 use JosephG\Roko\Domain\Security\Checks\ValueObject\Severity;
+use JosephG\Roko\Domain\Security\Checks\ValueObject\Async;
 
 /**
  * Aggregate that transforms SecurityKeys domain objects into Check value objects.
@@ -47,7 +48,8 @@ final class SecurityKeysChecks {
 				$securityKey->description(),
 				self::buildEvidence( $securityKey, $securityKeys->getLastRotated() ),
 				$recommendationCode, // Domain emits business codes
-				'roko'
+				'roko',
+				Async::nope()
 			);
 		}
 

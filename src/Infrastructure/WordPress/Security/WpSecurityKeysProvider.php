@@ -5,6 +5,7 @@ use JosephG\Roko\Domain\Security\SecurityKeys\Entity\SecurityKeysProviderInterfa
 use JosephG\Roko\Domain\Security\SecurityKeys\Entity\SecurityKeys;
 use JosephG\Roko\Domain\Security\SecurityKeys\ValueObject\SecurityKey;
 use JosephG\Roko\Infrastructure\WordPress\Security\I18n\SecurityKeysI18n;
+use JosephG\Roko\Domain\Security\Checks\ValueObject\Async;
 
 /**
  * Returns the eight effective secrets that WordPress uses
@@ -34,12 +35,15 @@ final class WpSecurityKeysProvider implements SecurityKeysProviderInterface {
 			$objects[ $labels[0] ] = new SecurityKey(
 				$info['key'],
 				SecurityKeysI18n::description( $labels[0] ),
-				$info['keySrc']
+				$info['keySrc'],
+				Async::nope()
 			);
+
 			$objects[ $labels[1] ] = new SecurityKey(
 				$info['salt'],
 				SecurityKeysI18n::description( $labels[1] ),
-				$info['saltSrc']
+				$info['saltSrc'],
+				Async::nope()
 			);
 		}
 

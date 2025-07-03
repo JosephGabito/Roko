@@ -5,6 +5,7 @@ use JosephG\Roko\Domain\Security\FileIntegrity\Entity\IntegrityScan;
 use JosephG\Roko\Domain\Security\Checks\ValueObject\Check;
 use JosephG\Roko\Domain\Security\Checks\ValueObject\CheckStatus;
 use JosephG\Roko\Domain\Security\Checks\ValueObject\Severity;
+use JosephG\Roko\Domain\Security\Checks\ValueObject\Async;
 
 /**
  * Domain Service: Transforms IntegrityScan entity into security checks.
@@ -101,7 +102,8 @@ final class FileIntegrityChecks {
 				'data'           => $coreChecksum->getData(),
 			),
 			$businessCode,
-			'roko'
+			'roko',
+			Async::nope()
 		);
 	}
 
@@ -126,7 +128,8 @@ final class FileIntegrityChecks {
 				'files'           => $executableUploads->getFiles(),
 			),
 			$businessCode,
-			'roko'
+			'roko',
+			Async::nope()
 		);
 	}
 
@@ -151,7 +154,8 @@ final class FileIntegrityChecks {
 				'files'         => $dotFiles->getFiles(),
 			),
 			$businessCode,
-			'roko'
+			'roko',
+			Async::nope()
 		);
 	}
 
@@ -176,7 +180,8 @@ final class FileIntegrityChecks {
 				'files'         => $oversizedFiles->getFiles(),
 			),
 			$businessCode,
-			'roko'
+			'roko',
+			Async::nope()
 		);
 	}
 
@@ -201,7 +206,8 @@ final class FileIntegrityChecks {
 				'folders'     => $backupFolders->getFolders(),
 			),
 			$businessCode,
-			'roko'
+			'roko',
+			Async::nope()
 		);
 	}
 
@@ -226,7 +232,8 @@ final class FileIntegrityChecks {
 				'files'              => $recentChanges->getFiles(),
 			),
 			$businessCode,
-			'roko'
+			'roko',
+			Async::nope()
 		);
 	}
 
@@ -251,7 +258,8 @@ final class FileIntegrityChecks {
 				'files'       => $malwarePatterns->getFiles(),
 			),
 			$businessCode,
-			'roko'
+			'roko',
+			Async::nope()
 		);
 	}
 

@@ -1,0 +1,14 @@
+                            "minLength": 1
+                        },
+                        "needsConfirmation": {
+                            "type": "boolean"
+                        }
+                    },
+                    "additionalProperties": false
+                }
+            },
+            "additionalProperties": false
+        }
+    },
+    "additionalProperties": false
+}

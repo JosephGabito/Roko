@@ -8,9 +8,10 @@ namespace JosephG\Roko\Domain\Security\Checks\ValueObject;
  * PHP 7.0 compatible alternative to enum.
  */
 final class CheckStatus {
-	public const PASS   = 'pass';
-	public const FAIL   = 'fail';
-	public const NOTICE = 'notice';
+	public const PASS    = 'pass';
+	public const FAIL    = 'fail';
+	public const NOTICE  = 'notice';
+	public const PENDING = 'pending';
 
 	private string $value;
 
@@ -28,6 +29,10 @@ final class CheckStatus {
 
 	public static function notice(): self {
 		return new self( self::NOTICE );
+	}
+
+	public static function pending(): self {
+		return new self( self::PENDING );
 	}
 
 	public function value(): string {
