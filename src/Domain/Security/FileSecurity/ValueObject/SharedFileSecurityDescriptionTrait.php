@@ -1,6 +1,8 @@
 <?php
 namespace JosephG\Roko\Domain\Security\FileSecurity\ValueObject;
 
+use JosephG\Roko\Domain\Security\Checks\ValueObject\Async;
+
 trait SharedFileSecurityDescriptionTrait {
 
 	private $description;
@@ -10,6 +12,10 @@ trait SharedFileSecurityDescriptionTrait {
 			throw new \Exception( 'Description must be of scalar value.' );
 		}
 		$this->description = $description;
+	}
+
+	public function async(): Async {
+		return Async::nope();
 	}
 
 	public function description() {

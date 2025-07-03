@@ -1,6 +1,8 @@
 <?php
 namespace JosephG\Roko\Domain\Security\FileSecurity\ValueObject;
 
+use JosephG\Roko\Domain\Security\Checks\ValueObject\Async;
+
 final class DoesSensitiveFilesExists {
 
 	use SharedFileSecurityDescriptionTrait;
@@ -8,7 +10,7 @@ final class DoesSensitiveFilesExists {
 	private bool $exists;
 
 	public function __construct(
-		bool $exists
+		bool $exists,
 	) {
 		$this->exists = $exists;
 	}
@@ -20,4 +22,5 @@ final class DoesSensitiveFilesExists {
 	public function value(): bool {
 		return $this->exists;
 	}
+
 }

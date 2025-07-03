@@ -400,7 +400,7 @@ class RokoSecurityDashboard {
                         x-show="open"
                         class="security-item-description roko-text-muted roko-text-small roko-block roko-mt-3">
                         <strong>Status:</strong> ${check.description}<br/>
-                        <strong>Recommendation:</strong> ${check.recommendation}
+                        <strong>Recommendation:</strong> ${check.recommendation.length > 0 ? check.recommendation : 'Recommendation not yet available'}
                         ${this.render_check_evidence(check)}
                         ${this.render_autofix_info(check)}
                     </div>
@@ -429,6 +429,8 @@ class RokoSecurityDashboard {
                 return this.create_badge('Warning', 'warning');
             case 'low':
                 return this.create_badge('Advisory', 'info');
+            case 'pending':
+                return this.create_badge_with_loading('Pending', 'info');
             default:
                 return this.create_badge('Issue', 'warning');
         }
@@ -1064,6 +1066,13 @@ class RokoSecurityDashboard {
      */
     create_badge(text, type) {
         return `<span class="roko-badge roko-badge-${type}">${text}</span>`;
+    }
+
+    create_badge_with_loading(text, type) {
+        return `<span class="roko-badge roko-badge-${type} roko-badge-loading">
+            <span class="roko-badge-loading-icon">(Loading...)</span>
+            <span class="roko-badge-text">${text}</span>
+        </span>`;
     }
 
     /**

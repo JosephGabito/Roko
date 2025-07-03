@@ -25,8 +25,7 @@ final class FileSecurityChecksI18n {
 			return $recommendations[ $businessCode ];
 		}
 
-		// Fallback for unknown codes
-		return __( 'Review file security configuration and apply appropriate hardening measures.', 'roko' );
+		return '';
 	}
 
 	/**

@@ -36,10 +36,19 @@ final class Check {
 	}
 
 	public function getStatus(): CheckStatus {
+		// Mark the status as pending if its an async request.
+		if ( $this->async->isAsync() ) {
+			$this->status = CheckStatus::pending();
+		}
+
 		return $this->status;
 	}
 
 	public function getSeverity(): Severity {
+		// Mark the status as pending if its an async request.
+		if ( $this->async->isAsync() ) {
+			$this->severity = Severity::pending();
+		}
 		return $this->severity;
 	}
 

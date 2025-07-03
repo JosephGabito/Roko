@@ -82,6 +82,8 @@ final class SecurityJsonService {
 			return new \WP_Error( 'roko_invalid_nonce', __( 'Nonce check failed.' ), array( 'status' => 403 ) );
 		}
 
+		do_action( 'roko_before_salts_regeneration', $request );
+
 		// 2 Generate a fresh 64-char key + salt per scheme
 		$schemes = array( 'auth', 'secure_auth', 'logged_in', 'nonce' );
 		$payload = array();
@@ -104,6 +106,8 @@ final class SecurityJsonService {
 				array( 'status' => 422 )
 			);
 		}
+
+		do_action( 'roko_after_salts_regeneration', $request );
 
 		// 4 Track when salts were last rotated
 		update_option( 'roko_salts_last_rotated', current_time( 'timestamp' ) );

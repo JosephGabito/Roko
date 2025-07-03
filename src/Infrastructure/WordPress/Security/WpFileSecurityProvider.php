@@ -8,13 +8,12 @@ use JosephG\Roko\Domain\Security\FileSecurity\ValueObject\IsWpDebugOn;
 use JosephG\Roko\Domain\Security\FileSecurity\ValueObject\IsEditorOn;
 use JosephG\Roko\Domain\Security\FileSecurity\ValueObject\IsDashboardInstallsOn;
 use JosephG\Roko\Domain\Security\FileSecurity\ValueObject\IsPHPExecutionInUploadsDirOn;
-use JosephG\Roko\Domain\Security\FileSecurity\ValueObject\DoesSensitiveFilesExists;
 use JosephG\Roko\Domain\Security\FileSecurity\ValueObject\IsXMLRPCOn;
 use JosephG\Roko\Domain\Security\FileSecurity\ValueObject\IsWpConfigPermission644;
-use JosephG\Roko\Domain\Security\FileSecurity\ValueObject\IsHtAccessPermission644;
 use JosephG\Roko\Domain\Security\FileSecurity\ValueObject\AnyBackupExposed;
 use JosephG\Roko\Domain\Security\FileSecurity\ValueObject\LogFilesExposed;
 use JosephG\Roko\Infrastructure\WordPress\Security\I18n\FileSecurityI18n;
+use JosephG\Roko\Domain\Security\Checks\ValueObject\Async;
 
 /**
  * WpFileSecurityProvider
@@ -116,16 +115,6 @@ final class WpFileSecurityProvider implements FilePermissionInterface {
 	}
 
 	/**
-	 * Check for existence of sensitive core files in web root.
-	 *
-	 * @return bool True if wp-config.php or .htaccess exist.
-	 */
-	private function doesSensitiveFilesExists(): bool {
-		return file_exists( ABSPATH . 'wp-config.php' )
-			|| file_exists( ABSPATH . '.htaccess' );
-	}
-
-	/**
 	 * Detect if XML-RPC is enabled and present.
 	 *
 	 * @return bool True if xmlrpc.php exists and filter returns true.
@@ -183,7 +172,7 @@ final class WpFileSecurityProvider implements FilePermissionInterface {
 		$xmlrpc            = new IsXMLRPCOn( $this->isXMLRPCOn() );
 		$wpConfigPerm      = new IsWpConfigPermission644( $this->isWpConfigPermission644() );
 		$backupExposed     = new AnyBackupExposed( $this->anyBackupExposed() );
-		$logsExposed       = new LogFilesExposed( $this->logFilesExposed() );
+		$logsExposed       = new LogFilesExposed( Async::yes( home_url() ) );
 
 		$directoryListing->setDescription( FileSecurityI18n::description( 'directoryListing' ) );
 		$phpExecUploads->setDescription( FileSecurityI18n::description( 'phpExecUploads' ) );

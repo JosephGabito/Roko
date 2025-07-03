@@ -12,11 +12,16 @@ final class Severity {
 	public const MEDIUM   = 'medium';
 	public const HIGH     = 'high';
 	public const CRITICAL = 'critical';
+	public const PENDING  = 'pending';
 
 	private string $value;
 
 	private function __construct( string $value ) {
 		$this->value = $value;
+	}
+
+	public static function pending(): self {
+		return new self( self::PENDING );
 	}
 
 	public static function low(): self {

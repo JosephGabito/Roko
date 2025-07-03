@@ -31,6 +31,7 @@ final class FileSecurityChecks {
 		$checks        = array();
 
 		foreach ( $filePermission->toArray() as $propertyName => $valueObject ) {
+
 			if ( ! isset( $checkMappings[ $propertyName ] ) ) {
 				continue; // Skip unknown checks
 			}
@@ -55,7 +56,7 @@ final class FileSecurityChecks {
 				self::buildEvidence( $valueObject, $propertyName ),
 				$businessCode, // Domain emits business codes
 				'roko',
-				Async::nope()
+				$valueObject->async()
 			);
 		}
 
