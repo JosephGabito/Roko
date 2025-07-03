@@ -6,6 +6,7 @@ use JosephG\Roko\Domain\Security\Checks\ValueObject\Check;
 use JosephG\Roko\Domain\Security\Checks\ValueObject\CheckStatus;
 use JosephG\Roko\Domain\Security\Checks\ValueObject\Severity;
 use JosephG\Roko\Domain\Security\Checks\ValueObject\Async;
+use JosephG\Roko\Application\Security\Async\AsyncDeterminationService;
 
 /**
  * Aggregate that transforms SecurityKeys domain objects into Check value objects.
@@ -39,6 +40,14 @@ final class SecurityKeysChecks {
 			$strength           = $securityKey->strength();
 			$source             = $securityKey->source();
 			$recommendationCode = $strength . '_' . $source; // Business code, not translated text
+			$evidence           = self::buildEvidence( $securityKey, $securityKeys->getLastRotated() );
+
+			// Application layer determines async strategy based on business rules
+			$async = AsyncDeterminationService::determineAsync(
+				$keyId,
+				$recommendationCode,
+				$evidence
+			);
 
 			$checks[] = new Check(
 				$keyId,
@@ -46,10 +55,10 @@ final class SecurityKeysChecks {
 				self::mapStrengthToStatus( $strength ),
 				self::calculateSeverity( $strength, $keyId ),
 				$securityKey->description(),
-				self::buildEvidence( $securityKey, $securityKeys->getLastRotated() ),
+				$evidence,
 				$recommendationCode, // Domain emits business codes
 				'roko',
-				Async::nope()
+				$async // Application-determined async strategy
 			);
 		}
 

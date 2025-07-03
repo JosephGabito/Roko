@@ -1,25 +1,23 @@
 <?php
 namespace JosephG\Roko\Domain\Security\FileSecurity\ValueObject;
 
-use JosephG\Roko\Domain\Security\Checks\ValueObject\Async;
-
 final class LogFilesExposed {
 
 	use SharedFileSecurityDescriptionTrait;
 
-	private Async $async;
+	private $exposed;
 
 	public function __construct(
-		Async $async
+		$exposed
 	) {
-		$this->async = $async;
+		$this->exposed = $exposed;
 	}
 
-	public function value(): Async {
-		return $this->async;
+	public function isExposed() {
+		return $this->exposed;
 	}
 
-	public function async(): Async {
-		return $this->async;
+	public function value() {
+		return $this->exposed;
 	}
 }

@@ -22,5 +22,4 @@ final class DoesSensitiveFilesExists {
 	public function value(): bool {
 		return $this->exists;
 	}
-
 }

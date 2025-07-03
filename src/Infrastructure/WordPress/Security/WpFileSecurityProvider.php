@@ -172,7 +172,7 @@ final class WpFileSecurityProvider implements FilePermissionInterface {
 		$xmlrpc            = new IsXMLRPCOn( $this->isXMLRPCOn() );
 		$wpConfigPerm      = new IsWpConfigPermission644( $this->isWpConfigPermission644() );
 		$backupExposed     = new AnyBackupExposed( $this->anyBackupExposed() );
-		$logsExposed       = new LogFilesExposed( Async::yes( home_url() ) );
+		$logsExposed       = new LogFilesExposed( $this->logFilesExposed() );
 
 		$directoryListing->setDescription( FileSecurityI18n::description( 'directoryListing' ) );
 		$phpExecUploads->setDescription( FileSecurityI18n::description( 'phpExecUploads' ) );

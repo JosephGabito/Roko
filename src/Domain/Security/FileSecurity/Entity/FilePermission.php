@@ -13,15 +13,15 @@ use JosephG\Roko\Domain\Security\FileSecurity\ValueObject\LogFilesExposed;
 
 final class FilePermission {
 
-	private IsDirectoryListingOn $directoryListingIsOn;
-	private IsWpDebugOn $wpDebugOn;
-	private IsEditorOn $editorOn;
-	private IsDashboardInstallsOn $dashboardInstallsOn;
-	private IsPHPExecutionInUploadsDirOn $phpExecutionInUploadsDirOn;
-	private IsXMLRPCOn $xmlrpcOn;
-	private IsWpConfigPermission644 $wpConfigPermission644;
-	private AnyBackupExposed $anyBackupExposed;
-	private LogFilesExposed $logFilesExposed;
+	private $directoryListingIsOn;
+	private $wpDebugOn;
+	private $editorOn;
+	private $dashboardInstallsOn;
+	private $phpExecutionInUploadsDirOn;
+	private $xmlrpcOn;
+	private $wpConfigPermission644;
+	private $anyBackupExposed;
+	private $logFilesExposed;
 
 	private $title;
 	private $description;

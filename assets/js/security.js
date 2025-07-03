@@ -164,6 +164,8 @@ class RokoSecurityDashboard {
         return await response.json();
     }
 
+
+
     // ==========================================
     // SCHEMA HELPERS
     // ==========================================
@@ -355,7 +357,7 @@ class RokoSecurityDashboard {
         // Start the slow WordPress Site Health fetch in the background
         setTimeout(() => {
             const i18n = this.get_site_health_i18n();
-            this.update_site_health_loading_message(i18n.loadingFetching);
+            this.update_site_health_loading_message(`<span class="roko-loading-text">${i18n.loadingFetching}</span>`);
             this.fetch_site_health_data();
         }, 100);
     }
@@ -528,7 +530,7 @@ class RokoSecurityDashboard {
 
         try {
             if (button) {
-                button.textContent = 'Fixing...';
+                button.classList.add('roko-button-loading');
                 button.disabled = true;
             }
 
@@ -550,6 +552,7 @@ class RokoSecurityDashboard {
             if (result.success) {
                 // Show success and refresh data
                 if (button) {
+                    button.classList.remove('roko-button-loading');
                     button.textContent = '✓ Fixed';
                     button.style.background = '#00a32a';
                     button.style.borderColor = '#00a32a';
@@ -571,6 +574,7 @@ class RokoSecurityDashboard {
         } catch (error) {
             console.error('Autofix error:', error);
             if (button) {
+                button.classList.remove('roko-button-loading');
                 button.textContent = '✗ Failed';
                 button.style.background = '#d63638';
                 button.style.borderColor = '#d63638';
@@ -679,14 +683,14 @@ class RokoSecurityDashboard {
 
         if (autofixAllBtn) {
             autofixAllBtn.disabled = true;
-            autofixText.textContent = 'Fixing...';
+            autofixAllBtn.classList.add('roko-button-loading');
         }
 
         for (let i = 0; i < allFixes.length; i++) {
             const check = allFixes[i];
 
             if (autofixText) {
-                autofixText.textContent = `Fixing ${i + 1}/${allFixes.length}...`;
+                autofixText.innerHTML = `<span class="roko-loading-text">Fixing ${i + 1}/${allFixes.length}</span>`;
             }
 
             try {
@@ -731,6 +735,9 @@ class RokoSecurityDashboard {
         alert(resultMessage);
 
         // Reset button and refresh data
+        if (autofixAllBtn) {
+            autofixAllBtn.classList.remove('roko-button-loading');
+        }
         if (autofixText) {
             autofixText.textContent = 'Auto-fix issues';
         }
@@ -758,10 +765,10 @@ class RokoSecurityDashboard {
             <div class="security-item" data-status="pending">
                 <div class="roko-d-flex roko-justify-content-between roko-align-items-center">
                     <span class="security-item-label">${i18n.labelHealthCheck}</span>
-                    ${this.create_badge(i18n.badgeLoading, 'info')}
+                    ${this.create_badge_with_loading(i18n.badgeLoading, 'info')}
                 </div>
                 <div class="security-item-description roko-text-muted roko-text-small roko-block roko-mt-3">
-                    ${i18n.loadingInitial}
+                    <span class="roko-loading-text">${i18n.loadingInitial}</span>
                 </div>
             </div>
         `;
@@ -808,7 +815,8 @@ class RokoSecurityDashboard {
             if (title && title.textContent.trim() === i18n.title) {
                 const description = card.querySelector('.security-item-description');
                 if (description) {
-                    description.textContent = message;
+                    // Use innerHTML to support loading classes with HTML content
+                    description.innerHTML = message;
                 }
             }
         });
@@ -825,12 +833,12 @@ class RokoSecurityDashboard {
             const tests = ['background-updates', 'loopback-requests', 'https-status', 'dotorg-communication', 'authorization-header'];
 
             // Show progress as we fetch each test
-            this.update_site_health_loading_message(this.sprintf(i18n.loadingRunning, tests.length));
+            this.update_site_health_loading_message(`<span class="roko-loading-text">${this.sprintf(i18n.loadingRunning, tests.length)}</span>`);
 
             const promises = tests.map((test, index) =>
                 this.fetch_single_site_health_test(test).then(result => {
                     // Update progress
-                    this.update_site_health_loading_message(this.sprintf(i18n.loadingCompleted, index + 1, tests.length));
+                    this.update_site_health_loading_message(`<span class="roko-loading-text">${this.sprintf(i18n.loadingCompleted, index + 1, tests.length)}</span>`);
                     return result;
                 })
             );
@@ -1070,7 +1078,6 @@ class RokoSecurityDashboard {
 
     create_badge_with_loading(text, type) {
         return `<span class="roko-badge roko-badge-${type} roko-badge-loading">
-            <span class="roko-badge-loading-icon">(Loading...)</span>
             <span class="roko-badge-text">${text}</span>
         </span>`;
     }

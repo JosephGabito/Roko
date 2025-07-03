@@ -6,6 +6,7 @@ use JosephG\Roko\Domain\Security\Checks\ValueObject\Check;
 use JosephG\Roko\Domain\Security\Checks\ValueObject\CheckStatus;
 use JosephG\Roko\Domain\Security\Checks\ValueObject\Severity;
 use JosephG\Roko\Domain\Security\Checks\ValueObject\Async;
+use JosephG\Roko\Application\Security\Async\AsyncDeterminationService;
 
 /**
  * Domain Service: Transforms FilePermission entity into security checks.
@@ -46,6 +47,14 @@ final class FileSecurityChecks {
 
 			$status       = self::mapVulnerabilityToStatus( $isVulnerable );
 			$businessCode = self::mapToBusinessCode( $propertyName, $isVulnerable );
+			$evidence     = self::buildEvidence( $valueObject, $propertyName );
+
+			// Application layer determines async strategy based on business rules
+			$async = AsyncDeterminationService::determineAsync(
+				$mapping['id'],
+				$businessCode,
+				$evidence
+			);
 
 			$checks[] = new Check(
 				$mapping['id'],
@@ -53,10 +62,10 @@ final class FileSecurityChecks {
 				$status,
 				self::calculateSeverity( $isVulnerable, $mapping['id'] ),
 				$valueObject->description(),
-				self::buildEvidence( $valueObject, $propertyName ),
+				$evidence,
 				$businessCode, // Domain emits business codes
 				'roko',
-				$valueObject->async()
+				$async // Application-determined async strategy
 			);
 		}
 

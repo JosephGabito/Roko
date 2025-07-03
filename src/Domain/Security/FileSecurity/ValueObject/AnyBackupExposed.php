@@ -22,5 +22,4 @@ final class AnyBackupExposed {
 	public function value(): bool {
 		return $this->exposed;
 	}
-	
 }

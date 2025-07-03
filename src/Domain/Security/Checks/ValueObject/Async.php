@@ -3,31 +3,31 @@ namespace JosephG\Roko\Domain\Security\Checks\ValueObject;
 
 final class Async {
 
-	private bool $isAsync;
-	private string $endpoint;
+	private $isAsync;
+	private $endpoint;
 
-	public function __construct( bool $isAsync = false, string $endpoint = '' ) {
+	public function __construct( $isAsync = false, $endpoint = '' ) {
 		$this->isAsync  = $isAsync;
 		$this->endpoint = $endpoint;
 	}
 
-	public function endpoint(): string {
+	public function endpoint() {
 		return $this->endpoint;
 	}
 
-	public function isAsync(): bool {
+	public function isAsync() {
 		return $this->isAsync;
 	}
 
-	public static function nope(): self {
+	public static function nope() {
 		return new self( false, '' );
 	}
 
-	public static function yes( string $endpoint ): self {
+	public static function yes( $endpoint ) {
 		return new self( true, $endpoint );
 	}
 
-	public function toArray(): array {
+	public function toArray() {
 		return array(
 			'isAsync'  => $this->isAsync,
 			'endpoint' => $this->endpoint,
