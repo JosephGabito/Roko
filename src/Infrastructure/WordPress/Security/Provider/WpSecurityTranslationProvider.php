@@ -4,6 +4,7 @@ namespace JosephG\Roko\Infrastructure\WordPress\Security\Provider;
 use JosephG\Roko\Application\Security\Provider\SecurityTranslationProviderInterface;
 use JosephG\Roko\Infrastructure\WordPress\Security\I18n\SecurityKeysChecksI18n;
 use JosephG\Roko\Infrastructure\WordPress\Security\I18n\FileSecurityChecksI18n;
+use JosephG\Roko\Infrastructure\WordPress\Security\I18n\FileIntegrityChecksI18n;
 
 /**
  * WordPress implementation of SecurityTranslationProvider.
@@ -41,5 +42,15 @@ final class WpSecurityTranslationProvider implements SecurityTranslationProvider
 	 */
 	public function getFileSecurityRecommendation( $businessCode ) {
 		return FileSecurityChecksI18n::recommendation( $businessCode );
+	}
+
+	/**
+	 * Get file integrity recommendation for a specific business code.
+	 *
+	 * @param string $businessCode Business code from domain (e.g., 'core_checksum_mismatch').
+	 * @return string Localized recommendation text.
+	 */
+	public function getFileIntegrityRecommendation( $businessCode ) {
+		return FileIntegrityChecksI18n::recommendation( $businessCode );
 	}
 }

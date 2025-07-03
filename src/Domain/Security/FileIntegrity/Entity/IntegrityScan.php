@@ -14,28 +14,69 @@ use JosephG\Roko\Domain\Security\FileIntegrity\ValueObject\MalwarePatternsFound;
  */
 final class IntegrityScan {
 
+	/** @var bool */
+	public $coreIntact;
+
+	/** @var int */
+	public $suspiciousCount;
+
+	/** @var \DateTimeImmutable */
+	public $scannedAt;
+
+	/** @var CoreChecksumMismatch */
+	public $coreChecksumMismatch;
+
+	/** @var ExecutableInUploadsFound */
+	public $executableInUploadsFound;
+
+	/** @var DotFilesPresent */
+	public $dotFilesPresent;
+
+	/** @var OversizedFilesFound */
+	public $oversizedFilesFound;
+
+	/** @var BackupFoldersFound */
+	public $backupFoldersFound;
+
+	/** @var RecentFileChanges */
+	public $recentFileChanges;
+
+	/** @var MalwarePatternsFound */
+	public $malwarePatternsFound;
+
 	private $title       = '';
 	private $description = '';
 
 	public function __construct(
-		public bool $coreIntact,
-		public int $suspiciousCount,
-		public \DateTimeImmutable $scannedAt,
-		public CoreChecksumMismatch $coreChecksumMismatch,
-		public ExecutableInUploadsFound $executableInUploadsFound,
-		public DotFilesPresent $dotFilesPresent,
-		public OversizedFilesFound $oversizedFilesFound,
-		public BackupFoldersFound $backupFoldersFound,
-		public RecentFileChanges $recentFileChanges,
-		public MalwarePatternsFound $malwarePatternsFound,
-	) {}
+		$coreIntact,
+		$suspiciousCount,
+		\DateTimeImmutable $scannedAt,
+		CoreChecksumMismatch $coreChecksumMismatch,
+		ExecutableInUploadsFound $executableInUploadsFound,
+		DotFilesPresent $dotFilesPresent,
+		OversizedFilesFound $oversizedFilesFound,
+		BackupFoldersFound $backupFoldersFound,
+		RecentFileChanges $recentFileChanges,
+		MalwarePatternsFound $malwarePatternsFound
+	) {
+		$this->coreIntact                = $coreIntact;
+		$this->suspiciousCount           = $suspiciousCount;
+		$this->scannedAt                 = $scannedAt;
+		$this->coreChecksumMismatch      = $coreChecksumMismatch;
+		$this->executableInUploadsFound  = $executableInUploadsFound;
+		$this->dotFilesPresent           = $dotFilesPresent;
+		$this->oversizedFilesFound       = $oversizedFilesFound;
+		$this->backupFoldersFound        = $backupFoldersFound;
+		$this->recentFileChanges         = $recentFileChanges;
+		$this->malwarePatternsFound      = $malwarePatternsFound;
+	}
 
-	public function setSectionSummary( string $title, string $description ) {
+	public function setSectionSummary( $title, $description ) {
 		$this->title       = $title;
 		$this->description = $description;
 	}
 
-	public function getSectionSummary(): array {
+	public function getSectionSummary() {
 		return array(
 			'title'       => $this->title,
 			'description' => $this->description,
@@ -47,7 +88,7 @@ final class IntegrityScan {
 	 *
 	 * @return array
 	 */
-	public function toArray(): array {
+	public function toArray() {
 		return array(
 			'coreIntact'           => $this->coreIntact,
 			'suspiciousCount'      => $this->suspiciousCount,

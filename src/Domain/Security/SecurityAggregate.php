@@ -10,6 +10,7 @@ use JosephG\Roko\Domain\Security\FileIntegrity\Repository\FileIntegrityRepositor
 use JosephG\Roko\Domain\Security\KnownVulnerabilities\Repository\VulnerabilityRepositoryInterface;
 use JosephG\Roko\Domain\Security\Checks\SecurityKeysChecks;
 use JosephG\Roko\Domain\Security\Checks\FileSecurityChecks;
+use JosephG\Roko\Domain\Security\Checks\FileIntegrityChecks;
 
 /**
  * Aggregate Root: combines all security sub-domain snapshots.
@@ -55,8 +56,9 @@ final class SecurityAggregate {
 		$vulns         = $this->vulnRepo->latestKnown();
 
 		// Domain logic - emits business codes, not translated text
-		$securityKeysChecks = SecurityKeysChecks::fromSecurityKeys( $keys );
-		$fileSecurityChecks = FileSecurityChecks::fromFilePermission( $fileSecurity );
+		$securityKeysChecks   = SecurityKeysChecks::fromSecurityKeys( $keys );
+		$fileSecurityChecks   = FileSecurityChecks::fromFilePermission( $fileSecurity );
+		$fileIntegrityChecks  = FileIntegrityChecks::fromIntegrityScan( $integrityScan );
 
 		return array(
 			'meta'     => array(
@@ -80,7 +82,7 @@ final class SecurityAggregate {
 					'id'          => 'file_integrity',
 					'title'       => 'File Integrity',
 					'description' => $integrityScan->getSectionSummary()['description'],
-					'checks'      => array(), // TODO: Create FileIntegrityChecks sub-aggregate
+					'checks'      => $fileIntegrityChecks->toArray(),
 				),
 				array(
 					'id'          => 'known_vulnerabilities',

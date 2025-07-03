@@ -23,4 +23,12 @@ interface SecurityTranslationProviderInterface {
 	 * @return string Localized recommendation text.
 	 */
 	public function getFileSecurityRecommendation( $businessCode );
+
+	/**
+	 * Get file integrity recommendation for a specific business code.
+	 *
+	 * @param string $businessCode Business code from domain (e.g., 'core_checksum_mismatch').
+	 * @return string Localized recommendation text.
+	 */
+	public function getFileIntegrityRecommendation( $businessCode );
 }

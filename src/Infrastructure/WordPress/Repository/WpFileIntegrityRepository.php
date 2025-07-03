@@ -77,16 +77,16 @@ final class WpFileIntegrityRepository implements FileIntegrityRepositoryInterfac
 		$malwarePatterns->setDescription( 'These code snippets are classic malware fingerprints.' );
 
 		$scan = new IntegrityScan(
-			coreIntact: true, // Legacy field - will be replaced by detailed checks
-			suspiciousCount: 3, // Count from detailed findings
-			scannedAt: new \DateTimeImmutable(),
-			coreChecksumMismatch: $coreChecksumMismatch,
-			executableInUploadsFound: $executableInUploads,
-			dotFilesPresent: $dotFiles,
-			oversizedFilesFound: $oversizedFiles,
-			backupFoldersFound: $backupFolders,
-			recentFileChanges: $recentFileChanges,
-			malwarePatternsFound: $malwarePatterns,
+			true, // coreIntact: Legacy field - will be replaced by detailed checks
+			3, // suspiciousCount: Count from detailed findings
+			new \DateTimeImmutable(),
+			$coreChecksumMismatch,
+			$executableInUploads,
+			$dotFiles,
+			$oversizedFiles,
+			$backupFolders,
+			$recentFileChanges,
+			$malwarePatterns
 		);
 
 		$scan->setSectionSummary(

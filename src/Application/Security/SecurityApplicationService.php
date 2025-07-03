@@ -73,6 +73,12 @@ final class SecurityApplicationService {
 					$businessCode = $check['recommendation'];
 					$check['recommendation'] = $this->translationProvider->getFileSecurityRecommendation( $businessCode );
 				}
+			} elseif ( $section['id'] === 'file_integrity' ) {
+				foreach ( $section['checks'] as &$check ) {
+					// Domain emitted business code - Application translates it
+					$businessCode = $check['recommendation'];
+					$check['recommendation'] = $this->translationProvider->getFileIntegrityRecommendation( $businessCode );
+				}
 			}
 		}
 		
