@@ -8,6 +8,6 @@ class IngressConfig {
 			return ROKO_INGRESS_URL;
 		}
 
-		return 'http://localhost:8000';
+		return 'https://roko-autogen.onrender.com';
 	}
 }
